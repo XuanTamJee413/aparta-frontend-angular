@@ -9,7 +9,7 @@ export const routes: Routes = [
       {
         path: 'admin',
         loadChildren: () => import('./pages/admin/admin.routes')
-          .then(m => m.ADMIN_ROUTES) 
+          .then(m => m.ADMIN_ROUTES)
       },
       {
         path: 'admin/project',
@@ -42,10 +42,12 @@ export const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+
   },
   {
     path: 'resident',
     loadChildren: () => import('./pages/resident/resident.routes')
       .then(m => m.RESIDENT_ROUTES)
-  },
+  }
 ];
+
