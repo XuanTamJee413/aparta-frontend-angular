@@ -24,12 +24,11 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# environment files (nếu có key bí mật)
-src/environments/environment*.ts
+# environment files
+src/environments/environment.local.ts
 
 # misc
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
 .pnpm-debug.log*
