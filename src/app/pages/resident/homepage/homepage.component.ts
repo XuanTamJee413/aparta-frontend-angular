@@ -6,106 +6,100 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="dashboard-container">
+    <div class="page-container">
       <!-- MAIN CONTENT AREA -->
-      <main class="content">
-        <div class="header">
-          <div>
-            <h1>Welcome back, {{ userName }}!</h1>
-            <p class="subtitle">Here's what's happening in your building today</p>
-          </div>
-        </div>
+      <header class="page-header">
+        <h1>Welcome back, {{ userName }}!</h1>
+        <p class="subtitle">Here's what's happening in your building today</p>
+      </header>
 
-        <!-- NOTIFICATION -->
-        <div class="notification">
-          <div class="icon-bg info">
-            <!-- Icon Placeholder -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          </div>
-          <div>
-            <strong>Building Maintenance Schedule!</strong>
-            <p>The swimming pool will be closed for maintenance on October 20-21, 2025. We apologize for any inconvenience.</p>
-          </div>
+      <!-- NOTIFICATION -->
+      <div class="notification">
+        <div class="icon-bg info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
         </div>
-
-        <!-- QUICK ACTIONS -->
-        <h2 class="section-title">Quick Actions</h2>
-        <div class="quick-actions">
-          <div class="action-card">
-            <div class="icon-bg accent1">...</div>
-            <span>View Bills</span>
-          </div>
-          <div class="action-card">
-            <div class="icon-bg accent2">...</div>
-            <span>Report Issue</span>
-          </div>
-          <div class="action-card">
-            <div class="icon-bg accent3">...</div>
-            <span>Contact Staff</span>
-          </div>
-          <div class="action-card">
-            <div class="icon-bg accent4">...</div>
-            <span>Announcements</span>
-          </div>
+        <div>
+          <strong>Building Maintenance Schedule!</strong>
+          <p>The swimming pool will be closed for maintenance on October 20-21, 2025. We apologize for any inconvenience.</p>
         </div>
+      </div>
 
-        <!-- DATA CARDS -->
-        <div class="data-grid">
-          <!-- Bills Summary -->
-          <div class="data-card">
-            <h3 class="card-title">Bills Summary</h3>
-            <p class="card-subtitle">Your current billing status</p>
-            <ul class="item-list">
-              @for(bill of bills; track bill.name) {
-                <li>
-                  <div>
-                    <span class="item-name">{{ bill.name }}</span>
-                    <span class="item-date">Due: {{ bill.dueDate }}</span>
-                  </div>
-                  <div>
-                    <span class="item-amount">{{ bill.amount | currency:'USD' }}</span>
-                    <span class="status" [ngClass]="bill.status.toLowerCase()">{{ bill.status }}</span>
-                  </div>
-                </li>
-              }
-            </ul>
-            <button class="primary-button">View All Bills</button>
-          </div>
-
-          <!-- Maintenance Requests -->
-          <div class="data-card">
-            <h3 class="card-title">Maintenance Requests</h3>
-            <p class="card-subtitle">Track your reported issues</p>
-            <ul class="item-list">
-              @for(request of maintenanceRequests; track request.description) {
-                <li class="maintenance-item">
-                  <div class="status-icon" [ngClass]="request.status.toLowerCase().replace(' ', '-')"></div>
-                  <div>
-                    <span class="item-name">{{ request.description }}</span>
-                    <span class="item-date">{{ request.date }}</span>
-                  </div>
-                  <span class="status" [ngClass]="request.status.toLowerCase().replace(' ', '-')">{{ request.status }}</span>
-                </li>
-              }
-            </ul>
-            <button class="secondary-button">View All Requests</button>
-          </div>
+      <!-- QUICK ACTIONS -->
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="quick-actions">
+        <div class="action-card">
+          <div class="icon-bg accent1">...</div>
+          <span>View Bills</span>
         </div>
-      </main>
+        <div class="action-card">
+          <div class="icon-bg accent2">...</div>
+          <span>Report Issue</span>
+        </div>
+        <div class="action-card">
+          <div class="icon-bg accent3">...</div>
+          <span>Contact Staff</span>
+        </div>
+        <div class="action-card">
+          <div class="icon-bg accent4">...</div>
+          <span>Announcements</span>
+        </div>
+      </div>
+
+      <!-- DATA CARDS -->
+      <div class="data-grid">
+        <!-- Bills Summary -->
+        <section class="card">
+          <h3 class="card-title">Bills Summary</h3>
+          <p class="card-subtitle">Your current billing status</p>
+          <ul class="item-list">
+            @for(bill of bills; track bill.name) {
+              <li>
+                <div>
+                  <span class="item-name">{{ bill.name }}</span>
+                  <span class="item-date">Due: {{ bill.dueDate }}</span>
+                </div>
+                <div>
+                  <span class="item-amount">{{ bill.amount | currency:'USD' }}</span>
+                  <span class="status" [ngClass]="bill.status.toLowerCase()">{{ bill.status }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+          <button class="btn btn-primary">View All Bills</button>
+        </section>
+
+        <!-- Maintenance Requests -->
+        <section class="card">
+          <h3 class="card-title">Maintenance Requests</h3>
+          <p class="card-subtitle">Track your reported issues</p>
+          <ul class="item-list">
+            @for(request of maintenanceRequests; track request.description) {
+              <li class="maintenance-item">
+                <div class="status-icon" [ngClass]="request.status.toLowerCase().replace(' ', '-')"></div>
+                <div>
+                  <span class="item-name">{{ request.description }}</span>
+                  <span class="item-date">{{ request.date }}</span>
+                </div>
+                <span class="status" [ngClass]="request.status.toLowerCase().replace(' ', '-')">{{ request.status }}</span>
+              </li>
+            }
+          </ul>
+          <button class="btn btn-secondary">View All Requests</button>
+        </section>
+      </div>
     </div>
   `,
   styles: [`
     :host {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-      background-color: #f7f9fc;
       display: block;
-      padding: 2rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    .dashboard-container {
+
+    .page-container {
       max-width: 1200px;
       margin: 0 auto;
     }
-    .header h1 {
+    .page-header h1 {
       font-size: 1.75rem;
       font-weight: 600;
       color: #333;
@@ -115,6 +109,72 @@ import { CommonModule } from '@angular/common';
       color: #6c757d;
       margin: 0.25rem 0 0 0;
     }
+
+    .card {
+      background-color: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    .card-subtitle {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin: 0.25rem 0 1.5rem 0;
+    }
+
+    .btn {
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      width: 100%;
+      margin-top: 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .btn-primary {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+    .btn-secondary {
+      background-color: #fff;
+      color: #333;
+      border: 1px solid #e9ecef;
+    }
+
+    .item-list { 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+    }
+    .item-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f1f3f5;
+    }
+    .item-list li:last-child { border-bottom: none; }
+    .item-name { font-weight: 600; }
+    .item-date { font-size: 0.85rem; color: #6c757d; display: block; }
+    .item-amount { font-weight: 600; margin-right: 1rem; }
+
+    .status {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+    }
+    .status.pending { background-color: #fff3cd; color: #ffc107; }
+    .status.paid { background-color: #d1e7dd; color: #198754; }
+    .status.resolved { background-color: #d1e7dd; color: #198754; }
+    .status.in-progress { background-color: #cff4fc; color: #0dcaf0; }
+
     .notification {
       display: flex;
       align-items: center;
@@ -128,6 +188,7 @@ import { CommonModule } from '@angular/common';
     }
     .notification p { margin: 0.25rem 0 0; font-size: 0.9rem; }
     .notification strong { font-weight: 600; }
+
     .icon-bg {
       width: 40px;
       height: 40px;
@@ -136,6 +197,7 @@ import { CommonModule } from '@angular/common';
       align-items: center;
       justify-content: center;
       color: #fff;
+      flex-shrink: 0;
     }
     .icon-bg.info { background-color: #0d6efd; }
     
@@ -176,61 +238,6 @@ import { CommonModule } from '@angular/common';
       gap: 1.5rem;
       margin-top: 2.5rem;
     }
-    .data-card {
-      background-color: #fff;
-      border: 1px solid #e9ecef;
-      border-radius: 8px;
-      padding: 1.5rem;
-    }
-    .card-title { font-size: 1.1rem; margin: 0; font-weight: 600; }
-    .card-subtitle { font-size: 0.9rem; color: #6c757d; margin: 0.25rem 0 1.5rem 0; }
-    
-    .item-list { list-style: none; padding: 0; margin: 0; }
-    .item-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 0;
-      border-bottom: 1px solid #f1f3f5;
-    }
-    .item-list li:last-child { border-bottom: none; }
-    .item-name { font-weight: 500; }
-    .item-date { font-size: 0.8rem; color: #6c757d; display: block; }
-    .item-amount { font-weight: 600; margin-right: 1rem; }
-    
-    .status {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.25rem 0.5rem;
-      border-radius: 20px;
-    }
-    .status.pending { background-color: #fff3cd; color: #ffc107; }
-    .status.paid { background-color: #d1e7dd; color: #198754; }
-    .status.resolved { background-color: #d1e7dd; color: #198754; }
-    .status.in-progress { background-color: #cff4fc; color: #0dcaf0; }
-
-    .primary-button {
-      background-color: #0d6efd;
-      color: #fff;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      width: 100%;
-      margin-top: 1.5rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .secondary-button {
-      background-color: #fff;
-      color: #333;
-      border: 1px solid #e9ecef;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      width: 100%;
-      margin-top: 1.5rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
     
     .maintenance-item { gap: 1rem; }
     .maintenance-item .status { margin-left: auto; }
@@ -245,7 +252,6 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class HomepageComponent {
-  // Dữ liệu giả (mock data) để hiển thị trên giao diện
   userName = 'John Anderson';
 
   bills = [

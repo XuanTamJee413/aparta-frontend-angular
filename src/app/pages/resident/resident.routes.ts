@@ -2,29 +2,50 @@ import { Routes } from '@angular/router';
 import { HomepageComponent } from './homepage/homepage.component';
 import { VisitorComponent } from './visitor/visitor.component';
 import { ResidentLayoutComponent } from './resident-layout.component';
+import { InvoiceComponent } from './invoice/invoice.component';
+import { ChatComponent } from './chat/chat.component';
+import { ProfileComponent } from './profile/profile.component';
+import { ServiceComponent } from './service/service.component';
+import { FacilityComponent } from './facility/facility.component';
+import { AnnouncementComponent } from './announcement/announcement.component';
 
 export const RESIDENT_ROUTES: Routes = [
     {
-    // Tất cả các đường dẫn bắt đầu bằng /resident sẽ tải ResidentLayoutComponent làm khung chính
     path: '',
     component: ResidentLayoutComponent,
     children: [
       {
-        // Khi URL là /resident/dashboard, nó sẽ hiển thị HomepageComponent bên trong layout.
-        // Điều này khớp với routerLink="dashboard" trong sidebar của bạn.
         path: 'home',
         component: HomepageComponent
       },
       {
-        // Khi URL là /resident/visitors, nó sẽ hiển thị VisitorComponent bên trong layout.
-        // Điều này khớp với routerLink="visitors".
-        path: 'visitors',
+        path: 'invoice', 
+        component: InvoiceComponent
+      },
+      {
+        path: 'service', 
+        component: ServiceComponent
+      },
+      {
+        path: 'news', 
+        component: AnnouncementComponent
+      },
+      {
+        path: 'visitor',
         component: VisitorComponent
       },
-      // TODO: Thêm các route cho các trang con khác (bills, issues...) ở đây
-      // Ví dụ: { path: 'bills', component: BillsComponent },
-
-      // Nếu người dùng chỉ truy cập /resident, tự động chuyển hướng họ đến trang dashboard.
+      {
+        path: 'facility',
+        component: FacilityComponent
+      },
+      {
+        path: 'chat',
+        component: ChatComponent
+      },
+      {
+        path: 'profile',
+        component: ProfileComponent
+      },
       {
         path: '',
         redirectTo: 'home',

@@ -3,6 +3,11 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: '/resident/home',
+    pathMatch: 'full'
+  },
+  {
+    path: '',
     loadComponent: () => import('./layout/main-layout.component')
       .then(m => m.MainLayoutComponent),
     children: [
