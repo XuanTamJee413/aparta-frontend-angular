@@ -42,5 +42,10 @@ export const routes: Routes = [
         pathMatch: 'full'
       }
     ]
-  }
+  },
+  {
+    path: 'resident',
+    loadChildren: () => import('./pages/resident/resident.routes')
+      .then(m => m.RESIDENT_ROUTES)
+  },
 ];
