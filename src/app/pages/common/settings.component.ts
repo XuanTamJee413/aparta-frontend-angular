@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
         <h3><strong>System</strong> Settings</h3>
       </div>
     </div>
-    
+
     <div class="card">
       <div class="card-header">
         <h5 class="card-title mb-0">Settings</h5>

@@ -56,10 +56,10 @@ import { RouterModule } from '@angular/router';
           <li class="sidebar-header">
             Pages
           </li>
-          
+
           <li class="sidebar-item">
             <a data-bs-target="#dashboards" data-bs-toggle="collapse" class="sidebar-link">
-              <i class="align-middle" data-feather="sliders"></i> 
+              <i class="align-middle" data-feather="sliders"></i>
               <span class="align-middle">Dashboards</span>
             </a>
             <ul id="dashboards" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
@@ -67,12 +67,12 @@ import { RouterModule } from '@angular/router';
                 <a class="sidebar-link" routerLink="/admin/dashboard">Analytics</a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/ecommerce">E-Commerce 
+                <a class="sidebar-link" routerLink="/admin/ecommerce">E-Commerce
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/crypto">Crypto 
+                <a class="sidebar-link" routerLink="/admin/crypto">Crypto
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
@@ -81,7 +81,7 @@ import { RouterModule } from '@angular/router';
 
           <li class="sidebar-item">
             <a data-bs-target="#pages" data-bs-toggle="collapse" class="sidebar-link collapsed">
-              <i class="align-middle" data-feather="layout"></i> 
+              <i class="align-middle" data-feather="layout"></i>
               <span class="align-middle">Pages</span>
             </a>
             <ul id="pages" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
@@ -89,22 +89,22 @@ import { RouterModule } from '@angular/router';
                 <a class="sidebar-link" routerLink="/admin/settings">Settings</a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/projects">Projects 
+                <a class="sidebar-link" routerLink="/admin/projects">Projects
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/clients">Clients 
+                <a class="sidebar-link" routerLink="/admin/clients">Clients
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/pricing">Pricing 
+                <a class="sidebar-link" routerLink="/admin/pricing">Pricing
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/chat">Chat 
+                <a class="sidebar-link" routerLink="/admin/chat">Chat
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
@@ -116,21 +116,21 @@ import { RouterModule } from '@angular/router';
 
           <li class="sidebar-item">
             <a class="sidebar-link" routerLink="/admin/profile">
-              <i class="align-middle" data-feather="user"></i> 
+              <i class="align-middle" data-feather="user"></i>
               <span class="align-middle">Profile</span>
             </a>
           </li>
 
           <li class="sidebar-item">
-            <a class="sidebar-link" routerLink="/admin/invoice">
-              <i class="align-middle" data-feather="credit-card"></i> 
-              <span class="align-middle">Invoice</span>
+            <a class="sidebar-link" routerLink="/management">
+              <i class="align-middle" data-feather="credit-card"></i>
+              <span class="align-middle">Quản Lý Cư Dân</span>
             </a>
           </li>
 
           <li class="sidebar-item">
             <a class="sidebar-link" routerLink="/admin/tasks">
-              <i class="align-middle" data-feather="list"></i> 
+              <i class="align-middle" data-feather="list"></i>
               <span class="align-middle">Tasks</span>
               <span class="sidebar-badge badge bg-primary">Pro</span>
             </a>
@@ -138,7 +138,7 @@ import { RouterModule } from '@angular/router';
 
           <li class="sidebar-item">
             <a class="sidebar-link" routerLink="/admin/calendar">
-              <i class="align-middle" data-feather="calendar"></i> 
+              <i class="align-middle" data-feather="calendar"></i>
               <span class="align-middle">Calendar</span>
               <span class="sidebar-badge badge bg-primary">Pro</span>
             </a>
@@ -150,7 +150,7 @@ import { RouterModule } from '@angular/router';
 
           <li class="sidebar-item">
             <a data-bs-target="#project-management" data-bs-toggle="collapse" class="sidebar-link collapsed">
-              <i class="align-middle" data-feather="folder"></i> 
+              <i class="align-middle" data-feather="folder"></i>
               <span class="align-middle">Projects</span>
             </a>
             <ul id="project-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
@@ -172,10 +172,10 @@ import { RouterModule } from '@angular/router';
           <li class="sidebar-header">
             Components
           </li>
-          
+
           <li class="sidebar-item">
             <a data-bs-target="#ui" data-bs-toggle="collapse" class="sidebar-link collapsed">
-              <i class="align-middle" data-feather="briefcase"></i> 
+              <i class="align-middle" data-feather="briefcase"></i>
               <span class="align-middle">UI Elements</span>
             </a>
             <ul id="ui" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
@@ -202,10 +202,10 @@ import { RouterModule } from '@angular/router';
               </li>
             </ul>
           </li>
-          
+
           <li class="sidebar-item">
             <a data-bs-target="#forms" data-bs-toggle="collapse" class="sidebar-link collapsed">
-              <i class="align-middle" data-feather="check-circle"></i> 
+              <i class="align-middle" data-feather="check-circle"></i>
               <span class="align-middle">Forms</span>
             </a>
             <ul id="forms" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
@@ -213,21 +213,21 @@ import { RouterModule } from '@angular/router';
                 <a class="sidebar-link" routerLink="/admin/forms/basic">Basic Inputs</a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/forms/layouts">Form Layouts 
+                <a class="sidebar-link" routerLink="/admin/forms/layouts">Form Layouts
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
               <li class="sidebar-item">
-                <a class="sidebar-link" routerLink="/admin/forms/input-groups">Input Groups 
+                <a class="sidebar-link" routerLink="/admin/forms/input-groups">Input Groups
                   <span class="sidebar-badge badge bg-primary">Pro</span>
                 </a>
               </li>
             </ul>
           </li>
-          
+
           <li class="sidebar-item">
             <a class="sidebar-link" routerLink="/admin/tables">
-              <i class="align-middle" data-feather="list"></i> 
+              <i class="align-middle" data-feather="list"></i>
               <span class="align-middle">Tables</span>
             </a>
           </li>

@@ -1,9 +1,14 @@
-import { Routes } from '@angular/router';
+import { ResidentList } from './resident-management/resident-list/resident-list';
+import { Routes} from '@angular/router';
 
 export const MANAGEMENT_ROUTES: Routes = [
   {
+
     path: '',
-    redirectTo: '/management/dashboard',
-    pathMatch: 'full'
+    component: ResidentList,
+
+
+
   }
+
 ];
