@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="page-container">
       <!-- MAIN HEADER -->
@@ -20,7 +21,12 @@ import { CommonModule } from '@angular/common';
             </div>
           </div>
         </div>
-        <button class="btn btn-primary btn-edit">Edit Profile</button>
+        <button class="btn btn-primary btn-edit" routerLink="/resident/editprofile">
+          Edit Profile
+        </button>
+        <button class="btn btn-success btn-edit" routerLink="/resident/relationship">
+          Add Relationship
+        </button>
       </header>
 
       <!-- INFORMATION CARDS -->

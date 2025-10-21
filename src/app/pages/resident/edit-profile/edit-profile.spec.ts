@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ServiceComponent } from './service.component';
+import { EditProfileComponent } from './edit-profile.component';
 
-
-describe('Service', () => {
-  let component: ServiceComponent;
-  let fixture: ComponentFixture<ServiceComponent>;
+describe('EditProfile', () => {
+  let component: EditProfileComponent;
+  let fixture: ComponentFixture<EditProfileComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ServiceComponent]
+      imports: [EditProfileComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ServiceComponent);
+    fixture = TestBed.createComponent(EditProfileComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

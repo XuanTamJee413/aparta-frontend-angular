@@ -8,6 +8,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { ServiceComponent } from './service/service.component';
 import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
+import { EditProfileComponent } from './edit-profile/edit-profile.component';
 
 export const RESIDENT_ROUTES: Routes = [
     {
@@ -45,6 +46,10 @@ export const RESIDENT_ROUTES: Routes = [
       {
         path: 'profile',
         component: ProfileComponent
+      },
+      {
+        path: 'editprofile',
+        component: EditProfileComponent
       },
       {
         path: '',
