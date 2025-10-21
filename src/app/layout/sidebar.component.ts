@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterLink, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,RouterLink],
   template: `
     <nav id="sidebar" class="sidebar js-sidebar">
       <div class="sidebar-content js-simplebar">
@@ -122,9 +122,16 @@ import { RouterModule } from '@angular/router';
           </li>
 
           <li class="sidebar-item">
-            <a class="sidebar-link" routerLink="/management">
+            <a class="sidebar-link" routerLink="/management/manage-resident">
               <i class="align-middle" data-feather="credit-card"></i>
               <span class="align-middle">Quản Lý Cư Dân</span>
+            </a>
+          </li>
+
+          <li class="sidebar-item">
+            <a class="sidebar-link" routerLink="/management/manage-apartment">
+              <i class="align-middle" data-feather="credit-card"></i>
+              <span class="align-middle">Quản Lý Căn Hộ</span>
             </a>
           </li>
 
