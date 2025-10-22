@@ -1,58 +1,34 @@
 import { Routes } from '@angular/router';
+import { AdminLayout } from './layout/admin-layout/admin-layout';
+import { ManagerLayout } from './layout/manager-layout/manager-layout';
+import { ResidentLayoutComponent } from './pages/resident/resident-layout.component';
+import { NotFound } from './pages/common/not-found/not-found';
 
 export const routes: Routes = [
   {
-    path: '',
-    redirectTo: '/resident/home',
-    pathMatch: 'full'
+    path: 'admin',
+    component: AdminLayout, 
+    loadChildren: () => import('./pages/admin/admin.routes')
+      .then(m => m.ADMIN_ROUTES)
   },
-  {
-    path: '',
-    loadComponent: () => import('./layout/main-layout.component')
-      .then(m => m.MainLayoutComponent),
-    children: [
-      {
-        path: 'admin',
-        loadChildren: () => import('./pages/admin/admin.routes')
-          .then(m => m.ADMIN_ROUTES)
-      },
-      {
-        path: 'admin/project',
-        loadChildren: () => import('./pages/admin/project/project.routes')
-          .then(m => m.PROJECT_ROUTES)
-      },
-      {
-        path: 'finance',
-        loadChildren: () => import('./pages/finance/finance.routes')
-          .then(m => m.FINANCE_ROUTES)
-      },
-      {
-        path: 'management',
-        loadChildren: () => import('./pages/management/management.routes')
-          .then(m => m.MANAGEMENT_ROUTES)
-      },
-      {
-        path: 'operation',
-        loadChildren: () => import('./pages/operation/operation.routes')
-          .then(m => m.OPERATION_ROUTES)
-      },
-      {
-        path: 'common',
-        loadChildren: () => import('./pages/common/common.routes')
-          .then(m => m.COMMON_ROUTES)
-      },
-      {
-        path: '',
-        redirectTo: '/common/homepage',
-        pathMatch: 'full'
-      }
-    ]
 
-  },
   {
-    path: 'resident',
+    path: 'manager',
+    component: ManagerLayout, 
+    loadChildren: () => import('./pages/building/building.routes')
+      .then(m => m.MANAGER_ROUTES)
+  },
+
+  {
+    path: '', 
+    component: ResidentLayoutComponent, 
     loadChildren: () => import('./pages/resident/resident.routes')
       .then(m => m.RESIDENT_ROUTES)
+  },
+  
+  {
+    path: '**', 
+    component: NotFound,
+    pathMatch: 'full'
   }
 ];
-

@@ -1,0 +1,93 @@
+<mat-sidenav-container class="sidenav-container">
+
+  <mat-sidenav #drawer class="sidenav" 
+    fixedInViewport
+    [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'"
+    [opened]="(isSmallScreen$ | async) === false">
+    
+    <mat-toolbar class="sidenav-toolbar">
+      <mat-icon class="toolbar-logo">admin_panel_settings</mat-icon>
+      <span>Admin Panel</span>
+    </mat-toolbar>
+
+    <mat-nav-list (click)="closeSidenavOnMobile()">
+
+      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon>space_dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+
+      <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Dự án</h3>
+      <a mat-list-item routerLink="project-list" routerLinkActive="active-link">
+        <mat-icon>article</mat-icon>
+        <span>Danh sách dự án</span>
+      </a>
+      <a mat-list-item routerLink="project-create" routerLinkActive="active-link">
+        <mat-icon>create_new_folder</mat-icon>
+        <span>Tạo dự án mới</span>
+      </a>
+      <a mat-list-item routerLink="project-categories" routerLinkActive="active-link">
+        <mat-icon>topic</mat-icon>
+        <span>Danh mục dự án</span>
+      </a>
+      
+      <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Tài khoản</h3>
+      <a mat-list-item routerLink="profile" routerLinkActive="active-link">
+        <mat-icon>person_outline</mat-icon>
+        <span>Hồ sơ cá nhân</span>
+      </a>
+      <a mat-list-item routerLink="settings" routerLinkActive="active-link">
+        <mat-icon>settings_outline</mat-icon>
+        <span>Cài đặt</span>
+      </a>
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content-container">
+    
+    <mat-toolbar color="primary" class="main-toolbar">
+      
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="drawer.toggle()"
+        *ngIf="isSmallScreen$ | async">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span>Quản trị viên (Admin)</span>
+      <span class="spacer"></span>
+      <button mat-icon-button>
+        <mat-icon>notifications_none</mat-icon>
+      </button>
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenuRef>
+        <button mat-menu-item routerLink="profile">
+          <mat-icon>person_outline</mat-icon>
+          <span>Hồ sơ</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Đăng xuất</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+    
+    <main class="content-wrapper">
+      <router-outlet></router-outlet>
+    </main>
+
+    <footer class="layout-footer">
+      <span>© 2025 Condominium Management. All rights reserved.</span>
+    </footer>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

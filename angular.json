@@ -25,6 +25,7 @@
               }
             ],
             "styles": [
+              "src/custom-theme.scss",
               "public/css/light.css",
               "src/styles.css"
             ]

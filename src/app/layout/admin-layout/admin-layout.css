@@ -1,0 +1,84 @@
+.content-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px; 
+  background-color: #f4f7fa; 
+}
+
+.layout-footer {
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  color: #757575;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.sidenav-container {
+  height: 100vh; 
+}
+
+.sidenav {
+  width: 260px;
+  background-color: lightgray;
+}
+
+.sidenav-toolbar {
+  background: rgb(161, 161, 161);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12); 
+  font-weight: 600; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 20px;
+}
+
+.main-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100; 
+  background-color: white;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+a[mat-list-item] mat-icon {
+  margin-right: 16px;
+  vertical-align: middle;
+}
+
+button[mat-menu-item] mat-icon {
+  margin-right: 12px;
+}
+
+.list-subheader {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.54);
+  text-transform: uppercase;
+  margin-top: 16px;
+  letter-spacing: 0.5px;
+}
+
+a[mat-list-item]:not(.active-link):hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.active-link {
+  background-color: rgba(63, 81, 181, 0.1); 
+  color: #3f51b5; 
+  font-weight: 500;
+}
+
+.active-link mat-icon {
+  color: #3f51b5;
+}
