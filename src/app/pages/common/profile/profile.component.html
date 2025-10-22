@@ -1,0 +1,111 @@
+<div class="page-container">
+  <header class="profile-header">
+    <div class="profile-summary">
+      <ng-container *ngIf="profile()?.avatarUrl; else initialsAvatar">
+        <img class="avatar avatar-img" [src]="profile()?.avatarUrl!" alt="avatar" (error)="$event.target['style'].display='none'">
+      </ng-container>
+      <ng-template #initialsAvatar>
+        <div class="avatar">{{ initials() }}</div>
+      </ng-template>
+      <div class="info">
+        <h1>{{ profile()?.name || '—' }}</h1>
+        <div class="contact-details">
+          <span>{{ profile()?.email || auth.user()?.email || '—' }}</span>
+          <span>{{ profile()?.phone || auth.user()?.phone || '—' }}</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="toggleEdit()">{{ editing() ? 'Cancel' : 'Edit' }}</button>
+  </header>
+
+  <section class="card" *ngIf="!editing(); else editForm">
+    <h3 class="card-title">Personal Information</h3>
+    <p class="card-subtitle">Your account details</p>
+
+    <ng-container *ngIf="loading(); else loaded">
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+    </ng-container>
+
+    <ng-template #loaded>
+      <div class="error" *ngIf="error()">{{ error() }}</div>
+      <ul class="details-list" *ngIf="profile(); else empty">
+        <li>
+          <span class="detail-label">Full Name</span>
+          <span class="detail-value">{{ profile()?.name || auth.user()?.name || '—' }}</span>
+        </li>
+        <li>
+          <span class="detail-label">Email</span>
+          <span class="detail-value">{{ profile()?.email || auth.user()?.email || '—' }}</span>
+        </li>
+        <li>
+          <span class="detail-label">Phone</span>
+          <span class="detail-value">{{ profile()?.phone || auth.user()?.phone || '—' }}</span>
+        </li>
+        <li>
+          <span class="detail-label">Role</span>
+          <span class="detail-value text-cap">{{ roleDisplay() }}</span>
+        </li>
+        <li *ngIf="profile()?.status">
+          <span class="detail-label">Status</span>
+          <span class="detail-value text-cap">{{ profile()?.status }}</span>
+        </li>
+        <li *ngIf="profile()?.lastLoginAt">
+          <span class="detail-label">Last login</span>
+          <span class="detail-value">{{ profile()?.lastLoginAt }}</span>
+        </li>
+        <li *ngIf="profile()?.staffCode">
+          <span class="detail-label">Staff code</span>
+          <span class="detail-value">{{ profile()?.staffCode }}</span>
+        </li>
+        <li *ngIf="profile()?.apartmentId">
+          <span class="detail-label">Apartment ID</span>
+          <span class="detail-value">{{ profile()?.apartmentId }}</span>
+        </li>
+      </ul>
+      <ng-template #empty>
+        <p>No profile data.</p>
+      </ng-template>
+    </ng-template>
+  </section>
+
+  <ng-template #editForm>
+    <section class="card">
+      <h3 class="card-title">Edit Profile</h3>
+      <p class="card-subtitle">Update your account details</p>
+      <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+        <label>
+          <span>Full Name</span>
+          <input type="text" formControlName="name" />
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" readonly [value]="profile()?.email || auth.user()?.email || '—'" />
+        </label>
+        <label>
+          <span>Phone</span>
+          <input type="text" formControlName="phone" />
+        </label>
+        <div class="avatar-upload">
+          <span>Avatar</span>
+          <div class="avatar-row">
+            <img *ngIf="previewUrl(); else currentAvatar" [src]="previewUrl()!" class="avatar avatar-img" alt="preview">
+            <ng-template #currentAvatar>
+              <img *ngIf="profile()?.avatarUrl" [src]="profile()?.avatarUrl!" class="avatar avatar-img" alt="avatar">
+            </ng-template>
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+            <button type="button" class="btn" [disabled]="!selectedFile() || uploading()" (click)="uploadAvatar()">Upload</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" (click)="toggleEdit()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Save</button>
+        </div>
+        <div class="error" *ngIf="error()">{{ error() }}</div>
+      </form>
+    </section>
+  </ng-template>
+</div>
+
+
