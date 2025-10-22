@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
@@ -10,13 +13,12 @@ import { CommonModule } from '@angular/common';
       <!-- MAIN HEADER -->
       <header class="profile-header">
         <div class="profile-summary">
-          <div class="avatar">JA</div>
+          <div class="avatar">{{ initials() }}</div>
           <div class="info">
-            <h1>{{ user.name }}</h1>
+            <h1>{{ profile()?.name || '—' }}</h1>
             <div class="contact-details">
-              <span>{{ user.apartment }}</span>
-              <span>{{ user.email }}</span>
-              <span>{{ user.phone }}</span>
+              <span>{{ profile()?.email || '—' }}</span>
+              <span>{{ profile()?.phone || '—' }}</span>
             </div>
           </div>
         </div>
@@ -34,28 +36,28 @@ import { CommonModule } from '@angular/common';
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Full Name</span>
-                <span class="detail-value">{{ user.name }}</span>
+                <span class="detail-value">{{ profile()?.name || '—' }}</span>
               </div>
             </li>
             <li>
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Email Address</span>
-                <span class="detail-value">{{ user.email }}</span>
+              <span class="detail-value">{{ profile()?.email || auth.user()?.email || '—' }}</span>
               </div>
             </li>
             <li>
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Phone Number</span>
-                <span class="detail-value">{{ user.phone }}</span>
+                <span class="detail-value">{{ profile()?.phone || auth.user()?.phone || '—' }}</span>
               </div>
             </li>
             <li>
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Emergency Contact</span>
-                <span class="detail-value">{{ user.emergencyContact }}</span>
+                <span class="detail-value">{{ emergencyContact || '—' }}</span>
               </div>
             </li>
           </ul>
@@ -70,26 +72,26 @@ import { CommonModule } from '@angular/common';
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Apartment Number</span>
-                <span class="detail-value">{{ apartment.number }}</span>
+                <span class="detail-value">{{ apartment()?.number || '—' }}</span>
               </div>
             </li>
              <li>
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Move-in Date</span>
-                <span class="detail-value">{{ apartment.moveInDate }}</span>
+                <span class="detail-value">{{ apartment()?.moveInDate || '—' }}</span>
               </div>
             </li>
              <li>
               <div class="detail-icon"></div>
               <div>
                 <span class="detail-label">Lease Expiry</span>
-                <span class="detail-value">{{ apartment.leaseExpiry }}</span>
+                <span class="detail-value">{{ apartment()?.leaseExpiry || '—' }}</span>
               </div>
             </li>
           </ul>
           <div class="notification">
-            Your lease is active and will expire on {{ apartment.leaseExpiry }}. Contact management for renewal options.
+            Your lease is active and will expire on {{ apartment()?.leaseExpiry || '—' }}. Contact management for renewal options.
           </div>
         </section>
       </div>
@@ -262,17 +264,67 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class ProfileComponent {
-  user = {
-    name: 'John Anderson',
-    apartment: 'Apartment A-201',
-    email: 'john.anderson@email.com',
-    phone: '+1 (555) 123-4567',
-    emergencyContact: '+1 (555) 987-6543'
-  };
+  private readonly http = inject(HttpClient);
+  readonly auth = inject(AuthService);
 
-  apartment = {
-    number: 'A-201',
-    moveInDate: 'January 15, 2023',
-    leaseExpiry: 'January 14, 2026'
-  };
+  profile = signal<{ name?: string; email?: string; phone?: string; role?: string } | null>(null);
+  apartment = signal<{ number?: string; moveInDate?: string; leaseExpiry?: string } | null>(null);
+  emergencyContact: string | null = null;
+
+  constructor() {
+    const baseUrl = (location.host.includes('localhost:4200') || location.hostname === 'localhost') ? '/api' : environment.apiUrl;
+    this.http.get<any>(`${baseUrl}/users/me`).subscribe({
+      next: (res) => {
+        const payload = this.auth.user();
+        const api = (res?.data ?? res?.user ?? res) as any;
+        const email = (api?.email ?? api?.emailAddress ?? payload?.email) as string | undefined;
+        const phone = (api?.phone ?? api?.phoneNumber ?? payload?.phone) as string | undefined;
+        const roleRaw = (api?.role ?? api?.roleName ?? payload?.role) as string | undefined;
+        const normalizedRole = String(roleRaw || '').trim().toLowerCase();
+        this.profile.set({
+          name: (api?.name ?? payload?.name) as string | undefined,
+          email,
+          phone,
+          role: normalizedRole || undefined
+        });
+        // Optional: map apartment if present
+        const apt = api?.apartment || null;
+        if (apt) {
+          this.apartment.set({
+            number: apt?.number || api?.apartmentId || undefined,
+            moveInDate: apt?.moveInDate || undefined,
+            leaseExpiry: apt?.leaseExpiry || undefined
+          });
+        }
+        this.emergencyContact = api?.emergencyContact || null;
+      },
+      error: () => {
+        const payload = this.auth.user();
+        if (payload) {
+          const normalizedRole = String(payload.role || '').trim().toLowerCase();
+          this.profile.set({
+            name: payload.name as string | undefined,
+            email: payload.email as string | undefined,
+            phone: payload.phone as string | undefined,
+            role: normalizedRole || undefined
+          });
+        }
+      }
+    });
+  }
+
+  initials(): string {
+    const n = (this.profile()?.name || '').trim();
+    if (!n) return 'U';
+    const parts = n.split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase()).join('');
+    return parts || n[0]?.toUpperCase() || 'U';
+  }
+
+  roleDisplay(): string {
+    const fromJwt = (this.auth.user()?.role as unknown as string) ?? '';
+    const fromApi = this.profile()?.role ?? '';
+    const combined = fromJwt || fromApi; // prefer JWT
+    if (!combined) return '—';
+    return String(combined).trim().toLowerCase();
+  }
 }

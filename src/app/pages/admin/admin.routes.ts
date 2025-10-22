@@ -15,8 +15,8 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'profile',
-    loadComponent: () => import('../common/profile.component')
-      .then(m => m.ProfileComponent),
+    loadComponent: () => import('../common/profile/profile.component')
+      .then(m => m.CommonProfileComponent),
     title: 'Profile'
   },
   {
