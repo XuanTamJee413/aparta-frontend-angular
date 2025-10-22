@@ -1,0 +1,25 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-icon">🏢</div>
+      <h1 class="brand-name">MyBuilding</h1>
+      <div class="brand-sub">Resident App</div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" formControlName="phone" placeholder="e.g. 0912345678" />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" formControlName="password" placeholder="Enter your password" />
+
+      <div class="aux">
+        <a class="link" href="#">Forgot Password?</a>
+      </div>
+
+      <button class="primary" type="submit" [disabled]="form.invalid || submitting()">Sign In</button>
+      <div class="error" *ngIf="error()">{{ error() }}</div>
+    </form>
+
+  </div>
+</div>
