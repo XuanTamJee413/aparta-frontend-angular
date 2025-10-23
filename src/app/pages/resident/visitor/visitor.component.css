@@ -1,0 +1,40 @@
+.visitor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.form-field-half {
+  flex: 1;
+}
+
+mat-card-actions {
+  margin-top: 16px;
+}
+.history-card {
+  margin-top: 24px;
+}
+
+.loading-spinner,
+.no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: grey;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}

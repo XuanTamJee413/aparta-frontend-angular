@@ -1,0 +1,131 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Đăng ký khách thăm</mat-card-title>
+    <mat-card-subtitle>Vui lòng nhập thông tin của khách</mat-card-subtitle>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <form [formGroup]="visitorForm" (ngSubmit)="onSubmit()" class="visitor-form">
+      
+      <mat-form-field appearance="outline">
+        <mat-label>Họ và tên</mat-label>
+        <input matInput formControlName="fullName" required>
+        <mat-error *ngIf="visitorForm.get('fullName')?.hasError('required')">
+          Họ tên là bắt buộc
+        </mat-error>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-half">
+          <mat-label>Số điện thoại</mat-label>
+          <input matInput formControlName="phone">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-half">
+          <mat-label>Số CCCD / Hộ chiếu</mat-label>
+          <input matInput formControlName="idNumber">
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Mục đích</mat-label>
+        <textarea matInput formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..."></textarea>
+      </mat-form-field>
+
+      <div class="form-row">
+        
+        <mat-form-field appearance="outline" class="form-field-half">
+          <mat-label>Ngày dự kiến đến</mat-label>
+          <input matInput 
+                 [matDatepicker]="picker" 
+                 formControlName="checkinDate"
+                 placeholder="Chọn ngày"
+                 required>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-error *ngIf="visitorForm.get('checkinDate')?.hasError('required')">
+            Ngày là bắt buộc
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-half">
+          <mat-label>Giờ dự kiến đến</mat-label>
+          
+          <mat-select formControlName="checkinTime" required>
+            <mat-option *ngFor="let time of timeSlots" [value]="time">
+              {{time}}
+            </mat-option>
+          </mat-select>
+          
+          <mat-error *ngIf="visitorForm.get('checkinTime')?.hasError('required')">
+            Giờ là bắt buộc
+          </mat-error>
+        </mat-form-field>
+        </div>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" (click)="resetForm()">Hủy</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="visitorForm.invalid">
+          Đăng ký
+        </button>
+      </mat-card-actions>
+
+    </form>
+  </mat-card-content>
+</mat-card>
+<mat-card class="history-card">
+  <mat-card-header>
+    <mat-card-title>Lịch sử khách thăm</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+
+    <div *ngIf="isLoadingHistory" class="loading-spinner">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+
+    <div *ngIf="!isLoadingHistory && history.length === 0" class="no-data">
+      <span>Chưa có lịch sử khách thăm nào.</span>
+    </div>
+
+    <div *ngIf="!isLoadingHistory && history.length > 0" class="table-container">
+      <table mat-table [dataSource]="history">
+
+        <ng-container matColumnDef="visitorName">
+          <th mat-header-cell *matHeaderCellDef> Tên khách </th>
+          <td mat-cell *matCellDef="let log"> {{log.visitorName}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="purpose">
+          <th mat-header-cell *matHeaderCellDef> Mục đích </th>
+          <td mat-cell *matCellDef="let log"> {{log.purpose}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="checkinTime">
+          <th mat-header-cell *matHeaderCellDef> Thời gian đến </th>
+          <td mat-cell *matCellDef="let log"> {{log.checkinTime | date: 'HH:mm dd/MM/yyyy'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
+          <td mat-cell *matCellDef="let log"> {{log.status}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> </th>
+          <td mat-cell *matCellDef="let log" align="right">
+            <button mat-icon-button (click)="editVisit(log)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteVisit(log)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+  </mat-card-content>
+</mat-card>

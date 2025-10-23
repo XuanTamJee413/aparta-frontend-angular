@@ -3,49 +3,50 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface VisitorCreatePayload {
-  fullName: string;
-  phone?: string;
-  idNumber?: string;
-  apartmentId: string;
-  purpose: string;
+export interface VisitorCreateDto {
+  fullName?: string | null;
+  phone?: string | null;
+  idNumber?: string | null;
+  
+  apartmentId?: string | null;
+  purpose?: string | null;
+  checkinTime?: string | null;
+  status?: string | null;
 }
 
-export interface VisitorDto {
+export interface Visitor {
   visitorId: string;
-  fullName: string | null;
-  phone: string | null;
-  idNumber: string | null;
+  fullName: string;
+  phone: string;
+  idNumber: string;
 }
 
-export interface VisitLogDto {
-  id: string;
-  apartmentId: string | null;
-  visitorId: string | null;
-  checkinTime: string | null; 
-  checkoutTime: string | null;
-  purpose: string | null;
-  status: string | null;
+export interface VisitLog {
+  visitLogId: string;
+  visitorId: string;
+  visitorName: string;
+  purpose: string;
+  checkinTime: Date;
+  checkoutTime?: Date;
+  status: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class VisitorService {
-  private http = inject(HttpClient);
-  private visitorApiUrl = `${environment.apiUrl}/Visitors`;
-  private visitLogApiUrl = `${environment.apiUrl}/VisitLogs`;
+  private apiBaseUrl = environment.apiUrl;
+  private visitorApiUrl = `${this.apiBaseUrl}/Visitors`;
+  private visitLogApiUrl = `${this.apiBaseUrl}/VisitLogs`;
 
-  getVisitors(): Observable<VisitorDto[]> {
-    return this.http.get<VisitorDto[]>(this.visitorApiUrl);
+  constructor(private http: HttpClient) { }
+
+  // POST: api/Visitors
+  createVisitor(dto: VisitorCreateDto): Observable<Visitor> {
+    return this.http.post<Visitor>(this.visitorApiUrl, dto);
   }
-
-  registerVisitor(payload: VisitorCreatePayload): Observable<VisitorDto> {
-    return this.http.post<VisitorDto>(this.visitorApiUrl, payload);
-  }
-
-  getVisitLogs(): Observable<VisitLogDto[]> {
-    return this.http.get<VisitLogDto[]>(this.visitLogApiUrl);
+  // GET: api/VisitLogs/apartment/{apartmentId}
+  getHistoryForApartment(apartmentId: string): Observable<VisitLog[]> {
+    return this.http.get<VisitLog[]>(`${this.visitLogApiUrl}/apartment/${apartmentId}`);
   }
 }
-
