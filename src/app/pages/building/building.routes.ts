@@ -45,6 +45,12 @@ export const MANAGER_ROUTES: Routes = [
     title: 'Quản lý Dịch vụ'
   },
 
+  {
+    path: 'manage-utility', // URL: .../building/manage-utility
+    loadComponent: () => import('./operation/utility-list.component/utility-list.component') 
+      .then(m => m.UtilityListComponent),
+    title: 'Quản lý Tiện ích'
+  },
   // --- END OPERATION  ---
   {
     path: '',

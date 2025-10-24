@@ -1,0 +1,93 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Quản lý Tiện ích</h3> <button class="btn btn-add-new" (click)="openCreateModal()">
+      &#43; Thêm mới
+    </button>
+  </div>
+  
+  <div class="card-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Tên Tiện ích</th>
+          <th>Vị trí</th>
+          <th>Thời gian (kỳ)</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let utility of utilities">
+          <td>{{ utility.name }}</td>
+          <td>{{ utility.location }}</td>
+          <td>{{ utility.periodTime }}</td> <td>
+            <span class="status-badge status-{{ utility.status | lowercase }}">
+              {{ utility.status }}
+            </span>
+          </td>
+          <td class="action-cell">
+            <button class="btn btn-edit" (click)="openEditModal(utility)">Sửa</button>
+            <button class="btn btn-delete" (click)="deleteUtility(utility.utilityId)">Xóa</button>
+          </td>
+        </tr>
+        <tr *ngIf="utilities.length === 0" class="empty-row"> <td colspan="5">Không có tiện ích nào.</td> </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<dialog #utilityDialog (close)="onDialogClose()">
+  
+  <form [formGroup]="utilityForm" (ngSubmit)="saveUtility()">
+    
+    <div class="form-header">
+      <h3>{{ isEditMode ? 'Cập nhật Tiện ích' : 'Thêm mới Tiện ích' }}</h3> <button type="button" class="btn-close" (click)="hideDialog()">×</button>
+    </div>
+
+    <div class="form-body">
+      
+      <div class="form-group">
+        <label for="name">Tên Tiện ích</label>
+        <input id="name" type="text" formControlName="name">
+        <small class="form-error" *ngIf="utilityForm.get('name')?.invalid && utilityForm.get('name')?.touched">
+          Tên tiện ích là bắt buộc.
+        </small>
+      </div>
+      
+      <div class="form-group">
+        <label for="location">Vị trí</label>
+        <input id="location" type="text" formControlName="location">
+        <small class="form-error" *ngIf="utilityForm.get('location')?.invalid && utilityForm.get('location')?.touched">
+          Vị trí là bắt buộc.
+        </small>
+      </div>
+      
+      <div class="form-group">
+        <label for="periodTime">Thời gian (kỳ)</label>
+        <input id="periodTime" type="number" step="any" formControlName="periodTime">
+        <small class="form-error" *ngIf="utilityForm.get('periodTime')?.invalid && utilityForm.get('periodTime')?.touched">
+          Thời gian phải là một con số.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Trạng thái</label>
+        <select id="status" formControlName="status">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-cancel" (click)="hideDialog()">Hủy</button>
+      <button type="submit" class="btn btn-save" [disabled]="utilityForm.invalid">
+        {{ isEditMode ? 'Cập nhật' : 'Lưu' }}
+      </button>
+    </div>
+    
+  </form>
+</dialog>

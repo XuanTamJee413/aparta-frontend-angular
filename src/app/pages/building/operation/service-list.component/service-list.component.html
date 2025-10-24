@@ -1,10 +1,12 @@
 <div class="card">
   <div class="card-header">
     <h3>Quản lý Dịch vụ</h3>
-    <button class="btn btn-add-new">
+    <button class="btn btn-add-new" (click)="openCreateModal()">
       &#43; Thêm mới
     </button>
-  </div> <div class="card-body">
+  </div>
+  
+  <div class="card-body">
     <table>
       <thead>
         <tr>
@@ -16,7 +18,6 @@
       </thead>
       <tbody>
         <tr *ngFor="let service of services">
-          
           <td>{{ service.name }}</td>
           <td>{{ service.price | number }} VND</td>
           <td>
@@ -24,13 +25,11 @@
               {{ service.status }}
             </span>
           </td>
-          
           <td class="action-cell">
-            <button class="btn btn-edit">Sửa</button>
+            <button class="btn btn-edit" (click)="openEditModal(service)">Sửa</button>
             <button class="btn btn-delete" (click)="delete(service.serviceId)">Xóa</button>
           </td>
         </tr>
-        
         <tr *ngIf="services.length === 0" class="empty-row">
           <td colspan="4">Không có dịch vụ nào.</td>
         </tr>
@@ -38,3 +37,52 @@
     </table>
   </div>
 </div>
+
+
+<dialog #serviceDialog (close)="onDialogClose()">
+  
+  <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+    
+    <div class="form-header">
+      <h3>{{ isEditMode ? 'Cập nhật Dịch vụ' : 'Thêm mới Dịch vụ' }}</h3>
+      <button type="button" class="btn-close" (click)="hideDialog()">×</button>
+    </div>
+
+    <div class="form-body">
+      
+      <div class="form-group">
+        <label for="name">Tên Dịch vụ</label>
+        <input id="name" type="text" formControlName="name">
+        <small class="form-error" *ngIf="serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched">
+          Tên dịch vụ là bắt buộc.
+        </small>
+      </div>
+      
+      <div class="form-group">
+        <label for="price">Giá</label>
+        <input id="price" type="number" step="any" formControlName="price">
+        <small class="form-error" *ngIf="serviceForm.get('price')?.invalid && serviceForm.get('price')?.touched">
+          Giá là bắt buộc và phải lớn hơn 0.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Trạng thái</label>
+        <select id="status" formControlName="status">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-cancel" (click)="hideDialog()">Hủy</button>
+      <button type="submit" class="btn btn-save" [disabled]="serviceForm.invalid">
+        {{ isEditMode ? 'Cập nhật' : 'Lưu' }}
+      </button>
+    </div>
+    
+  </form>
+</dialog>
