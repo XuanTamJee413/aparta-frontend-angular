@@ -1,0 +1,40 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Quản lý Dịch vụ</h3>
+    <button class="btn btn-add-new">
+      &#43; Thêm mới
+    </button>
+  </div> <div class="card-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Tên Dịch vụ</th>
+          <th>Giá</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let service of services">
+          
+          <td>{{ service.name }}</td>
+          <td>{{ service.price | number }} VND</td>
+          <td>
+            <span class="status-badge status-{{ service.status | lowercase }}">
+              {{ service.status }}
+            </span>
+          </td>
+          
+          <td class="action-cell">
+            <button class="btn btn-edit">Sửa</button>
+            <button class="btn btn-delete" (click)="delete(service.serviceId)">Xóa</button>
+          </td>
+        </tr>
+        
+        <tr *ngIf="services.length === 0" class="empty-row">
+          <td colspan="4">Không có dịch vụ nào.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
