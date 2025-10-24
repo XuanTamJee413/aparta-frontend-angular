@@ -38,6 +38,7 @@ export interface UpdateManagerRequest {
   password?: string;
   staffCode: string;
   avatarUrl?: string;
+  status?: string;
 }
 
 @Injectable({

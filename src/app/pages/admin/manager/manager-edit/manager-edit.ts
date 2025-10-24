@@ -20,8 +20,14 @@ export class ManagerEditComponent implements OnInit {
     email: '',
     password: '',
     staffCode: '',
-    avatarUrl: ''
+    avatarUrl: '',
+    status: ''
   };
+
+  statusOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' }
+  ];
 
   loading = false;
   submitting = false;
@@ -61,7 +67,8 @@ export class ManagerEditComponent implements OnInit {
               email: this.currentManager.email,
               staffCode: this.currentManager.staffCode,
               avatarUrl: this.currentManager.avatarUrl || '',
-              password: ''
+              password: '',
+              status: this.currentManager.status
             };
           } else {
             this.errorMessage = 'Manager not found';
@@ -89,7 +96,8 @@ export class ManagerEditComponent implements OnInit {
       name: this.manager.name,
       phone: this.manager.phone,
       email: this.manager.email,
-      staffCode: this.manager.staffCode
+      staffCode: this.manager.staffCode,
+      status: this.manager.status
     };
 
     if (this.manager.password && this.manager.password.trim()) {
@@ -99,6 +107,9 @@ export class ManagerEditComponent implements OnInit {
     if (this.manager.avatarUrl && this.manager.avatarUrl.trim()) {
       managerData.avatarUrl = this.manager.avatarUrl;
     }
+
+    console.log('Updating manager with data:', managerData);
+    console.log('Manager ID:', this.managerId);
 
     this.managerService.updateManager(this.managerId, managerData).subscribe({
       next: (response) => {
@@ -110,9 +121,9 @@ export class ManagerEditComponent implements OnInit {
         }
       },
       error: (error) => {
+        console.error('Error updating manager:', error);
         this.errorMessage = error.error?.message || 'An error occurred while updating manager';
         this.submitting = false;
-        console.error('Error updating manager:', error);
       }
     });
   }
