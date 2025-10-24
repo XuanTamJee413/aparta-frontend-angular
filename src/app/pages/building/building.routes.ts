@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 // Import các component có thật của bạn
 import { ApartmentList } from './management/apartment-management/apartment-list/apartment-list.component';
 import { ResidentList } from './operation/resident-list/resident-list';
+import { NewsListComponent } from './management/news/news-list/news-list';
+import { NewsCreateComponent } from './management/news/news-create/news-create';
+import { NewsEditComponent } from './management/news/news-edit/news-edit';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
@@ -12,6 +15,21 @@ export const MANAGER_ROUTES: Routes = [
   {
     path: 'manage-apartment', 
     component: ApartmentList
+  },
+  {
+    path: 'news/list',
+    component: NewsListComponent,
+    title: 'News List'
+  },
+  {
+    path: 'news/create',
+    component: NewsCreateComponent,
+    title: 'Create News'
+  },
+  {
+    path: 'news/edit/:id',
+    component: NewsEditComponent,
+    title: 'Edit News'
   },
   // --- END MANAGEMENT ---
 

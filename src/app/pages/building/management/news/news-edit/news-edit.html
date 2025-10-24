@@ -1,0 +1,124 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Chỉnh sửa tin tức</h1>
+          <p>Cập nhật thông tin tin tức</p>
+        </div>
+        <a routerLink="/manager/news/list" class="btn-secondary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Quay lại
+        </a>
+      </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <div *ngIf="!loading && currentNews" class="news-info">
+      <div class="info-item">
+        <span class="info-label">Trạng thái hiện tại:</span>
+        <span class="status-badge"
+          [ngClass]="{
+            'status-active': currentNews.status === 'active',
+            'status-draft': currentNews.status === 'draft',
+            'status-delete': currentNews.status === 'delete'
+          }">
+          <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
+            <circle cx="4" cy="4" r="3" />
+          </svg>
+          {{ currentNews.status === 'active' ? 'Active' : currentNews.status === 'draft' ? 'Draft' : 'Deleted' }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Tác giả:</span>
+        <span>{{ currentNews.authorName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Ngày tạo:</span>
+        <span>{{ formatDate(currentNews.createdAt) }}</span>
+      </div>
+    </div>
+
+    <form *ngIf="!loading && currentNews" (ngSubmit)="onSubmit()" #newsForm="ngForm">
+      <div class="form-row">
+        <div class="form-group form-group-large">
+          <label class="form-label" for="title">
+            Tiêu đề <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-input"
+            [(ngModel)]="news.title"
+            required
+            maxlength="200"
+            placeholder="Nhập tiêu đề tin tức..."
+            [disabled]="submitting"
+          />
+          <p class="form-hint">{{ news.title.length }}/200 ký tự</p>
+        </div>
+
+        <div class="form-group form-group-small">
+          <label class="form-label" for="status">
+            Trạng thái <span class="required">*</span>
+          </label>
+          <select
+            id="status"
+            name="status"
+            class="form-select"
+            [(ngModel)]="news.status"
+            required
+            [disabled]="submitting"
+          >
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="content">
+          Nội dung <span class="required">*</span>
+        </label>
+        <textarea
+          id="content"
+          name="content"
+          class="form-textarea"
+          [(ngModel)]="news.content"
+          required
+          rows="10"
+          placeholder="Nhập nội dung tin tức..."
+          [disabled]="submitting"
+        ></textarea>
+        <p class="form-hint">Chỉnh sửa nội dung tin tức</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!newsForm.form.valid || submitting">
+          <svg *ngIf="!submitting" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <div *ngIf="submitting" class="btn-spinner"></div>
+          {{ submitting ? 'Đang cập nhật...' : 'Cập nhật tin tức' }}
+        </button>
+        <a routerLink="/manager/news/list" class="btn-cancel" [class.disabled]="submitting">
+          Hủy
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>

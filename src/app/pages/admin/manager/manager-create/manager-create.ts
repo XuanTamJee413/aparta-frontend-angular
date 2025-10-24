@@ -2,19 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MaterialModule } from '../../../../shared/material.module';
 import { CreateManagerRequest, ManagerService } from '../../../../services/admin/manager.service';
 
 @Component({
   selector: 'app-manager-create',
   standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule,
-    MaterialModule
-  ],
-  templateUrl: './manager-create.html', 
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './manager-create.html',
   styleUrls: ['./manager-create.css']
 })
 export class ManagerCreateComponent {
@@ -41,7 +35,7 @@ export class ManagerCreateComponent {
     this.submitting = true;
     this.errorMessage = '';
 
-    // Remove avatarUrl if empty
+    // xóa ảnh đại diện nếu không có URL
     const managerData = { ...this.manager };
     if (!managerData.avatarUrl) {
       delete managerData.avatarUrl;
@@ -50,10 +44,7 @@ export class ManagerCreateComponent {
     this.managerService.createManager(managerData).subscribe({
       next: (response) => {
         if (response.succeeded) {
-          // Navigate to list with success message
-          this.router.navigate(['/admin/manager/list'], {
-            state: { successMessage: response.message || 'Manager created successfully' }
-          });
+          this.router.navigate(['/admin/manager/list']);
         } else {
           this.errorMessage = response.message || 'Failed to create manager';
           this.submitting = false;

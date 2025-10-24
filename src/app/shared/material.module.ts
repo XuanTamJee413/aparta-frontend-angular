@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
 
 const MATERIAL_MODULES = [
   MatCardModule,
@@ -23,6 +24,7 @@ const MATERIAL_MODULES = [
   MatProgressSpinnerModule,
   MatTooltipModule,
   MatChipsModule,
+  MatSelectModule,
 ];
 
 @NgModule({

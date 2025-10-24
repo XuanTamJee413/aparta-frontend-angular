@@ -1,167 +1,101 @@
-<mat-card class="manager-card">
-  <mat-card-header class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h3 class="mat-headline-5 mb-0"><strong>Edit</strong> Manager</h3>
-    </div>
-    <div>
-      <button routerLink="/admin/manager/list" mat-raised-button>
-        <mat-icon>arrow_back</mat-icon>
-        Back to List
-      </button>
-    </div>
-  </mat-card-header>
-
-  @if (errorMessage) {
-    <mat-card class="mb-3">
-      <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
         <div>
-          <strong>Error!</strong> {{ errorMessage }}
+          <h1>Chỉnh sửa Manager</h1>
+          <p>Cập nhật thông tin quản lý viên</p>
         </div>
-        <button mat-icon-button (click)="errorMessage = ''">
-          <mat-icon>close</mat-icon>
-        </button>
+        <a routerLink="/admin/manager/list" class="btn-secondary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Quay lại
+        </a>
       </div>
-    </mat-card>
-  }
+    </header>
 
-  @if (loading) {
-    <div class="text-center py-5">
-      <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
-      <p class="mt-3 text-muted">Loading manager data...</p>
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
     </div>
-  }
 
-  @if (!loading && currentManager) {
-    <mat-card>
-      <mat-card-content>
-        <form (ngSubmit)="onSubmit()" #managerForm="ngForm">
-          <div class="row">
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 mb-3">
-                <mat-label>Full Name</mat-label>
-                <input 
-                  matInput 
-                  name="name"
-                  [(ngModel)]="manager.name"
-                  required
-                  placeholder="Enter full name">
-                <mat-icon matPrefix>person</mat-icon>
-                <mat-error>Full name is required</mat-error>
-              </mat-form-field>
-            </div>
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 mb-3">
-                <mat-label>Staff Code</mat-label>
-                <input 
-                  matInput 
-                  name="staffCode"
-                  [(ngModel)]="manager.staffCode"
-                  required
-                  placeholder="e.g., MGR001">
-                <mat-icon matPrefix>badge</mat-icon>
-                <mat-error>Staff code is required</mat-error>
-              </mat-form-field>
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 mb-3">
-                <mat-label>Email</mat-label>
-                <input 
-                  matInput 
-                  type="email"
-                  name="email"
-                  [(ngModel)]="manager.email"
-                  required
-                  email
-                  placeholder="manager@example.com">
-                <mat-icon matPrefix>email</mat-icon>
-                <mat-error>Valid email is required</mat-error>
-              </mat-form-field>
-            </div>
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 mb-3">
-                <mat-label>Phone</mat-label>
-                <input 
-                  matInput 
-                  type="tel"
-                  name="phone"
-                  [(ngModel)]="manager.phone"
-                  required
-                  placeholder="0987654321">
-                <mat-icon matPrefix>phone</mat-icon>
-                <mat-error>Phone number is required</mat-error>
-              </mat-form-field>
-            </div>
-          </div>
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
 
-          <div class="row">
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 mb-3">
-                <mat-label>Password (Leave blank to keep current)</mat-label>
-                <input 
-                  matInput 
-                  type="password"
-                  name="password"
-                  [(ngModel)]="manager.password"
-                  minlength="6"
-                  placeholder="Enter new password (min 6 characters)">
-                <mat-icon matPrefix>lock</mat-icon>
-                <mat-hint>Only fill this if you want to change password</mat-hint>
-                <mat-error>Password must be at least 6 characters</mat-error>
-              </mat-form-field>
-            </div>
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 mb-3">
-                <mat-label>Avatar URL</mat-label>
-                <input 
-                  matInput 
-                  type="url"
-                  name="avatarUrl"
-                  [(ngModel)]="manager.avatarUrl"
-                  placeholder="https://example.com/avatar.jpg">
-                <mat-icon matPrefix>image</mat-icon>
-              </mat-form-field>
-            </div>
-          </div>
+    <div *ngIf="!loading && currentManager" class="manager-info">
+      <div class="info-item">
+        <span class="info-label">Trạng thái:</span>
+        <span class="status-badge"
+          [ngClass]="{
+            'status-active': currentManager.status && currentManager.status.toLowerCase() === 'active',
+            'status-inactive': currentManager.status && currentManager.status.toLowerCase() !== 'active'
+          }">
+          <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
+            <circle cx="4" cy="4" r="3" />
+          </svg>
+          {{ currentManager.status }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Last Login:</span>
+        <span>{{ currentManager.lastLoginAt || 'Chưa đăng nhập' }}</span>
+      </div>
+    </div>
 
-          @if (currentManager.avatarUrl) {
-            <div class="row mb-3">
-              <div class="col-12">
-                <label class="form-label">Current Avatar</label>
-                <div>
-                  <img 
-                    [src]="currentManager.avatarUrl" 
-                    alt="Current Avatar" 
-                    class="rounded-circle"
-                    style="width: 80px; height: 80px; object-fit: cover;">
-                </div>
-              </div>
-            </div>
-          }
-          
-          <div class="d-flex gap-2 mt-4">
-            <button 
-              mat-raised-button
-              color="primary"
-              type="submit" 
-              [disabled]="!managerForm.form.valid || submitting">
-              <mat-icon *ngIf="!submitting">save</mat-icon>
-              <mat-spinner *ngIf="submitting" diameter="20" class="d-inline-block me-2"></mat-spinner>
-              {{ submitting ? 'Updating...' : 'Update Manager' }}
-            </button>
-            <button 
-              mat-raised-button
-              type="button" 
-              routerLink="/admin/manager/list"
-              [disabled]="submitting">
-              <mat-icon>cancel</mat-icon>
-              Cancel
-            </button>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  }
-</mat-card>
+    <form *ngIf="!loading && currentManager" (ngSubmit)="onSubmit()" #managerForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="name">Họ tên <span class="required">*</span></label>
+          <input type="text" id="name" name="name" class="form-input" [(ngModel)]="manager.name" required placeholder="Nhập họ tên đầy đủ..." [disabled]="submitting" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="staffCode">Mã nhân viên <span class="required">*</span></label>
+          <input type="text" id="staffCode" name="staffCode" class="form-input" [(ngModel)]="manager.staffCode" required placeholder="VD: MGR001" [disabled]="submitting" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="email">Email <span class="required">*</span></label>
+          <input type="email" id="email" name="email" class="form-input" [(ngModel)]="manager.email" required email placeholder="manager@example.com" [disabled]="submitting" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phone">Số điện thoại <span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" class="form-input" [(ngModel)]="manager.phone" required placeholder="0987654321" [disabled]="submitting" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="password">Mật khẩu mới (để trống nếu không đổi)</label>
+          <input type="password" id="password" name="password" class="form-input" [(ngModel)]="manager.password" minlength="6" placeholder="Tối thiểu 6 ký tự" [disabled]="submitting" />
+          <p class="form-hint">Chỉ nhập nếu muốn thay đổi mật khẩu</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="avatarUrl">Avatar URL</label>
+          <input type="url" id="avatarUrl" name="avatarUrl" class="form-input" [(ngModel)]="manager.avatarUrl" placeholder="https://example.com/avatar.jpg" [disabled]="submitting" />
+        </div>
+      </div>
+
+      <div *ngIf="currentManager.avatarUrl" class="avatar-preview">
+        <span class="avatar-label">Avatar hiện tại:</span>
+        <img [src]="currentManager.avatarUrl" alt="Avatar" class="avatar-img" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!managerForm.form.valid || submitting">
+          <svg *ngIf="!submitting" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <div *ngIf="submitting" class="btn-spinner"></div>
+          {{ submitting ? 'Đang cập nhật...' : 'Cập nhật Manager' }}
+        </button>
+        <a routerLink="/admin/manager/list" class="btn-cancel" [class.disabled]="submitting">Hủy</a>
+      </div>
+    </form>
+
+  </div>
+</div>

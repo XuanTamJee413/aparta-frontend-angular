@@ -1,38 +1,27 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MaterialModule } from '../../../../shared/material.module';
 import { Manager, ManagerService } from '../../../../services/admin/manager.service';
-
 
 @Component({
   selector: 'app-manager-list',
   standalone: true,
-  imports: [
-    CommonModule, 
-    RouterModule, 
-    FormsModule,
-    MaterialModule
-  ], 
-  templateUrl: './manager-list.html', 
+  imports: [CommonModule, RouterModule, FormsModule],
+  templateUrl: './manager-list.html',
   styleUrls: ['./manager-list.css']
 })
-export class ManagerListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['staffCode', 'name', 'email', 'phone', 'status', 'actions'];
-  dataSource = new MatTableDataSource<Manager>();
-  
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-
+export class ManagerListComponent implements OnInit {
   managers: Manager[] = [];
   filteredManagers: Manager[] = [];
   loading = false;
   errorMessage = '';
   searchTerm = '';
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 20;
+  totalPages = 0;
 
   constructor(private managerService: ManagerService) {}
 
@@ -40,25 +29,16 @@ export class ManagerListComponent implements OnInit, AfterViewInit {
     this.loadManagers();
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   loadManagers(): void {
     this.loading = true;
     this.errorMessage = '';
-    
+
     this.managerService.getAllManagers(this.searchTerm).subscribe({
       next: (response) => {
         if (response.succeeded) {
           this.managers = response.data as Manager[];
           this.filteredManagers = [...this.managers];
-          this.dataSource.data = this.filteredManagers;
-          
-          if (this.paginator) {
-            this.paginator.firstPage();
-          }
+          this.updatePagination();
         } else {
           this.errorMessage = response.message || 'Failed to load managers';
         }
@@ -73,11 +53,35 @@ export class ManagerListComponent implements OnInit, AfterViewInit {
   }
 
   onSearch(): void {
+    this.currentPage = 1;
     this.loadManagers();
   }
 
   onClearSearch(): void {
     this.searchTerm = '';
+    this.currentPage = 1;
     this.loadManagers();
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredManagers.length / this.itemsPerPage);
+  }
+
+  get paginatedManagers(): Manager[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.filteredManagers.slice(startIndex, endIndex);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
   }
 }

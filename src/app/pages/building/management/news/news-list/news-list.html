@@ -3,14 +3,14 @@
     <header>
       <div class="header-row">
         <div>
-          <h1>Quản lý Manager</h1>
-          <p>Danh sách quản lý viên và thông tin</p>
+          <h1>Quản lý News tòa nhà</h1>
+          <p>Danh sách tin tức và thông báo</p>
         </div>
-        <a routerLink="/admin/manager/create" class="btn-primary">
+        <a routerLink="/manager/news/create" class="btn-primary">
           <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Tạo Manager mới
+          Tạo tin mới
         </a>
       </div>
     </header>
@@ -20,7 +20,7 @@
       <button class="alert-close" (click)="errorMessage = ''">×</button>
     </div>
 
-    <div class="search-container">
+    <div class="filter-container">
       <div class="search-wrapper">
         <div class="search-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -30,7 +30,7 @@
         <input
           type="text"
           class="search-input"
-          placeholder="Tìm theo tên hoặc mã nhân viên..."
+          placeholder="Tìm theo tiêu đề hoặc tác giả..."
           [(ngModel)]="searchTerm"
           (keyup.enter)="onSearch()"
           [disabled]="loading"
@@ -40,6 +40,14 @@
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
           </svg>
         </button>
+      </div>
+
+      <div class="status-wrapper">
+        <select class="status-select" [(ngModel)]="statusFilter" (change)="onStatusChange()" [disabled]="loading">
+          <option *ngFor="let status of statusOptions" [value]="status.value">
+            {{ status.label }}
+          </option>
+        </select>
       </div>
     </div>
 
@@ -53,42 +61,36 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Mã nhân viên</th>
-              <th>Tên</th>
-              <th>Email</th>
-              <th>Số điện thoại</th>
-              <th>Avatar</th>
+              <th>Tiêu đề</th>
+              <th>Tác giả</th>
               <th>Trạng thái</th>
+              <th>Ngày xuất bản</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let manager of paginatedManagers">
-              <td class="font-medium">{{ manager.staffCode }}</td>
-              <td>{{ manager.name }}</td>
-              <td>{{ manager.email }}</td>
-              <td>{{ manager.phone }}</td>
-              <td>
-                <img *ngIf="manager.avatarUrl" 
-                     [src]="manager.avatarUrl" 
-                     alt="Avatar" 
-                     class="avatar-img">
-                <span *ngIf="!manager.avatarUrl" class="no-avatar">Không có</span>
+            <tr *ngFor="let news of paginatedNews">
+              <td class="news-title-cell">
+                <div class="news-title">{{ news.title }}</div>
+                <div class="news-preview">{{ news.content.length > 80 ? news.content.substring(0, 80) + '...' : news.content }}</div>
               </td>
+              <td>{{ news.authorName }}</td>
               <td>
                 <span class="status-badge"
                   [ngClass]="{
-                    'status-active': manager.status && manager.status.toLowerCase() === 'active',
-                    'status-inactive': manager.status && manager.status.toLowerCase() !== 'active'
+                    'status-active': news.status === 'active',
+                    'status-draft': news.status === 'draft',
+                    'status-delete': news.status === 'delete'
                   }">
                   <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
                     <circle cx="4" cy="4" r="3" />
                   </svg>
-                  {{ manager.status }}
+                  {{ news.status === 'active' ? 'Active' : news.status === 'draft' ? 'Draft' : 'Deleted' }}
                 </span>
               </td>
+              <td>{{ formatDate(news.publishedDate) }}</td>
               <td class="actions">
-                <button class="action-edit-btn" [routerLink]="['/admin/manager/edit', manager.userId]">
+                <button class="action-edit-btn" [routerLink]="['/manager/news/edit', news.newsId]">
                   <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
                   </svg>
@@ -96,9 +98,9 @@
                 </button>
               </td>
             </tr>
-            <tr *ngIf="paginatedManagers.length === 0">
-              <td colspan="7" class="no-results">
-                Không tìm thấy manager nào phù hợp.
+            <tr *ngIf="paginatedNews.length === 0">
+              <td colspan="5" class="no-results">
+                Không tìm thấy tin tức nào phù hợp.
               </td>
             </tr>
           </tbody>

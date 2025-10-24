@@ -2,20 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { MaterialModule } from '../../../../shared/material.module';
 import { Manager, ManagerService, UpdateManagerRequest } from '../../../../services/admin/manager.service';
 
 @Component({
   selector: 'app-manager-edit',
   standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule,
-    MaterialModule
-  ],
-  templateUrl: './manager-edit.html', 
-  styleUrls: ['./manager-edit.css'] 
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './manager-edit.html',
+  styleUrls: ['./manager-edit.css']
 })
 export class ManagerEditComponent implements OnInit {
   managerId: string = '';
@@ -40,7 +34,6 @@ export class ManagerEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Lấy 'id' từ route parameters
     this.managerId = this.route.snapshot.paramMap.get('id') || '';
     if (this.managerId) {
       this.loadManagerData();
@@ -57,10 +50,10 @@ export class ManagerEditComponent implements OnInit {
       next: (response) => {
         if (response.succeeded) {
           const managers = response.data as Manager[];
-          this.currentManager = managers.find(m => 
+          this.currentManager = managers.find(m =>
             m.userId.toLowerCase() === this.managerId.toLowerCase()
           ) || null;
-          
+
           if (this.currentManager) {
             this.manager = {
               name: this.currentManager.name,
@@ -68,7 +61,7 @@ export class ManagerEditComponent implements OnInit {
               email: this.currentManager.email,
               staffCode: this.currentManager.staffCode,
               avatarUrl: this.currentManager.avatarUrl || '',
-              password: '' 
+              password: ''
             };
           } else {
             this.errorMessage = 'Manager not found';
@@ -110,9 +103,7 @@ export class ManagerEditComponent implements OnInit {
     this.managerService.updateManager(this.managerId, managerData).subscribe({
       next: (response) => {
         if (response.succeeded) {
-          this.router.navigate(['/admin/manager/list'], {
-            state: { successMessage: response.message || 'Manager updated successfully' }
-          });
+          this.router.navigate(['/admin/manager/list']);
         } else {
           this.errorMessage = response.message || 'Failed to update manager';
           this.submitting = false;
