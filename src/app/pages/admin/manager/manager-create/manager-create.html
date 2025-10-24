@@ -1,0 +1,143 @@
+<mat-card class="manager-card">
+  <mat-card-header class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mat-headline-5 mb-0"><strong>Create</strong> Manager</h3>
+    </div>
+    <div>
+      <button routerLink="/admin/manager/list" mat-raised-button>
+        <mat-icon>arrow_back</mat-icon>
+        Back to List
+      </button>
+    </div>
+  </mat-card-header>
+
+  @if (errorMessage) {
+    <mat-card class="mb-3">
+      <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <div>
+          <strong>Error!</strong> {{ errorMessage }}
+        </div>
+        <button mat-icon-button (click)="errorMessage = ''">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </mat-card>
+  }
+
+  <mat-card>
+    <mat-card-content>
+      <form (ngSubmit)="onSubmit()" #managerForm="ngForm">
+        <div class="row">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Full Name</mat-label>
+              <input 
+                matInput 
+                name="name"
+                [(ngModel)]="manager.name"
+                required
+                placeholder="Enter full name">
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error>Full name is required</mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Staff Code</mat-label>
+              <input 
+                matInput 
+                name="staffCode"
+                [(ngModel)]="manager.staffCode"
+                required
+                placeholder="e.g., MGR001">
+              <mat-icon matPrefix>badge</mat-icon>
+              <mat-error>Staff code is required</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Email</mat-label>
+              <input 
+                matInput 
+                type="email"
+                name="email"
+                [(ngModel)]="manager.email"
+                required
+                email
+                placeholder="manager@example.com">
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error>Valid email is required</mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Phone</mat-label>
+              <input 
+                matInput 
+                type="tel"
+                name="phone"
+                [(ngModel)]="manager.phone"
+                required
+                placeholder="0987654321">
+              <mat-icon matPrefix>phone</mat-icon>
+              <mat-error>Phone number is required</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Password</mat-label>
+              <input 
+                matInput 
+                type="password"
+                name="password"
+                [(ngModel)]="manager.password"
+                required
+                minlength="6"
+                placeholder="Enter password (min 6 characters)">
+              <mat-icon matPrefix>lock</mat-icon>
+              <mat-error>Password must be at least 6 characters</mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Avatar URL</mat-label>
+              <input 
+                matInput 
+                type="url"
+                name="avatarUrl"
+                [(ngModel)]="manager.avatarUrl"
+                placeholder="https://example.com/avatar.jpg">
+              <mat-icon matPrefix>image</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+        
+        <div class="d-flex gap-2 mt-4">
+          <button 
+            mat-raised-button
+            color="primary"
+            type="submit" 
+            [disabled]="!managerForm.form.valid || submitting">
+            <mat-icon *ngIf="!submitting">add</mat-icon>
+            <mat-spinner *ngIf="submitting" diameter="20" class="d-inline-block me-2"></mat-spinner>
+            {{ submitting ? 'Creating...' : 'Create Manager' }}
+          </button>
+          <button 
+            mat-raised-button
+            type="button" 
+            routerLink="/admin/manager/list"
+            [disabled]="submitting">
+            <mat-icon>cancel</mat-icon>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</mat-card>

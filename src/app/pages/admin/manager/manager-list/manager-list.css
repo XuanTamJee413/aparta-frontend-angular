@@ -1,0 +1,77 @@
+.manager-card {
+  margin: 20px;
+}
+
+.search-card {
+  padding: 16px;
+}
+
+.search-field {
+  width: 100%;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.avatar-sm {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #757575;
+  font-weight: 500;
+}
+
+.status-chip {
+  font-size: 12px;
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.paginator {
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Ẩn phần hiển thị range "1 – 6 of 6" và page size selector */
+.paginator ::ng-deep .mat-mdc-paginator-range-label {
+  display: none !important;
+}
+
+.paginator ::ng-deep .mat-mdc-paginator-page-size {
+  display: none !important;
+}
+
+mat-card-header {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-mdc-row:hover {
+  background-color: #f5f5f5;
+}
+
+.alert {
+  margin: 0;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 12px;
+}

@@ -64,9 +64,9 @@ export class LoginComponent {
     if (role === 'admin') {
       this.router.navigateByUrl('/admin/dashboard');
     } else if (role === 'staff') {
-      this.router.navigateByUrl('/management');
+      this.router.navigateByUrl('/manager');
     } else {
-      this.router.navigateByUrl('/resident/home');
+      this.router.navigateByUrl('/home');
     }
   }
 

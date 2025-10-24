@@ -1,0 +1,62 @@
+.manager-card {
+  margin: 20px;
+}
+
+mat-card-header {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-content {
+  padding: 24px;
+}
+
+.alert {
+  margin: 0;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 12px;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+mat-spinner {
+  margin-right: 8px;
+}

@@ -1,0 +1,149 @@
+<mat-card class="manager-card">
+  <!-- Header -->
+  <mat-card-header class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mat-headline-5 mb-0"><strong>Manager</strong> List</h3>
+    </div>
+    <div>
+      <button routerLink="/admin/manager/create" mat-raised-button color="primary">
+        <mat-icon>add</mat-icon>
+        New Manager
+      </button>
+    </div>
+  </mat-card-header>
+
+  <!-- Error Alert -->
+  @if (errorMessage) {
+    <mat-card class="mb-3">
+      <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <div>
+          <strong>Error!</strong> {{ errorMessage }}
+        </div>
+        <button mat-icon-button (click)="errorMessage = ''">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </mat-card>
+  }
+
+  <!-- Search Bar -->
+  <mat-card class="mb-3 search-card">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search by name or staff code</mat-label>
+      <input
+        matInput
+        placeholder="Enter keyword..."
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+        [disabled]="loading">
+      <button mat-icon-button matSuffix (click)="onSearch()" [disabled]="loading">
+        <mat-icon>search</mat-icon>
+      </button>
+      @if (searchTerm) {
+        <button mat-icon-button matSuffix (click)="onClearSearch()" [disabled]="loading">
+          <mat-icon>clear</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </mat-card>
+
+  <!-- Loading Spinner -->
+  @if (loading) {
+    <div class="text-center py-5">
+      <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!loading) {
+    <mat-card>
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z2" matSort>
+
+          <!-- Staff Code Column -->
+          <ng-container matColumnDef="staffCode">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Staff Code </th>
+            <td mat-cell *matCellDef="let manager"> {{ manager.staffCode }} </td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+            <td mat-cell *matCellDef="let manager">
+              <div class="d-flex align-items-center">
+                <img
+                  *ngIf="manager.avatarUrl; else noAvatar"
+                  [src]="manager.avatarUrl"
+                  alt="Avatar"
+                  class="avatar-sm rounded-circle me-2">
+                <ng-template #noAvatar>
+                  <div class="avatar-placeholder me-2">?</div>
+                </ng-template>
+                <span class="fw-medium">{{ manager.name }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Email Column -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef> Email </th>
+            <td mat-cell *matCellDef="let manager"> {{ manager.email }} </td>
+          </ng-container>
+
+          <!-- Phone Column -->
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef> Phone </th>
+            <td mat-cell *matCellDef="let manager"> {{ manager.phone }} </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container mat matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Status </th>
+            <td mat-cell *matCellDef="let manager">
+              <mat-chip
+                [color]="manager.status?.toLowerCase() === 'active' ? 'primary' : 'warn'"
+                selected
+                class="status-chip">
+                {{ manager.status }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef> Actions </th>
+            <td mat-cell *matCellDef="let manager">
+              <button
+                mat-icon-button
+                color="primary"
+                [routerLink]="['/admin/manager/edit', manager.userId]"
+                matTooltip="Edit Manager">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Header Header & Row Definitions -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+          <!-- No data row -->
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell text-center text-muted py-4" [attr.colspan]="displayedColumns.length">
+              No managers found
+            </td>
+          </tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator
+          [pageSize]="20"
+          [length]="filteredManagers.length"
+          [hidePageSize]="true"
+          showFirstLastButtons
+          class="paginator">
+        </mat-paginator>
+      </div>
+    </mat-card>
+  }
+</mat-card>
