@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
-// Import các component có thật của bạn
 import { ApartmentList } from './management/apartment-management/apartment-list/apartment-list.component';
 import { ResidentList } from './operation/resident-list/resident-list';
-
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
   {
@@ -29,6 +27,11 @@ export const MANAGER_ROUTES: Routes = [
     path: 'resident-list', 
     loadComponent: () => import('./operation/resident-list/resident-list') 
       .then(m => m.ResidentList)
+  },
+  {
+    path: 'visitor-list',
+    loadComponent: () => import('./operation/visitor/visitor-list/visitor-list') 
+      .then(m => m.VisitorList)
   },
 
   {

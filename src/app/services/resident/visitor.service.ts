@@ -22,13 +22,15 @@ export interface Visitor {
 }
 
 export interface VisitLog {
-  visitLogId: string;
-  visitorId: string;
-  visitorName: string;
-  purpose: string;
-  checkinTime: Date;
-  checkoutTime?: Date;
-  status: string;
+  visitLogId: string;
+  visitorId: string;
+  visitorName: string;
+  idNumber: string;
+  apartmentNumber: string;
+  purpose: string;
+  checkinTime: Date;
+  checkoutTime?: Date;
+  status: string;
 }
 
 @Injectable({
@@ -49,4 +51,19 @@ export class VisitorService {
   getHistoryForApartment(apartmentId: string): Observable<VisitLog[]> {
     return this.http.get<VisitLog[]>(`${this.visitLogApiUrl}/apartment/${apartmentId}`);
   }
+  getAllVisitors(): Observable<VisitLog[]> {
+    return this.http.get<VisitLog[]>(this.visitLogApiUrl);
+  }
+
+  checkInVisitor(visitLogId: string): Observable<any> {
+    return this.http.put(`${this.visitLogApiUrl}/${visitLogId}/checkin`, {});
+  }
+
+  checkOutVisitor(visitLogId: string): Observable<any> {
+    return this.http.put(`${this.visitLogApiUrl}/${visitLogId}/checkout`, {});
+  }
+
+  createAndCheckInVisitor(dto: VisitorCreateDto): Observable<Visitor> {
+    return this.http.post<Visitor>(`${this.visitorApiUrl}/create-and-checkin`, dto);
+  }
 }
