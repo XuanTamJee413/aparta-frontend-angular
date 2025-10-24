@@ -41,6 +41,13 @@ export const MANAGER_ROUTES: Routes = [
     title: 'Profile'
   },
 
+  {
+    path: 'manage-service', // Đây là URL: .../building/manage-service
+    loadComponent: () => import('./operation/service-list.component/service-list.component') 
+      .then(m => m.ServiceListComponent),
+    title: 'Quản lý Dịch vụ'
+  },
+
   // --- END OPERATION  ---
   {
     path: '',
