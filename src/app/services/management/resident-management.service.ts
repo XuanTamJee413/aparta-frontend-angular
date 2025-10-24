@@ -1,8 +1,12 @@
-
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApartmentMember } from '../../pages/building/operation/resident-list/resident-list';
+
+import {
+  ApartmentMember,
+  ApartmentMemberQueryParameters,
+  ApiResponse
+} from '../../pages/building/operation/resident-list/resident-list';
 
 
 @Injectable({
@@ -13,8 +17,25 @@ export class ResidentManagementService {
 
   constructor(private http: HttpClient) { }
 
-  getMembers(): Observable<ApartmentMember[]> {
 
-    return this.http.get<ApartmentMember[]>(this.apiUrl);
+  getMembers(query: ApartmentMemberQueryParameters): Observable<ApiResponse<ApartmentMember[]>> {
+
+    let params = new HttpParams();
+
+    if (query.searchTerm) {
+      params = params.append('SearchTerm', query.searchTerm);
+    }
+    if (query.isOwned !== null && query.isOwned !== undefined) {
+      params = params.append('IsOwned', query.isOwned);
+    }
+    if (query.sortBy) {
+      params = params.append('SortBy', query.sortBy);
+    }
+    if (query.sortOrder) {
+      params = params.append('SortOrder', query.sortOrder);
+    }
+
+    return this.http.get<ApiResponse<ApartmentMember[]>>(this.apiUrl, { params });
   }
 }
+
