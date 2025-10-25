@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
 import { AdminLayout } from './layout/admin-layout/admin-layout';
 import { ManagerLayout } from './layout/manager-layout/manager-layout';
-import { ResidentLayoutComponent } from './pages/resident/resident-layout.component';
+import { ResidentLayoutComponent } from './layout/resident-layout/resident-layout.component';
 import { NotFound } from './pages/common/not-found/not-found';
+import { LoginComponent } from './pages/auth/login.component';
 
 export const routes: Routes = [
   {
@@ -28,7 +29,7 @@ export const routes: Routes = [
   
   {
     path: '**', 
-    component: NotFound,
+    component: LoginComponent,
     pathMatch: 'full'
   }
 ];

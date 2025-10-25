@@ -1,0 +1,110 @@
+/* Biến màu chính (Bạn có thể thay đổi màu #3f51b5 cho phù hợp) */
+:host {
+  --resident-primary-color: #3f51b5; 
+}
+
+.content-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px; 
+  background-color: #f4f7fa; /* Giữ màu nền nội dung*/
+}
+
+.layout-footer {
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  color: #757575;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.sidenav-container {
+  height: 100vh; 
+}
+
+/* --- TÙY CHỈNH CHO RESIDENT --- */
+
+/* Sidenav: Nền trắng, có viền phải */
+.sidenav {
+  width: 260px;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+
+/* Sidenav Toolbar: Nền trắng, chữ và icon màu chính */
+.sidenav-toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12); 
+  font-weight: 600; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 20px;
+  color: var(--resident-primary-color);
+}
+
+.sidenav-toolbar .toolbar-logo {
+  color: var(--resident-primary-color);
+}
+
+/* Main Toolbar (Top): Nền trắng, có bóng mờ */
+.main-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100; 
+  background-color: #ffffff;
+  color: #212121; /* Đảm bảo chữ màu tối */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* Các mục trong Menu */
+a[mat-list-item] {
+  color: #424242; /* Chữ màu xám đậm */
+  font-weight: 500;
+}
+
+/* Icon trong Menu (màu xám nhạt hơn) */
+a[mat-list-item] mat-icon {
+  margin-right: 16px;
+  vertical-align: middle;
+  color: #757575;
+}
+
+button[mat-menu-item] mat-icon {
+  margin-right: 12px;
+}
+
+/* Bỏ subheader (nếu có) */
+.list-subheader {
+ display: none;
+}
+
+/* Khi hover vào mục chưa active */
+a[mat-list-item]:not(.active-link):hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Mục đang được chọn (Active) */
+.active-link {
+  background-color: rgba(63, 81, 181, 0.08); /* Nền màu nhạt */
+  color: var(--resident-primary-color); /* Chữ màu chính */
+  font-weight: 600; /* Đậm hơn */
+  /* Thêm viền phải để nhấn mạnh */
+  border-right: 3px solid var(--resident-primary-color); 
+}
+
+.active-link mat-icon {
+  color: var(--resident-primary-color); /* Icon màu chính */
+}

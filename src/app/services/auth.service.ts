@@ -9,6 +9,7 @@ interface JwtPayload {
   email?: string;
   role?: UserRole | string;
   role_id?: string;
+  apartment_id?: string;
   exp?: number;
   iss?: string;
   aud?: string;

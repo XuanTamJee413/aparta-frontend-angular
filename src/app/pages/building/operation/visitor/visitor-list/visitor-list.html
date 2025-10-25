@@ -1,0 +1,164 @@
+<button mat-fab 
+        color="primary" 
+        class="fab-add-button" 
+        matTooltip="Thêm khách vãng lai (check-in ngay)"
+        (click)="showManualAddForm = !showManualAddForm">
+  <mat-icon>{{ showManualAddForm ? 'close' : 'add' }}</mat-icon>
+</button>
+
+<div *ngIf="!showManualAddForm">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Quản lý khách thăm</mat-card-title>
+      <mat-card-subtitle>Danh sách tất cả khách thăm đã đăng ký và đã đến</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+
+      <div *ngIf="isLoading" class="loading-spinner">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+
+      <div *ngIf="!isLoading && allVisitors.length === 0" class="no-data">
+        <span>Chưa có khách thăm nào trong hệ thống.</span>
+      </div>
+
+      <div *ngIf="!isLoading && allVisitors.length > 0" class="table-container">
+        <table mat-table [dataSource]="allVisitors">
+
+          <ng-container matColumnDef="visitorInfo">
+            <th mat-header-cell *matHeaderCellDef> Tên khách </th>
+            <td mat-cell *matCellDef="let log"> 
+              {{log.visitorFullName}} <br> <small>{{log.visitorIdNumber}}</small> 
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="apartmentCode">
+            <th mat-header-cell *matHeaderCellDef> Căn hộ </th>
+            <td mat-cell *matCellDef="let log"> {{log.apartmentCode}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="purpose">
+            <th mat-header-cell *matHeaderCellDef> Mục đích </th>
+            <td mat-cell *matCellDef="let log"> {{log.purpose}} </td>
+          </ng-container>
+          
+          <ng-container matColumnDef="checkinTime">
+            <th mat-header-cell *matHeaderCellDef> Thời gian </th>
+            <td mat-cell *matCellDef="let log">
+              <div *ngIf="log.status === 'Pending'" class="time-cell">
+                <span>Dự kiến:</span>
+                <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
+              </div>
+              <div *ngIf="log.status !== 'Pending' && log.status !== 'Cancelled'" class="time-cell">
+                <span>Thực tế:</span>
+                <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
+              </div>
+                <div *ngIf="log.status === 'Cancelled'" class="time-cell">
+                  <span>(Đã hủy)</span>
+                </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="checkoutTime">
+            <th mat-header-cell *matHeaderCellDef> Giờ ra </th>
+            <td mat-cell *matCellDef="let log"> {{log.checkoutTime ? (log.checkoutTime | date: 'HH:mm dd/MM/yy') : 'N/A'}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
+            <td mat-cell *matCellDef="let log">
+              <span class="status-chip" [ngClass]="log.status.toLowerCase()">
+                {{log.status | uppercase}}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef> Hành động </th>
+            <td mat-cell *matCellDef="let log" align="right">
+              
+              <button mat-icon-button 
+                      color="primary" 
+                      (click)="onCheckIn(log)"
+                      matTooltip="Check-in cho khách"
+                      [disabled]="log.status === 'Checked-in' || log.status === 'Checked-out' || log.status === 'Cancelled'">
+                <mat-icon>login</mat-icon>
+              </button>
+
+              <button mat-icon-button 
+                      color="warn" 
+                      (click)="onCheckOut(log)"
+                      matTooltip="Check-out cho khách"
+                      [disabled]="log.status !== 'Checked-in'">
+                <mat-icon>logout</mat-icon>
+              </button>
+
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div *ngIf="showManualAddForm">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Thêm khách vãng lai (Check-in ngay)</mat-card-title>
+      <mat-card-subtitle>Khách sẽ được check-in ngay tại thời điểm tạo</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="manualVisitorForm" (ngSubmit)="onManualSubmit()" class="visitor-form">
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Mã căn hộ</mat-label>
+          <input matInput formControlName="apartmentId" required placeholder="Ví dụ: A-101, B-202...">
+          <mat-error *ngIf="manualVisitorForm.get('apartmentId')?.hasError('required')">
+            Mã căn hộ là bắt buộc
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Họ và tên</mat-label>
+          <input matInput formControlName="fullName" required>
+          <mat-error *ngIf="manualVisitorForm.get('fullName')?.hasError('required')">
+            Họ tên là bắt buộc
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-half">
+            <mat-label>Số điện thoại</mat-label>
+            <input matInput formControlName="phone">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field-half">
+            <mat-label>Số CCCD / Hộ chiếu</mat-label>
+            <input matInput formControlName="idNumber" required>
+            <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('required')">
+              CCCD/Hộ chiếu là bắt buộc
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Mục đích</mat-label>
+          <textarea matInput formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..."></textarea>
+        </mat-form-field>
+
+        <mat-card-actions align="end">
+          <button mat-button type="button" (click)="resetManualForm()">Hủy</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="manualVisitorForm.invalid">
+            Tạo và Check-in
+          </button>
+        </mat-card-actions>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
