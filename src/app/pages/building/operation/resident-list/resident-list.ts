@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ResidentManagementService } from '../../../../services/management/resident-management.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { RouterLink } from '@angular/router';
 
 
 export interface ApiResponse<T> {
@@ -24,16 +25,20 @@ export interface ApartmentMemberQueryParameters {
 
 export interface ApartmentMember {
   apartmentMemberId: string;
-  apartmentId: string | null;
-  name: string | null;
+  apartmentId: string;
+  name: string;
+  faceImageUrl: string | null;
   phoneNumber: string | null;
+  info: string | null;
   idNumber: string | null;
   gender: string | null;
   dateOfBirth: string | null;
   isOwner: boolean;
+  nationality: string | null;
   familyRole: string | null;
+  status: string;
   createdAt: string | null;
-  status: string | null;
+  updatedAt: string | null;
 }
 
 @Component({
@@ -43,7 +48,8 @@ export interface ApartmentMember {
   imports: [
     CommonModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    RouterLink
   ],
 
 
@@ -66,7 +72,7 @@ export interface ApartmentMember {
             <input
               type="text"
               class="search-input"
-              placeholder="Tìm theo tên, căn hộ, SĐT..."
+              placeholder="Tìm theo tên, CCCD, SĐT..."
               [(ngModel)]="searchTerm"
               (input)="onSearchChange()"
             />
@@ -145,10 +151,10 @@ export interface ApartmentMember {
                       <td>{{ member.phoneNumber }}</td>
                       <td>{{ member.dateOfBirth | date: 'dd/MM/yyyy' }}</td>
                       <td class="actions">
-                        <a href="#" class="action-view">
-                          <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                          Xem
-                        </a>
+                       <a [routerLink]="['../resident-list/detail', member.apartmentMemberId]" class="action-view">
+                  <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    Xem
+                  </a>
                         <button class="action-edit-btn">
                           <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
                           Sửa

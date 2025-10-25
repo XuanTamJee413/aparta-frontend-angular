@@ -17,6 +17,9 @@ export class ResidentManagementService {
 
   constructor(private http: HttpClient) { }
 
+  getMemberById(id: string): Observable<ApartmentMember> {
+    return this.http.get<ApartmentMember>(`${this.apiUrl}/${id}`);
+  }
 
   getMembers(query: ApartmentMemberQueryParameters): Observable<ApiResponse<ApartmentMember[]>> {
 
