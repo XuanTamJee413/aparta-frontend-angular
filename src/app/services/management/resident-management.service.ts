@@ -13,7 +13,7 @@ import {
   providedIn: 'root'
 })
 export class ResidentManagementService {
-  private apiUrl = 'https://localhost:7272/api/ApartmentMembers';
+  private apiUrl = 'http://localhost:5175/api/ApartmentMembers';
 
   constructor(private http: HttpClient) { }
 
