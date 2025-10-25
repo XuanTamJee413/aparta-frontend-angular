@@ -12,7 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { VisitLog, VisitorCreateDto, VisitorService } from '../../../../../services/resident/visitor.service';
+import { VisitorCreateDto, VisitorService, VisitLogStaffViewDto } from '../../../../../services/resident/visitor.service';
 
 @Component({
   selector: 'app-visitor-list',
@@ -36,13 +36,13 @@ import { VisitLog, VisitorCreateDto, VisitorService } from '../../../../../servi
 export class VisitorList implements OnInit {
 
   manualVisitorForm!: FormGroup;
-  allVisitors: VisitLog[] = [];
+  allVisitors: VisitLogStaffViewDto[] = [];
   isLoading = false;
   showManualAddForm = false;
 
   displayedColumns: string[] = [
-    'visitorName',
-    'apartmentNumber',
+    'visitorInfo',
+    'apartmentCode',
     'purpose',
     'checkinTime',
     'checkoutTime',
@@ -72,7 +72,7 @@ export class VisitorList implements OnInit {
     this.isLoading = true;
     this.visitorService.getAllVisitors().subscribe({
       next: (data) => {
-        this.allVisitors = data.sort((a, b) => new Date(b.checkinTime).getTime() - new Date(a.checkinTime).getTime());
+        this.allVisitors = data;
         this.isLoading = false;
       },
       error: (err) => {
@@ -83,38 +83,46 @@ export class VisitorList implements OnInit {
     });
   }
 
-  onCheckIn(visitor: VisitLog): void {
+  onCheckIn(visitor: VisitLogStaffViewDto): void {
     if (visitor.status === 'Checked-in' || visitor.status === 'Checked-out') {
       return;
     }
 
     this.visitorService.checkInVisitor(visitor.visitLogId).subscribe({
-      next: () => {
-        this.snackBar.open(`Đã check-in cho khách: ${visitor.visitorName}`, 'Đóng', { duration: 2000 });
-        this.loadAllVisitors();
+      next: (updatedVisitor) => {
+        this.snackBar.open(`Đã check-in cho khách: ${updatedVisitor.visitorFullName}`, 'Đóng', { duration: 2000 });
+        this.updateVisitorInList(updatedVisitor);
       },
       error: (err) => {
-        this.snackBar.open('Lỗi: Không thể check-in', 'Đóng', { duration: 3000 });
+        this.snackBar.open(err?.error || 'Lỗi: Không thể check-in', 'Đóng', { duration: 3000 });
         console.error(err);
       }
     });
   }
 
-  onCheckOut(visitor: VisitLog): void {
+  onCheckOut(visitor: VisitLogStaffViewDto): void {
     if (visitor.status !== 'Checked-in') {
       return;
     }
 
     this.visitorService.checkOutVisitor(visitor.visitLogId).subscribe({
-      next: () => {
-        this.snackBar.open(`Đã check-out cho khách: ${visitor.visitorName}`, 'Đóng', { duration: 2000 });
-        this.loadAllVisitors();
+      next: (updatedVisitor) => {
+        this.snackBar.open(`Đã check-out cho khách: ${updatedVisitor.visitorFullName}`, 'Đóng', { duration: 2000 });
+        this.updateVisitorInList(updatedVisitor);
       },
       error: (err) => {
-        this.snackBar.open('Lỗi: Không thể check-out', 'Đóng', { duration: 3000 });
+        this.snackBar.open(err?.error || 'Lỗi: Không thể check-out', 'Đóng', { duration: 3000 });
         console.error(err);
       }
     });
+  }
+
+  private updateVisitorInList(updatedVisitor: VisitLogStaffViewDto): void {
+    const index = this.allVisitors.findIndex(v => v.visitLogId === updatedVisitor.visitLogId);
+    if (index !== -1) {
+      this.allVisitors[index] = updatedVisitor;
+      this.allVisitors = [...this.allVisitors]; // Trigger change detection
+    }
   }
 
   onManualSubmit(): void {

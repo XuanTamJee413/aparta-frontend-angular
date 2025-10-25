@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-// Angular Material Imports
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +15,7 @@ import { VisitLog, VisitorCreateDto, VisitorService } from '../../../services/re
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-visitor',
@@ -41,8 +41,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export class VisitorComponent implements OnInit {
 
   visitorForm!: FormGroup;
-  private residentApartmentId: string = '1'; // hardcode apartment 1
-
+  private residentApartmentId: string = ''; 
   history: VisitLog[] = [];
   isLoadingHistory = false;
   displayedColumns: string[] = ['visitorName', 'purpose', 'checkinTime', 'status', 'actions'];
@@ -51,10 +50,23 @@ export class VisitorComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private visitorService: VisitorService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
+    const userPayload = this.auth.user();
+
+  if (userPayload && userPayload.apartment_id) {
+    this.residentApartmentId = String(userPayload.apartment_id); 
+  } else {
+    console.error('Không tìm thấy apartment_id của cư dân.');
+    this.snackBar.open('Lỗi: Không thể xác định căn hộ của bạn.', 'Đóng', { 
+      duration: 3000,
+      panelClass: ['error-snackbar'] 
+    });
+    return; 
+  }
     this.populateTimeSlots();
 
     this.visitorForm = this.fb.group({
