@@ -1,0 +1,58 @@
+<mat-card class="compact-form">
+  <mat-card-header>
+    <mat-card-title>Tạo dự án mới</mat-card-title>
+    <mat-card-subtitle>Nhập thông tin cơ bản để tạo dự án</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="project-form">
+      
+      <!-- Project Code -->
+      <mat-form-field appearance="outline">
+        <mat-label>Mã dự án *</mat-label>
+        <input matInput 
+               formControlName="projectCode" 
+               placeholder="VD: PRJ001, APARTA_A"
+               maxlength="20">
+        <mat-icon matSuffix>code</mat-icon>
+        <mat-error *ngIf="isFieldInvalid('projectCode')">
+          {{ getErrorMessage('projectCode') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Project Name -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tên dự án *</mat-label>
+        <input matInput 
+               formControlName="name" 
+               placeholder="VD: Chung cư Aparta Tower"
+               maxlength="100">
+        <mat-icon matSuffix>business</mat-icon>
+        <mat-error *ngIf="isFieldInvalid('name')">
+          {{ getErrorMessage('name') }}
+        </mat-error>
+      </mat-form-field>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button type="button" 
+            mat-button 
+            (click)="onCancel()"
+            [disabled]="isLoading">
+      <mat-icon>arrow_back</mat-icon>
+      Quay lại
+    </button>
+    
+    <button type="submit" 
+            mat-raised-button 
+            color="primary"
+            (click)="onSubmit()"
+            [disabled]="isLoading || projectForm.invalid">
+      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+      <mat-icon *ngIf="!isLoading">save</mat-icon>
+      {{ isLoading ? 'Đang tạo...' : 'Tạo dự án' }}
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -1,0 +1,73 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Tạo tòa nhà mới</mat-card-title>
+    <mat-card-subtitle>Nhập thông tin để tạo tòa nhà mới</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="buildingForm" (ngSubmit)="onSubmit()" class="building-form">
+      
+      <!-- Project Selection -->
+      <div class="project-selection">
+        <label for="projectSelect">Mã dự án *</label>
+        <select id="projectSelect" 
+                class="js-example-templating form-control" 
+                formControlName="projectId"
+                style="width: 100%;">
+          <option value="">Chọn dự án...</option>
+        </select>
+        <mat-error *ngIf="isFieldInvalid('projectId')">
+          {{ getErrorMessage('projectId') }}
+        </mat-error>
+      </div>
+
+      <!-- Building Code -->
+      <mat-form-field appearance="outline">
+        <mat-label>Mã tòa nhà *</mat-label>
+        <input matInput 
+               formControlName="buildingCode" 
+               placeholder="VD: BLD001, TOWER_A"
+               maxlength="20">
+        <mat-icon matSuffix>code</mat-icon>
+        <mat-error *ngIf="isFieldInvalid('buildingCode')">
+          {{ getErrorMessage('buildingCode') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Building Name -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tên tòa nhà *</mat-label>
+        <input matInput 
+               formControlName="name" 
+               placeholder="VD: Tòa A, Tòa B"
+               maxlength="100">
+        <mat-icon matSuffix>home</mat-icon>
+        <mat-error *ngIf="isFieldInvalid('name')">
+          {{ getErrorMessage('name') }}
+        </mat-error>
+      </mat-form-field>
+
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button mat-button 
+            type="button" 
+            (click)="onCancel()"
+            [disabled]="isSubmitting">
+      <mat-icon>arrow_back</mat-icon>
+      Quay lại
+    </button>
+    
+    <button mat-raised-button 
+            color="primary" 
+            type="submit"
+            (click)="onSubmit()"
+            [disabled]="buildingForm.invalid || isSubmitting">
+      <mat-icon *ngIf="!isSubmitting">save</mat-icon>
+      <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+      {{ isSubmitting ? 'Đang tạo...' : 'Tạo tòa nhà' }}
+    </button>
+  </mat-card-actions>
+</mat-card>

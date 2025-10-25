@@ -7,20 +7,14 @@ export const ADMIN_ROUTES: Routes = [
       .then(m => m.DashboardComponent),
     title: 'Admin Dashboard'
   },
-  
   {
-    path: 'project-list', // URL: /admin/project-list
-    loadComponent: () => import('./project/project-list.component').then(m => m.ProjectListComponent)
+    path: 'project',
+    loadChildren: () => import('./project/project.routes').then(m => m.PROJECT_ROUTES)
   },
   {
-    path: 'project-create', // URL: /admin/project-create
-    loadComponent: () => import('./project/project-create.component').then(m => m.ProjectCreateComponent)
+    path: 'building',
+    loadChildren: () => import('./building/building.routes').then(m => m.BUILDING_ROUTES)
   },
-  {
-    path: 'project-categories', // URL: /admin/project-categories
-    loadComponent: () => import('./project/project-categories.component').then(m => m.ProjectCategoriesComponent)
-  },
-
   {
     path: 'settings', // URL: /admin/settings
     loadComponent: () => import('../common/settings.component')

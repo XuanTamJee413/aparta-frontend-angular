@@ -20,17 +20,13 @@
 
       <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Dự án</h3>
-      <a mat-list-item routerLink="project-list" routerLinkActive="active-link">
+      <a mat-list-item routerLink="project/list" routerLinkActive="active-link">
         <mat-icon>article</mat-icon>
-        <span>Danh sách dự án</span>
+        <span>Dự án</span>
       </a>
-      <a mat-list-item routerLink="project-create" routerLinkActive="active-link">
-        <mat-icon>create_new_folder</mat-icon>
-        <span>Tạo dự án mới</span>
-      </a>
-      <a mat-list-item routerLink="project-categories" routerLinkActive="active-link">
+      <a mat-list-item routerLink="building/list" routerLinkActive="active-link">
         <mat-icon>topic</mat-icon>
-        <span>Danh mục dự án</span>
+        <span>Tòa nhà</span>
       </a>
       
       <mat-divider></mat-divider>
@@ -65,7 +61,7 @@
       <button mat-icon-button>
         <mat-icon>notifications_none</mat-icon>
       </button>
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button [matMenuTriggerFor]="userMenuRef">
         <mat-icon>account_circle</mat-icon>
       </button>
       <mat-menu #userMenuRef>
