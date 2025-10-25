@@ -4,6 +4,7 @@ import { ApartmentList } from './management/apartment-management/apartment-list/
 import { ResidentList } from './operation/resident-list/resident-list';
 import { AssetList } from './management/asset-management/asset-list/asset-list.component';
 import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail';
+import { CreateAsset } from './management/asset-management/create-asset/create-asset';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
@@ -18,6 +19,10 @@ export const MANAGER_ROUTES: Routes = [
   {
     path: 'manage-asset',
     component: AssetList
+  },
+  {
+    path: 'manage-asset/create',
+    component: CreateAsset
   },
   // --- END MANAGEMENT ---
 

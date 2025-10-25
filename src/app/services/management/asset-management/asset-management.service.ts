@@ -4,9 +4,6 @@ import { Observable } from 'rxjs';
 import { Asset } from '../../../pages/building/management/asset-management/asset-list/asset-list.component';
 
 
-
-
-
 @Injectable({
   providedIn: 'root'
 })

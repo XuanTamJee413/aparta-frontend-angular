@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AssetManagementService } from '../../../../../services/management/asset-management/asset-management.service';
-
 
 export interface Asset {
   assetId: string;
@@ -9,7 +9,6 @@ export interface Asset {
   info: string;
   quantity: Int16Array;
 }
-
 
 @Component({
   selector: 'app-asset-list',
@@ -19,17 +18,37 @@ export interface Asset {
     <main class="content">
       <div class="container-fluid p-0">
         <div class="mb-3">
-
           <h1 class="h3 d-inline align-middle">Quản lý Tài sản</h1>
         </div>
+
         <div class="row">
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-
-                <h5 class="card-title">Danh sách tài sản</h5>
+                <h5 class="card-title mb-0">Danh sách tài sản</h5>
               </div>
+
               <div class="card-body">
+
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 mb-3">
+                  <div class="input-group search-group">
+                    <span class="input-group-text">Tìm kiếm</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Theo ID, Tòa nhà, Tên tài sản..."
+
+                      [value]="searchTerm"
+                      aria-label="Tìm kiếm tài sản"
+                    />
+                  </div>
+
+                  <button class="btn btn-success fw-medium" (click)="onAddBuilding()">
+                    + Thêm Tòa Nhà
+                  </button>
+                </div>
+
 
                 @if (isLoading) {
                   <div class="text-center">
@@ -43,10 +62,10 @@ export interface Asset {
                     {{ error }}
                   </div>
                 } @else {
+
                   <table class="table table-striped" style="width:100%">
                     <thead>
                       <tr>
-
                         <th>ID</th>
                         <th>Thuộc Tòa Nhà</th>
                         <th>Tên Tài Sản</th>
@@ -55,8 +74,7 @@ export interface Asset {
                       </tr>
                     </thead>
                     <tbody>
-
-                      @for (asset of assets; track asset.assetId) {
+                      @for (asset of filteredAssets(); track asset.assetId) {
                         <tr>
                           <td>{{ asset.assetId }}</td>
                           <td>{{ asset.buildingId }}</td>
@@ -68,12 +86,14 @@ export interface Asset {
                         </tr>
                       } @empty {
                         <tr>
-
-                          <td colspan="5" class="text-center">Không có tài sản nào trong danh sách.</td>
+                          <td colspan="5" class="text-center">
+                            Không có tài sản nào khớp với tìm kiếm.
+                          </td>
                         </tr>
                       }
                     </tbody>
                   </table>
+
                 }
               </div>
             </div>
@@ -82,7 +102,12 @@ export interface Asset {
       </div>
     </main>
   `,
-  styles: []
+  styles: [`
+    .search-group { width: 100%; max-width: 560px; }
+    @media (max-width: 576px) {
+      .search-group { max-width: 100%; }
+    }
+  `]
 })
 export class AssetList implements OnInit {
 
@@ -90,7 +115,13 @@ export class AssetList implements OnInit {
   isLoading = true;
   error: string | null = null;
 
-  constructor(private assetService: AssetManagementService) { }
+
+  searchTerm = '';
+
+  constructor(
+    private assetService: AssetManagementService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadAssets();
@@ -99,7 +130,6 @@ export class AssetList implements OnInit {
   loadAssets(): void {
     this.isLoading = true;
     this.error = null;
-
 
     this.assetService.getAssets().subscribe({
       next: (data) => {
@@ -115,5 +145,30 @@ export class AssetList implements OnInit {
         console.error('Lỗi khi gọi API Assets:', err);
       }
     });
+  }
+
+
+  onSearch(term: string): void {
+    this.searchTerm = term.trim().toLowerCase();
+  }
+
+
+  filteredAssets(): Asset[] {
+    const t = this.searchTerm;
+    if (!t) return this.assets;
+
+    return this.assets.filter(a =>
+      (a.assetId ?? '').toLowerCase().includes(t) ||
+      (a.buildingId ?? '').toLowerCase().includes(t) ||
+      (a.info ?? '').toLowerCase().includes(t) ||
+      String(a.quantity ?? '').toLowerCase().includes(t)
+    );
+  }
+
+
+  onAddBuilding(): void {
+
+    this.router.navigate(['manager/manage-asset/create'])
+      .catch(err => console.error('Không điều hướng được tới trang tạo Tòa Nhà:', err));
   }
 }
