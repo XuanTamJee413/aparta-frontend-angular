@@ -1,11 +1,11 @@
 <mat-sidenav-container class="sidenav-container">
 
-  <mat-sidenav #drawer class="sidenav" 
+  <mat-sidenav #drawer class="sidenav"
     fixedInViewport
     [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
     [mode]="(isSmallScreen$ | async) ? 'over' : 'side'"
     [opened]="(isSmallScreen$ | async) === false">
-    
+
     <mat-toolbar class="sidenav-toolbar">
       <mat-icon class="toolbar-logo">home_work</mat-icon>
       <span>My Condominium</span>
@@ -38,6 +38,10 @@
         <span>Khách thăm</span>
       </a>
 
+      <a mat-list-item routerLink="household" routerLinkActive="active-link">
+        <mat-icon>people</mat-icon>
+        <span>Hộ Khẩu</span>
+      </a>
       <a mat-list-item routerLink="facility" routerLinkActive="active-link">
         <mat-icon>apartment</mat-icon>
         <span>Cơ sở & Tiện ích</span>
@@ -47,7 +51,7 @@
         <mat-icon>chat</mat-icon>
         <span>Chat với nhân viên</span>
       </a>
-      
+
       <a mat-list-item routerLink="profile" routerLinkActive="active-link">
         <mat-icon>person</mat-icon>
         <span>Hồ sơ</span>
@@ -58,9 +62,9 @@
   </mat-sidenav>
 
   <mat-sidenav-content class="content-container">
-    
+
     <mat-toolbar class="main-toolbar">
-      
+
       <button
         type="button"
         aria-label="Toggle sidenav"
@@ -88,7 +92,7 @@
         </button>
       </mat-menu>
     </mat-toolbar>
-    
+
     <main class="content-wrapper">
       <router-outlet></router-outlet>
     </main>
