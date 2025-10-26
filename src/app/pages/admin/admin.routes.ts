@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { ManagerListComponent } from './manager/manager-list/manager-list';
-import { ManagerCreateComponent } from './manager/manager-create/manager-create';
-import { ManagerEditComponent } from './manager/manager-edit/manager-edit';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -22,30 +19,10 @@ export const ADMIN_ROUTES: Routes = [
     path: 'subscription',
     loadChildren: () => import('./subscription/subscription.routes').then(m => m.SUBSCRIPTION_ROUTES)
   },
-
-  //lấy all manager
   {
-    path: 'manager/list', 
-    component: ManagerListComponent,
-    title: 'Manager List'
+    path: 'manager',
+    loadChildren: () => import('./manager/manager.routes').then(m => m.MANAGER_ROUTES)
   },
-  // tạo manager
-  {
-    path: 'manager/create', 
-    component: ManagerCreateComponent,
-    title: 'Create Manager'
-  },
-  // chỉnh sửa manager
-  {
-    path: 'manager/edit/:id',
-    component: ManagerEditComponent,
-    title: 'Edit Manager'
-  },
-  // {
-  //   path: 'manager', // URL: /admin/manager
-  //   redirectTo: 'manager/list',
-  //   pathMatch: 'full'
-  // },
 
   {
     path: 'settings', // URL: /admin/settings
