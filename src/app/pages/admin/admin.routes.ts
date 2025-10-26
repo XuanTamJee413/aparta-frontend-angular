@@ -16,6 +16,10 @@ export const ADMIN_ROUTES: Routes = [
     loadChildren: () => import('./building/building.routes').then(m => m.BUILDING_ROUTES)
   },
   {
+    path: 'subscription',
+    loadChildren: () => import('./subscription/subscription.routes').then(m => m.SUBSCRIPTION_ROUTES)
+  },
+  {
     path: 'settings', // URL: /admin/settings
     loadComponent: () => import('../common/settings.component')
       .then(m => m.SettingsComponent),

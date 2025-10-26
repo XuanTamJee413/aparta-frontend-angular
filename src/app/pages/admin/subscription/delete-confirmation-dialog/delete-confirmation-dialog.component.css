@@ -1,0 +1,166 @@
+::ng-deep .mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 12px;
+}
+
+.dialog-title {
+  display: flex;
+  align-items: center;
+  color: #d32f2f;
+  font-weight: 500;
+  margin: 0;
+  padding: 24px 24px 16px;
+  border-bottom: 2px solid #ffebee;
+}
+
+.warning-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  margin-right: 12px;
+  color: #ff9800;
+}
+
+mat-dialog-content {
+  padding: 24px;
+}
+
+.dialog-content {
+  max-width: 400px;
+}
+
+.confirmation-text {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+/* Subscription Info */
+.subscription-info {
+  background-color: #f5f5f5;
+  border-left: 4px solid #1976d2;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.info-row .label {
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+}
+
+.info-row .value {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 14px;
+}
+
+.info-row code {
+  background-color: #e3f2fd;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #1565c0;
+}
+
+/* Warning Message */
+.warning-message {
+  display: flex;
+  align-items: center;
+  background-color: #fff3e0;
+  border: 1px solid #ffb74d;
+  padding: 12px 16px;
+  border-radius: 4px;
+}
+
+.warning-message mat-icon {
+  color: #ff9800;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.warning-message p {
+  margin: 0;
+  color: #e65100;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Actions */
+mat-dialog-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  gap: 12px;
+}
+
+mat-dialog-actions button {
+  margin-left: 8px;
+  text-transform: none;
+  font-weight: 500;
+}
+
+mat-dialog-actions button:first-child {
+  margin-left: 0;
+}
+
+mat-dialog-actions button mat-icon {
+  margin-right: 4px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dialog-title {
+    padding: 16px;
+    font-size: 18px;
+  }
+
+  mat-dialog-content {
+    padding: 16px;
+  }
+
+  mat-dialog-actions {
+    padding: 12px 16px;
+    flex-direction: column;
+  }
+
+  mat-dialog-actions button {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+
+  mat-dialog-actions button:first-child {
+    margin-top: 0;
+  }
+
+  .subscription-info {
+    padding: 12px;
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+

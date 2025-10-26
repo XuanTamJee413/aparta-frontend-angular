@@ -121,7 +121,8 @@ export class ProjectListComponent implements OnInit {
     this.router.navigate(['/admin/project/edit', project.projectId]);
   }
 
-  onSearch(): void {
+  onFilterChange(): void {
+    // Auto search when filter changes
     this.loadProjects();
   }
 
@@ -130,16 +131,6 @@ export class ProjectListComponent implements OnInit {
     this.isActiveFilter = null;
     this.sortBy = '';
     this.sortOrder = 'asc';
-    this.loadProjects();
-  }
-
-  onSort(column: string): void {
-    if (this.sortBy === column) {
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortBy = column;
-      this.sortOrder = 'asc';
-    }
     this.loadProjects();
   }
 

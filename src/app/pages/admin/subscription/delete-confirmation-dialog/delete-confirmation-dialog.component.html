@@ -1,0 +1,42 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="warning-icon">warning</mat-icon>
+  Xác nhận Xóa
+</h2>
+
+<mat-dialog-content>
+  <div class="dialog-content">
+    <p class="confirmation-text">
+      Bạn có chắc chắn muốn xóa bản nháp này không?
+    </p>
+    
+    <div class="subscription-info">
+      <div class="info-row">
+        <span class="label">Mã gói:</span>
+        <span class="value"><code>{{ subscription.subscriptionCode }}</code></span>
+      </div>
+      <div class="info-row">
+        <span class="label">Số tháng:</span>
+        <span class="value">{{ subscription.numMonths }} tháng</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Giá gốc:</span>
+        <span class="value">{{ subscription.amount | number }} VND</span>
+      </div>
+    </div>
+    
+    <div class="warning-message">
+      <mat-icon>info</mat-icon>
+      <p>Hành động này không thể hoàn tác.</p>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    <mat-icon>close</mat-icon> Hủy
+  </button>
+  <button mat-raised-button color="warn" (click)="onConfirm()">
+    <mat-icon>delete</mat-icon> Xóa
+  </button>
+</mat-dialog-actions>
+
