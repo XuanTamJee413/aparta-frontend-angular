@@ -2,13 +2,13 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AssetManagementService } from '../../../../../services/management/asset-management/asset-management.service';
+import {
+  AssetManagementService,
+  BuildingDto,
+  AssetCreateDto
+} from '../../../../../services/management/asset-management/asset-management.service';
 
-export interface AssetCreateDto {
-  buildingId: string;
-  info: string;
-  quantity: number;
-}
+
 
 @Component({
   selector: 'app-create-asset',
@@ -30,7 +30,40 @@ export interface AssetCreateDto {
 
 
                   <div class="mb-3">
-                    <label for="info" class="form-label">Tên Tài sản (Info)</label>
+                    <label for="buildingId" class="form-label">Tòa nhà</label>
+                    <select
+                      id="buildingId"
+                      class="form-select"
+                      formControlName="buildingId"
+                      [class.is-invalid]="isInvalid('buildingId')">
+
+
+                      @if (buildingsLoading()) {
+                        <option [value]="null" disabled>Đang tải danh sách tòa nhà...</option>
+                      }
+
+                      @else if (buildingsError()) {
+                        <option [value]="null" disabled>Lỗi: {{ buildingsError() }}</option>
+                      }
+                      @else {
+                        <option [value]="null" disabled>-- Vui lòng chọn một tòa nhà --</option>
+                        @for (building of buildings(); track building.buildingId) {
+                          <option [value]="building.buildingId">
+                            {{ building.name }}
+                          </option>
+                        }
+                      }
+                    </select>
+                    @if (isInvalid('buildingId')) {
+                      <div class="invalid-feedback">
+                        Vui lòng chọn một tòa nhà.
+                      </div>
+                    }
+                  </div>
+
+
+                  <div class="mb-3">
+                    <label for="info" class="form-label">Tên Tài sản</label>
                     <input
                       type="text"
                       class="form-control"
@@ -45,6 +78,7 @@ export interface AssetCreateDto {
                       </div>
                     }
                   </div>
+
 
                   <div class="mb-3">
                     <label for="quantity" class="form-label">Số Lượng</label>
@@ -63,15 +97,20 @@ export interface AssetCreateDto {
                         @if (assetForm.get('quantity')?.hasError('min')) {
                           Số lượng phải ít nhất là 0.
                         }
+                         @if (assetForm.get('quantity')?.hasError('pattern')) {
+                          Số lượng phải là một số nguyên.
+                        }
                       </div>
                     }
                   </div>
+
 
                   @if (errorMessage()) {
                     <div class="alert alert-danger">
                       {{ errorMessage() }}
                     </div>
                   }
+
 
                   <div class="d-flex justify-content-end gap-2">
                     <button
@@ -101,7 +140,7 @@ export interface AssetCreateDto {
       </div>
     </main>
   `,
-  styles: `` // Không cần style thêm
+  styles: ``
 })
 export class CreateAsset implements OnInit {
 
@@ -110,33 +149,53 @@ export class CreateAsset implements OnInit {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
+  buildings = signal<BuildingDto[]>([]);
+  buildingsLoading = signal(true);
+  buildingsError = signal<string | null>(null);
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private assetService = inject(AssetManagementService);
 
   ngOnInit(): void {
-
     this.assetForm = this.fb.group({
+      buildingId: [null, Validators.required],
       info: ['', Validators.required],
-      quantity: [0, [Validators.required, Validators.min(0)]]
+      quantity: [0, [Validators.required, Validators.min(0), Validators.pattern("^[0-9]*$")]]
     });
+
+    this.loadBuildings();
   }
 
+
+  loadBuildings(): void {
+    this.buildingsLoading.set(true);
+    this.buildingsError.set(null);
+
+    this.assetService.getBuildings().subscribe({
+      next: (data) => {
+        this.buildings.set(data);
+        this.buildingsLoading.set(false);
+      },
+      error: (err) => {
+        this.buildingsLoading.set(false);
+        this.buildingsError.set('Không thể tải danh sách tòa nhà.');
+        console.error('Lỗi khi tải buildings:', err);
+      }
+    });
+  }
 
   isInvalid(controlName: string): boolean {
     const control = this.assetForm.get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
 
-
   onCancel(): void {
     this.router.navigate(['manager/manage-asset']);
   }
 
-
   onSubmit(): void {
     this.assetForm.markAllAsTouched();
-
     if (this.assetForm.invalid) {
       return;
     }
@@ -144,14 +203,7 @@ export class CreateAsset implements OnInit {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-
-    const formValues = this.assetForm.value;
-
-    const createDto: AssetCreateDto = {
-      info: formValues.info,
-      quantity: formValues.quantity,
-      buildingId: '1'
-    };
+    const createDto: AssetCreateDto = this.assetForm.value;
 
     this.assetService.createAsset(createDto).subscribe({
       next: () => {
@@ -161,16 +213,18 @@ export class CreateAsset implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
 
+
         let specificError = 'Vui lòng thử lại.';
-        if (err.error && typeof err.error === 'object') {
-          const validationErrors = err.error.errors;
-          if (validationErrors) {
-            specificError = Object.values(validationErrors).flat().join(' ');
-          } else if (err.error.message) {
-            specificError = err.error.message;
-          } else if (err.status === 400) {
-            specificError = "Dữ liệu gửi lên không hợp lệ (lỗi 400).";
+        if (err.status === 400) {
+          if (err.error && typeof err.error.title === 'string' && err.error.title.includes('JSON')) {
+              specificError = "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại các trường (ví dụ: Số lượng phải là số nguyên).";
+          } else if (err.error && err.error.errors) {
+              specificError = Object.values(err.error.errors).flat().join(' ');
+          } else {
+              specificError = "Dữ liệu gửi lên không hợp lệ (lỗi 400).";
           }
+        } else if (err.error?.message) {
+            specificError = err.error.message;
         } else if (err.message) {
             specificError = err.message;
         }
@@ -181,4 +235,5 @@ export class CreateAsset implements OnInit {
     });
   }
 }
+
 
