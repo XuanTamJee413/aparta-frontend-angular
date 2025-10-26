@@ -72,6 +72,11 @@ export const MANAGER_ROUTES: Routes = [
     .then(m => m.VisitorList)
   },
   {
+  path: 'fast-checkin',
+  loadComponent: () => import('./operation/visitor/fast-checkin/fast-checkin')
+    .then(m => m.FastCheckin)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('../common/profile/profile.component')
       .then(m => m.ProfileComponent),

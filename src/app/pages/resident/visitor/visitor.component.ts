@@ -10,7 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { VisitLog, VisitorCreateDto, VisitorService } from '../../../services/resident/visitor.service';
+import { VisitorCreateDto, VisitorService } from '../../../services/resident/visitor.service';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -42,7 +42,6 @@ export class VisitorComponent implements OnInit {
 
   visitorForm!: FormGroup;
   private residentApartmentId: string = ''; 
-  history: VisitLog[] = [];
   isLoadingHistory = false;
   displayedColumns: string[] = ['visitorName', 'purpose', 'checkinTime', 'status', 'actions'];
   timeSlots: string[] = [];
@@ -75,10 +74,9 @@ export class VisitorComponent implements OnInit {
       idNumber: ['', Validators.required],
       purpose: [''],
       checkinDate: [new Date(), Validators.required],
-      checkinTime: ['12:00', Validators.required] 
+      checkinTime: ['12:00', Validators.required]
     });
 
-    this.loadHistory();
   }
 
   populateTimeSlots(): void {
@@ -91,20 +89,6 @@ export class VisitorComponent implements OnInit {
     }
   }
 
-  loadHistory(): void {
-    this.isLoadingHistory = true;
-    this.visitorService.getHistoryForApartment(this.residentApartmentId).subscribe({
-      next: (data) => {
-        this.history = data.sort((a, b) => new Date(b.checkinTime).getTime() - new Date(a.checkinTime).getTime());
-        this.isLoadingHistory = false;
-      },
-      error: (err) => {
-        console.error('Error loading history', err);
-        this.snackBar.open('Không thể tải lịch sử khách thăm', 'Đóng', { duration: 3000 });
-        this.isLoadingHistory = false;
-      }
-    });
-  }
 
   onSubmit(): void {
     if (this.visitorForm.invalid) {
@@ -143,7 +127,8 @@ export class VisitorComponent implements OnInit {
       purpose: this.visitorForm.value.purpose,
       apartmentId: this.residentApartmentId,
       
-      checkinTime: localISOString 
+      checkinTime: localISOString,
+      status: 'Pending'
     };
 
     this.visitorService.createVisitor(dto).subscribe({
@@ -152,7 +137,6 @@ export class VisitorComponent implements OnInit {
           duration: 3000
         });
         this.resetForm();
-        this.loadHistory();
       },
       error: (err) => {
         this.snackBar.open('Lỗi: Không thể đăng ký khách', 'Đóng', {
@@ -169,13 +153,5 @@ export class VisitorComponent implements OnInit {
       checkinDate: new Date(),
       checkinTime: '12:00'
     });
-  }
-
-  editVisit(log: VisitLog): void {
-    this.snackBar.open(`Sửa: ${log.visitorName}`, 'Đóng', { duration: 2000 });
-  }
-
-  deleteVisit(log: VisitLog): void {
-    this.snackBar.open(`Xóa: ${log.visitorName}`, 'Đóng', { duration: 2000 });
   }
 }
