@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { ApartmentList } from './management/apartment-management/apartment-list/apartment-list.component';
 import { ResidentList } from './operation/resident-list/resident-list';
+import { NewsListComponent } from './management/news/news-list/news-list';
+import { NewsCreateComponent } from './management/news/news-create/news-create';
+import { NewsEditComponent } from './management/news/news-edit/news-edit';
 
 import { AssetList } from './management/asset-management/asset-list/asset-list.component';
 import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail';
@@ -24,6 +27,21 @@ export const MANAGER_ROUTES: Routes = [
   {
     path: 'manage-asset/create',
     component: CreateAsset
+  },
+  {
+    path: 'news/list',
+    component: NewsListComponent,
+    title: 'News List'
+  },
+  {
+    path: 'news/create',
+    component: NewsCreateComponent,
+    title: 'Create News'
+  },
+  {
+    path: 'news/edit/:id',
+    component: NewsEditComponent,
+    title: 'Edit News'
   },
   // --- END MANAGEMENT ---
 

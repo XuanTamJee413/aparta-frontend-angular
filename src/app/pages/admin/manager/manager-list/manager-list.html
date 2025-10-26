@@ -1,0 +1,124 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Quản lý Manager</h1>
+          <p>Danh sách quản lý viên và thông tin</p>
+        </div>
+        <a routerLink="/admin/manager/create" class="btn-primary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Tạo Manager mới
+        </a>
+      </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
+    </div>
+
+    <div class="search-container">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm theo tên hoặc mã nhân viên..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          [disabled]="loading"
+        />
+        <button *ngIf="searchTerm" class="clear-btn" (click)="onClearSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <div *ngIf="!loading" class="table-container">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mã nhân viên</th>
+              <th>Tên</th>
+              <th>Email</th>
+              <th>Số điện thoại</th>
+              <th>Avatar</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let manager of paginatedManagers">
+              <td class="font-medium">{{ manager.staffCode }}</td>
+              <td>{{ manager.name }}</td>
+              <td>{{ manager.email }}</td>
+              <td>{{ manager.phone }}</td>
+              <td>
+                <img *ngIf="manager.avatarUrl" 
+                     [src]="manager.avatarUrl" 
+                     alt="Avatar" 
+                     class="avatar-img">
+                <span *ngIf="!manager.avatarUrl" class="no-avatar">Không có</span>
+              </td>
+              <td>
+                <span class="status-badge"
+                  [ngClass]="{
+                    'status-active': manager.status && manager.status.toLowerCase() === 'active',
+                    'status-inactive': manager.status && manager.status.toLowerCase() !== 'active'
+                  }">
+                  <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
+                    <circle cx="4" cy="4" r="3" />
+                  </svg>
+                  {{ manager.status }}
+                </span>
+              </td>
+              <td class="actions">
+                <button class="action-edit-btn" [routerLink]="['/admin/manager/edit', manager.userId]">
+                  <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
+                  </svg>
+                  Sửa
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedManagers.length === 0">
+              <td colspan="7" class="no-results">
+                Không tìm thấy manager nào phù hợp.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && totalPages > 0" class="pagination">
+      <span class="page-info">
+        Trang <span class="font-medium">{{ currentPage }}</span> / <span class="font-medium">{{ totalPages }}</span>
+      </span>
+      <div class="pagination-buttons">
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+          Trước
+        </button>
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          Tiếp
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

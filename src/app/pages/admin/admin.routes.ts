@@ -1,4 +1,7 @@
 import { Routes } from '@angular/router';
+import { ManagerListComponent } from './manager/manager-list/manager-list';
+import { ManagerCreateComponent } from './manager/manager-create/manager-create';
+import { ManagerEditComponent } from './manager/manager-edit/manager-edit';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -20,6 +23,30 @@ export const ADMIN_ROUTES: Routes = [
     path: 'project-categories', // URL: /admin/project-categories
     loadComponent: () => import('./project/project-categories.component').then(m => m.ProjectCategoriesComponent)
   },
+
+  //lấy all manager
+  {
+    path: 'manager/list', 
+    component: ManagerListComponent,
+    title: 'Manager List'
+  },
+  // tạo manager
+  {
+    path: 'manager/create', 
+    component: ManagerCreateComponent,
+    title: 'Create Manager'
+  },
+  // chỉnh sửa manager
+  {
+    path: 'manager/edit/:id',
+    component: ManagerEditComponent,
+    title: 'Edit Manager'
+  },
+  // {
+  //   path: 'manager', // URL: /admin/manager
+  //   redirectTo: 'manager/list',
+  //   pathMatch: 'full'
+  // },
 
   {
     path: 'settings', // URL: /admin/settings

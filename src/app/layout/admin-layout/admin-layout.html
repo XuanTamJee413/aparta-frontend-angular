@@ -19,6 +19,13 @@
       </a>
 
       <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Quản lý</h3>
+      <a mat-list-item routerLink="manager/list" routerLinkActive="active-link">
+        <mat-icon>people</mat-icon>
+        <span>Danh sách Manager</span>
+      </a>
+
+      <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Dự án</h3>
       <a mat-list-item routerLink="project-list" routerLinkActive="active-link">
         <mat-icon>article</mat-icon>
@@ -65,10 +72,10 @@
       <button mat-icon-button>
         <mat-icon>notifications_none</mat-icon>
       </button>
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button [matMenuTriggerFor]="userMenuRef">
         <mat-icon>account_circle</mat-icon>
       </button>
-      <mat-menu #userMenuRef>
+      <mat-menu #userMenuRef="matMenu">
         <button mat-menu-item routerLink="profile">
           <mat-icon>person_outline</mat-icon>
           <span>Hồ sơ</span>

@@ -1,0 +1,114 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Chỉnh sửa Manager</h1>
+          <p>Cập nhật thông tin quản lý viên</p>
+        </div>
+        <a routerLink="/admin/manager/list" class="btn-secondary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Quay lại
+        </a>
+      </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <div *ngIf="!loading && currentManager" class="manager-info">
+      <div class="info-item">
+        <span class="info-label">Trạng thái:</span>
+        <span class="status-badge"
+          [ngClass]="{
+            'status-active': currentManager.status && currentManager.status.toLowerCase() === 'active',
+            'status-inactive': currentManager.status && currentManager.status.toLowerCase() !== 'active'
+          }">
+          <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
+            <circle cx="4" cy="4" r="3" />
+          </svg>
+          {{ currentManager.status }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Last Login:</span>
+        <span>{{ currentManager.lastLoginAt || 'Chưa đăng nhập' }}</span>
+      </div>
+    </div>
+
+    <form *ngIf="!loading && currentManager" (ngSubmit)="onSubmit()" #managerForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="name">Họ tên <span class="required">*</span></label>
+          <input type="text" id="name" name="name" class="form-input" [(ngModel)]="manager.name" required placeholder="Nhập họ tên đầy đủ..." [disabled]="submitting" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="staffCode">Mã nhân viên <span class="required">*</span></label>
+          <input type="text" id="staffCode" name="staffCode" class="form-input" [(ngModel)]="manager.staffCode" required placeholder="VD: MGR001" [disabled]="submitting" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="email">Email <span class="required">*</span></label>
+          <input type="email" id="email" name="email" class="form-input" [(ngModel)]="manager.email" required email placeholder="manager@example.com" [disabled]="submitting" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phone">Số điện thoại <span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" class="form-input" [(ngModel)]="manager.phone" required placeholder="0987654321" [disabled]="submitting" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="password">Mật khẩu mới (để trống nếu không đổi)</label>
+          <input type="password" id="password" name="password" class="form-input" [(ngModel)]="manager.password" minlength="6" placeholder="Tối thiểu 6 ký tự" [disabled]="submitting" />
+          <p class="form-hint">Chỉ nhập nếu muốn thay đổi mật khẩu</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="avatarUrl">Avatar URL</label>
+          <input type="url" id="avatarUrl" name="avatarUrl" class="form-input" [(ngModel)]="manager.avatarUrl" placeholder="https://example.com/avatar.jpg" [disabled]="submitting" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="status">Trạng thái <span class="required">*</span></label>
+          <select id="status" name="status" class="form-input" [(ngModel)]="manager.status" required [disabled]="submitting">
+            <option value="">-- Chọn trạng thái --</option>
+            <option *ngFor="let option of statusOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group"></div>
+      </div>
+
+      <div *ngIf="currentManager.avatarUrl" class="avatar-preview">
+        <span class="avatar-label">Avatar hiện tại:</span>
+        <img [src]="currentManager.avatarUrl" alt="Avatar" class="avatar-img" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!managerForm.form.valid || submitting">
+          <svg *ngIf="!submitting" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <div *ngIf="submitting" class="btn-spinner"></div>
+          {{ submitting ? 'Đang cập nhật...' : 'Cập nhật Manager' }}
+        </button>
+        <a routerLink="/admin/manager/list" class="btn-cancel" [class.disabled]="submitting">Hủy</a>
+      </div>
+    </form>
+
+  </div>
+</div>

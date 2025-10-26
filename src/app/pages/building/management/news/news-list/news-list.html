@@ -1,0 +1,126 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Quản lý News tòa nhà</h1>
+          <p>Danh sách tin tức và thông báo</p>
+        </div>
+        <a routerLink="/manager/news/create" class="btn-primary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Tạo tin mới
+        </a>
+      </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
+    </div>
+
+    <div class="filter-container">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm theo tiêu đề hoặc tác giả..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          [disabled]="loading"
+        />
+        <button *ngIf="searchTerm" class="clear-btn" (click)="onClearSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="status-wrapper">
+        <select class="status-select" [(ngModel)]="statusFilter" (change)="onStatusChange()" [disabled]="loading">
+          <option *ngFor="let status of statusOptions" [value]="status.value">
+            {{ status.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <div *ngIf="!loading" class="table-container">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tiêu đề</th>
+              <th>Tác giả</th>
+              <th>Trạng thái</th>
+              <th>Ngày xuất bản</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let news of paginatedNews">
+              <td class="news-title-cell">
+                <div class="news-title">{{ news.title }}</div>
+                <div class="news-preview">{{ news.content.length > 80 ? news.content.substring(0, 80) + '...' : news.content }}</div>
+              </td>
+              <td>{{ news.authorName }}</td>
+              <td>
+                <span class="status-badge"
+                  [ngClass]="{
+                    'status-active': news.status === 'active',
+                    'status-draft': news.status === 'draft',
+                    'status-delete': news.status === 'delete'
+                  }">
+                  <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
+                    <circle cx="4" cy="4" r="3" />
+                  </svg>
+                  {{ news.status === 'active' ? 'Active' : news.status === 'draft' ? 'Draft' : 'Deleted' }}
+                </span>
+              </td>
+              <td>{{ formatDate(news.publishedDate) }}</td>
+              <td class="actions">
+                <button class="action-edit-btn" [routerLink]="['/manager/news/edit', news.newsId]">
+                  <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
+                  </svg>
+                  Sửa
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedNews.length === 0">
+              <td colspan="5" class="no-results">
+                Không tìm thấy tin tức nào phù hợp.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && totalPages > 0" class="pagination">
+      <span class="page-info">
+        Trang <span class="font-medium">{{ currentPage }}</span> / <span class="font-medium">{{ totalPages }}</span>
+      </span>
+      <div class="pagination-buttons">
+        <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+          Trước
+        </button>
+        <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          Tiếp
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

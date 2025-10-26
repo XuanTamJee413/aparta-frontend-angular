@@ -1,0 +1,81 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Tạo tin tức mới</h1>
+          <p>Thêm tin tức hoặc thông báo cho tòa nhà</p>
+        </div>
+        <a routerLink="/manager/news/list" class="btn-secondary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Quay lại
+        </a>
+      </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
+    </div>
+
+    <div class="info-box">
+      <svg class="info-icon" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+      </svg>
+      <span><strong>Lưu ý:</strong> Tin tức sẽ được tạo với trạng thái "Draft". Bạn có thể chỉnh sửa và xuất bản sau.</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #newsForm="ngForm">
+      <div class="form-group">
+        <label class="form-label" for="title">
+          Tiêu đề <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          class="form-input"
+          [(ngModel)]="news.title"
+          required
+          maxlength="200"
+          placeholder="Nhập tiêu đề tin tức..."
+          [disabled]="submitting"
+        />
+        <p class="form-hint">{{ news.title.length }}/200 ký tự</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="content">
+          Nội dung <span class="required">*</span>
+        </label>
+        <textarea
+          id="content"
+          name="content"
+          class="form-textarea"
+          [(ngModel)]="news.content"
+          required
+          rows="10"
+          placeholder="Nhập nội dung tin tức..."
+          [disabled]="submitting"
+        ></textarea>
+        <p class="form-hint">Viết nội dung đầy đủ của tin tức</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!newsForm.form.valid || submitting">
+          <svg *ngIf="!submitting" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <div *ngIf="submitting" class="btn-spinner"></div>
+          {{ submitting ? 'Đang tạo...' : 'Tạo tin tức' }}
+        </button>
+        <a routerLink="/manager/news/list" class="btn-cancel" [class.disabled]="submitting">
+          Hủy
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
