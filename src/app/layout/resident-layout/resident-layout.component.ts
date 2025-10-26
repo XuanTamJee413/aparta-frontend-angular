@@ -25,10 +25,10 @@ import { MatMenuModule, MatMenu } from '@angular/material/menu';
     MatButtonModule,
     MatMenuModule
   ],
-  templateUrl: './resident-layout.component.html', // Đổi templateUrl
-  styleUrls: ['./resident-layout.component.css']  // Đổi styleUrls
+  templateUrl: './resident-layout.component.html',
+  styleUrls: ['./resident-layout.component.css']  
 })
-export class ResidentLayoutComponent { // Đổi tên class
+export class ResidentLayoutComponent {
 
   @ViewChild('drawer') drawer!: MatSidenav;
   @ViewChild('userMenuRef') userMenu!: MatMenu;

@@ -8,14 +8,15 @@ import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { ProfileComponent } from '../common/profile/profile.component';
+import { RegisterHousehold } from './household/register-household/register-household';
 
 export const RESIDENT_ROUTES: Routes = [
     {
-    path: 'home', 
+    path: 'home',
     component: HomepageComponent
   },
   {
-    path: 'invoice', 
+    path: 'invoice',
     component: InvoiceComponent
   },
   {
@@ -27,8 +28,12 @@ export const RESIDENT_ROUTES: Routes = [
     component: AnnouncementComponent
   },
   {
-    path: 'visitor', 
+    path: 'visitor',
     component: VisitorComponent
+  },
+  {
+    path: 'household',
+    component:RegisterHousehold
   },
   {
     path: 'facility',
