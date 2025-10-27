@@ -22,9 +22,8 @@ export const routes: Routes = [
 
   {
     path: '', 
-    component: ResidentLayoutComponent, 
-    loadChildren: () => import('./pages/resident/resident.routes')
-      .then(m => m.RESIDENT_ROUTES)
+    component: LoginComponent, 
+    
   },
   
   {
