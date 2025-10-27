@@ -1,38 +1,42 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core'; // 1. Thêm ViewChild, ElementRef
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// 2. Vẫn cần ReactiveFormsModule
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; 
-import { ServiceCreateDto, ServiceDto, ServiceUpdateDto } from '../../../../models/service.model';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { ServiceDto, PagedList, ServiceQueryParameters, ServiceUpdateDto, ServiceCreateDto } from '../../../../models/service.model';
 import { ServiceService } from '../../../../services/operation/service.service';
-
-
-// 3. Xóa tất cả import của PrimeNG
 
 @Component({
   selector: 'app-service-list',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule, // 4. Giữ lại ReactiveFormsModule
+    ReactiveFormsModule, 
   ],
   templateUrl: './service-list.component.html',
   styleUrls: ['./service-list.component.css']
 })
 export class ServiceListComponent implements OnInit {
 
-  // 5. Lấy tham chiếu đến thẻ <dialog> trong HTML
   @ViewChild('serviceDialog') dialog!: ElementRef<HTMLDialogElement>;
 
   services: ServiceDto[] = [];
-  
   isEditMode: boolean = false;
   currentServiceId: string | null = null;
   serviceForm: FormGroup; 
 
+  currentPage: number = 1;
+  pageSize: number = 10;
+  totalCount: number = 0;
+  totalPages: number = 0;
+
+  searchControl = new FormControl('');
+  statusFilterControl = new FormControl('');
+
   statusOptions = [
-    { label: 'Actice', value: 'Active' },
-    { label: 'Inactive', value: 'Inactive' }
+    { label: 'Tất cả', value: '' },
+    { label: 'Available', value: 'Available' },
+    { label: 'Unavailable', value: 'Unavailable' }
   ];
+  dialogStatusOptions = this.statusOptions.filter(o => o.value !== '');
 
   constructor(
     private serviceService: ServiceService,
@@ -41,7 +45,7 @@ export class ServiceListComponent implements OnInit {
     this.serviceForm = this.fb.group({
       name: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
-      status: ['Available', Validators.required]
+      status: ['Available', Validators.required] 
     });
   }
 
@@ -50,25 +54,71 @@ export class ServiceListComponent implements OnInit {
   }
 
   loadServices(): void {
-    this.serviceService.getServices().subscribe({
-      next: (data) => { this.services = data; },
+    const params: ServiceQueryParameters = {
+      pageNumber: this.currentPage,
+      pageSize: this.pageSize,
+      searchTerm: this.searchControl.value || null,
+      status: this.statusFilterControl.value || null
+    };
+
+    this.serviceService.getServices(params).subscribe({
+      next: (data: PagedList<ServiceDto>) => {
+        this.services = data.items;
+        this.totalCount = data.totalCount;
+        this.totalPages = data.totalPages;
+        this.currentPage = data.pageNumber;
+      },
       error: (err) => { console.error('Lỗi khi tải dịch vụ:', err); }
     });
   }
 
-  // 6. Sửa hàm mở Dialog
+  onSearch(): void {
+    this.currentPage = 1; 
+    this.loadServices();
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1; 
+    this.loadServices();
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadServices();
+    }
+  }
+
+  // Hàm helper này không còn được dùng trong HTML, nhưng bạn có thể giữ lại
+  getPageNumbers(): number[] {
+    return Array(this.totalPages).fill(0).map((x, i) => i + 1);
+  }
+  // ... (code của bạn)
+
+  // 🔽 THÊM 2 HÀM GET NÀY VÀO 🔽
+
+  get hasPreviousPage(): boolean {
+    return this.currentPage > 1;
+  }
+
+  get hasNextPage(): boolean {
+    return this.currentPage < this.totalPages;
+  }
+
+  // --- Các hàm Dialog (Cập nhậtเล็กน้อย) ---
+// ... (code còn lại)
+
   openCreateModal(): void {
     this.isEditMode = false;
     this.currentServiceId = null;
     this.serviceForm.reset({
       name: '',
       price: 0,
-      status: 'Active'
+      status: 'Available'
     });
-    this.dialog.nativeElement.showModal(); // Dùng .showModal()
+    this.dialog.nativeElement.showModal();
   }
 
-  // 7. Sửa hàm mở Dialog
   openEditModal(service: ServiceDto): void {
     this.isEditMode = true;
     this.currentServiceId = service.serviceId;
@@ -77,21 +127,18 @@ export class ServiceListComponent implements OnInit {
       price: service.price,
       status: service.status
     });
-    this.dialog.nativeElement.showModal(); // Dùng .showModal()
+    this.dialog.nativeElement.showModal();
   }
 
-  // 8. Sửa hàm đóng Dialog
   hideDialog(): void {
-    this.dialog.nativeElement.close(); // Dùng .close()
+    this.dialog.nativeElement.close();
   }
 
-  // 9. HÀM BẠN ĐANG THIẾU LÀ ĐÂY:
-  // Hàm này để reset form khi dialog bị đóng (ví dụ: nhấn Esc)
   onDialogClose(): void {
     this.serviceForm.reset();
   }
 
-  // 10. Sửa hàm Save
+  // 🔽 SỬA LỖI TRONG HÀM NÀY 🔽
   saveService(): void {
     if (this.serviceForm.invalid) {
       this.serviceForm.markAllAsTouched();
@@ -101,43 +148,54 @@ export class ServiceListComponent implements OnInit {
     const formValue = this.serviceForm.value;
 
     if (this.isEditMode && this.currentServiceId) {
-      // --- CHẾ ĐỘ SỬA ---
+      // SỬA LỖI 1: Khởi tạo DTO trực tiếp từ formValue
       const updateDto: ServiceUpdateDto = {
         name: formValue.name,
         price: formValue.price,
         status: formValue.status
       };
+
       this.serviceService.updateService(this.currentServiceId, updateDto).subscribe({
         next: () => {
-          this.loadServices();
-          this.hideDialog(); // Gọi hàm đóng
+          this.loadServices(); 
+          this.hideDialog();
         },
         error: (err) => console.error('Lỗi khi cập nhật:', err)
       });
     } else {
-      // --- CHẾ ĐỘ THÊM MỚI ---
+      // SỬA LỖI 2: Khởi tạo DTO trực tiếp từ formValue
       const createDto: ServiceCreateDto = {
         name: formValue.name,
         price: formValue.price,
         status: formValue.status
       };
+
       this.serviceService.addService(createDto).subscribe({
         next: () => {
-          this.loadServices();
-          this.hideDialog(); // Gọi hàm đóng
+          this.loadServices(); 
+          this.hideDialog();
         },
         error: (err) => console.error('Lỗi khi thêm mới:', err)
       });
     }
   }
 
-  // Hàm Xóa (giữ nguyên)
+  // 🔽 SỬA LỖI TRONG HÀM NÀY 🔽
   delete(id: string): void {
     if (confirm('Bạn có chắc muốn xóa dịch vụ này?')) {
       this.serviceService.deleteService(id).subscribe({
         next: () => {
           console.log('Xóa thành công');
-          this.loadServices();
+          
+          // SỬA LỖI 3: Chỉ gọi loadServices() MỘT LẦN
+          
+          // Xử lý logic phân trang trước
+          if (this.services.length === 1 && this.currentPage > 1) {
+             this.currentPage--;
+          }
+          
+          // Sau đó mới tải lại dữ liệu
+          this.loadServices(); 
         },
         error: (err) => {
           console.error('Lỗi khi xóa:', err);
@@ -145,4 +203,5 @@ export class ServiceListComponent implements OnInit {
       });
     }
   }
+  
 }

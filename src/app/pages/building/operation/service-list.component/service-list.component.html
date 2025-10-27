@@ -6,6 +6,24 @@
     </button>
   </div>
   
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="search">Tìm theo tên:</label>
+      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Nhập tên dịch vụ...">
+    </div>
+    
+    <div class="filter-group">
+      <label for="statusFilter">Lọc theo trạng thái:</label>
+      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
+        <option *ngFor="let option of statusOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn btn-filter" (click)="onSearch()">Tìm kiếm / Lọc</button>
+  </div>
+
   <div class="card-body">
     <table>
       <thead>
@@ -31,25 +49,58 @@
           </td>
         </tr>
         <tr *ngIf="services.length === 0" class="empty-row">
-          <td colspan="4">Không có dịch vụ nào.</td>
+          <td colspan="4">Không có dịch vụ nào (hoặc không tìm thấy kết quả).</td>
         </tr>
       </tbody>
     </table>
   </div>
+
+  <div class="card-footer" *ngIf="totalPages > 0">
+    <div class="pagination-summary">
+      Hiển thị {{ services.length }} / Tổng số {{ totalCount }} mục
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="btn-page" 
+        [disabled]="currentPage === 1" 
+        (click)="onPageChange(1)">
+        &laquo;
+      </button>
+      <button 
+        class="btn-page" 
+        [disabled]="!hasPreviousPage" 
+        (click)="onPageChange(currentPage - 1)">
+        &lsaquo;
+      </button>
+
+      <span> Trang {{ currentPage }} / {{ totalPages }} </span>
+
+      <button 
+        class="btn-page" 
+        [disabled]="!hasNextPage" 
+        (click)="onPageChange(currentPage + 1)">
+        &rsaquo;
+      </button>
+      <button 
+        class="btn-page" 
+        [disabled]="currentPage === totalPages" 
+        (click)="onPageChange(totalPages)">
+        &raquo;
+      </button>
+    </div>
+  </div>
+
 </div>
 
 
 <dialog #serviceDialog (close)="onDialogClose()">
-  
   <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
-    
     <div class="form-header">
       <h3>{{ isEditMode ? 'Cập nhật Dịch vụ' : 'Thêm mới Dịch vụ' }}</h3>
       <button type="button" class="btn-close" (click)="hideDialog()">×</button>
     </div>
 
     <div class="form-body">
-      
       <div class="form-group">
         <label for="name">Tên Dịch vụ</label>
         <input id="name" type="text" formControlName="name">
@@ -65,24 +116,22 @@
           Giá là bắt buộc và phải lớn hơn 0.
         </small>
       </div>
-
+      
       <div class="form-group">
         <label for="status">Trạng thái</label>
         <select id="status" formControlName="status">
-          <option *ngFor="let option of statusOptions" [value]="option.value">
+          <option *ngFor="let option of dialogStatusOptions" [value]="option.value">
             {{ option.label }}
           </option>
         </select>
       </div>
-
     </div>
 
     <div class="form-footer">
-      <button type="button" class="btn btn-cancel" (click)="hideDialog()">Hủy</button>
+      <button type="button" class="btn-btn-cancel" (click)="hideDialog()">Hủy</button>
       <button type="submit" class="btn btn-save" [disabled]="serviceForm.invalid">
         {{ isEditMode ? 'Cập nhật' : 'Lưu' }}
       </button>
     </div>
-    
   </form>
 </dialog>
