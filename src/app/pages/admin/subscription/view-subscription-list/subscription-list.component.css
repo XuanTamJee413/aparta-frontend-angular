@@ -1,0 +1,271 @@
+.container-fluid {
+  padding: 20px;
+}
+
+.card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: none;
+  border-radius: 8px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  padding: 20px;
+}
+
+.card-title {
+  color: #495057;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.card-header button {
+  white-space: nowrap;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Tabs */
+::ng-deep .mat-mdc-tab-group {
+  margin-bottom: 20px;
+}
+
+::ng-deep .mat-mdc-tab-label {
+  min-width: 160px;
+  font-weight: 500;
+}
+
+/* Filter Section */
+.filter-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-section .mat-mdc-form-field {
+  font-size: 14px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+/* Table */
+.table-container {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead {
+  background-color: #343a40;
+  color: white;
+}
+
+.table th {
+  font-weight: 500;
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.table td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0,0,0,0.02);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+/* Badge Styles */
+.badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.badge-warning {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.badge-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  color: #dee2e6;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 16px;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #dee2e6;
+}
+
+.pagination-info {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+}
+
+.pagination-controls .form-select {
+  width: auto;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.pagination {
+  margin-bottom: 0;
+}
+
+.page-link {
+  color: #007bff;
+  border-color: #dee2e6;
+  padding: 6px 12px;
+}
+
+.page-link:hover {
+  color: #0056b3;
+  background-color: #e9ecef;
+}
+
+.page-link mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.page-item.disabled .page-link {
+  color: #6c757d;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+
+/* Loading Spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Buttons */
+.mat-mdc-raised-button {
+  text-transform: none;
+}
+
+.mat-mdc-icon-button {
+  width: 36px;
+  height: 36px;
+}
+
+.mat-mdc-icon-button mat-icon {
+  font-size: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 10px;
+  }
+
+  .card-header {
+    padding: 15px;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
+  .card-header button {
+    width: 100%;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+  }
+
+  .filter-section {
+    padding: 15px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .table {
+    font-size: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .pagination-controls .form-select {
+    width: 100%;
+  }
+}

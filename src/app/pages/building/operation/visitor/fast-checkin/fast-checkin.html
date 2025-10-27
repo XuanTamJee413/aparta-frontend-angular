@@ -1,0 +1,70 @@
+<div class="card shadow-sm border-0 container mb-4">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center p-3">
+    <h4 class="card-title mb-0">Check-in nhanh</h4>
+    <button type="button" class="btn-close" (click)="onClose()" aria-label="Close"></button>
+  </div>
+  <div class="card-body p-4">
+    <form [formGroup]="manualVisitorForm" (ngSubmit)="onManualSubmit()">
+
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="fc-apartmentId" formControlName="apartmentId" placeholder="Ví dụ: A-101"
+               [class.is-invalid]="manualVisitorForm.get('apartmentId')?.invalid && manualVisitorForm.get('apartmentId')?.touched">
+        <label for="fc-apartmentId">Mã căn hộ</label>
+        <div *ngIf="manualVisitorForm.get('apartmentId')?.hasError('required') && manualVisitorForm.get('apartmentId')?.touched" class="invalid-feedback">
+          Mã căn hộ là bắt buộc
+        </div>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="fc-fullName" formControlName="fullName" placeholder="Nguyễn Văn A"
+               [class.is-invalid]="manualVisitorForm.get('fullName')?.invalid && manualVisitorForm.get('fullName')?.touched">
+        <label for="fc-fullName">Họ và tên</label>
+        <div *ngIf="manualVisitorForm.get('fullName')?.hasError('required') && manualVisitorForm.get('fullName')?.touched" class="invalid-feedback">
+          Họ tên là bắt buộc
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md">
+          <div class="form-floating">
+            <input type="tel" class="form-control" id="fc-phone" formControlName="phone" placeholder="Số điện thoại">
+            <label for="fc-phone">Số điện thoại</label>
+          </div>
+        </div>
+        <div class="col-md">
+          <div class="form-floating">
+            <input type="text" class="form-control" id="fc-idNumber" formControlName="idNumber" placeholder="Số CCCD / Hộ chiếu"
+                   [class.is-invalid]="manualVisitorForm.get('idNumber')?.invalid && manualVisitorForm.get('idNumber')?.touched">
+            <label for="fc-idNumber">Số CCCD / Hộ chiếu</label>
+            <div *ngIf="manualVisitorForm.get('idNumber')?.hasError('required') && manualVisitorForm.get('idNumber')?.touched" class="invalid-feedback">
+              CCCD/Hộ chiếu là bắt buộc
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-floating mb-3">
+        <textarea class="form-control" id="fc-purpose" formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..." style="height: 100px"></textarea>
+        <label for="fc-purpose">Mục đích</label>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" (click)="onClose()">Hủy</button>
+        <button type="submit" class="btn btn-primary" [disabled]="manualVisitorForm.invalid">
+          <i class="bi bi-check-circle me-2"></i> Tạo và Check-in
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<div *ngIf="alertMessage" 
+     class="alert alert-dismissible fade show shadow-lg position-fixed bottom-0 end-0 p-3 m-3"
+     [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-danger'"
+     style="z-index: 1080; min-width: 300px;"
+     role="alert">
+  <i class="bi me-2" [ngClass]="alertType === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+  {{ alertMessage }}
+  <button type="button" class="btn-close" (click)="alertMessage = null" aria-label="Close"></button>
+</div>

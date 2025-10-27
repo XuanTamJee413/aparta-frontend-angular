@@ -1,13 +1,13 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ApiResponse, ApartmentMember } from '../../resident-list/resident-list';
 import { ResidentManagementService } from '../../../../../services/management/resident-management.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-resident-detail',
-  imports: [CommonModule, RouterLink, DatePipe],
+  imports: [CommonModule, DatePipe],
   standalone: true,
   template: `
     <div class="page-container">

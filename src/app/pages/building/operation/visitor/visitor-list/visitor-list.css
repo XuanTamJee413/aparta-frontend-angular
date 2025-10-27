@@ -1,80 +1,62 @@
-.visitor-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-}
-
-.form-row {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-}
-
-.form-field-half {
-    flex: 1;
-}
-
-mat-card-actions {
-    margin-top: 16px;
-}
-
-.loading-spinner,
-.no-data {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-    color: grey;
-}
-
-.table-container {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-}
-
-.fab-add-button {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 100;
-}
-
-.status-chip {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75em;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-}
-
-.status-chip.pending {
-    background-color: #f39c12;
-}
-
-.status-chip.checked-in {
-    background-color: #2ecc71;
-}
-
-.status-chip.checked-out {
-    background-color: #95a5a6;
-}
-
-.status-chip.cancelled {
-    background-color: #e74c3c;
-}
-
 .time-cell {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
-.time-cell span {
-    font-size: 0.8em;
-    color: grey;
+.action-cell {
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+
+.btn-link {
+  text-decoration: none;
+}
+.btn-link:hover .fw-bold {
+  text-decoration: underline;
+}
+.btn-link .fw-bold {
+  color: var(--bs-body-color);
+}
+
+
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1055; 
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  opacity: 0.5; 
+}
+
+.modal.d-block {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1060; 
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: 0;
+}
+
+.form-control-plaintext {
+  padding: 0.375rem 0.1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding-left: 10px;
+}
+
+.btn-outline-success:disabled,
+.btn-outline-danger:disabled {
+  color: #6c757d; 
+  border-color: #ced4da; 
+  background-color: transparent;
 }

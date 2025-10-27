@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+// Nhận dữ liệu đã join từ API: visitorlogs/all.
+
 export interface VisitLogStaffViewDto {
   visitLogId: string;
   checkinTime: string;
@@ -14,16 +16,21 @@ export interface VisitLogStaffViewDto {
   visitorIdNumber: string | null;
 }
 
+
+// Dùng cho cả Cư dân (đăng ký khách) và Nhân viên (check-in vãng lai).
+
 export interface VisitorCreateDto {
   fullName?: string | null;
   phone?: string | null;
   idNumber?: string | null;
-
   apartmentId?: string | null;
   purpose?: string | null;
   checkinTime?: string | null;
   status?: string | null;
 }
+
+
+// API trả về sau khi tạo mới Visitor thành công.
 
 export interface Visitor {
   visitorId: string;
@@ -32,50 +39,53 @@ export interface Visitor {
   idNumber: string;
 }
 
-export interface VisitLog {
-  visitLogId: string;
-  visitorId: string;
-  visitorName: string;
-  idNumber: string;
-  apartmentNumber: string;
-  purpose: string;
-  checkinTime: Date;
-  checkoutTime?: Date;
-  status: string;
+
+// lấy apartment-code đổ vào combobox.
+
+export interface ApartmentDto {
+  apartmentId: string;
+  apartmentCode: string;
 }
+
+// --- Service Class ---
 
 @Injectable({
   providedIn: 'root'
 })
 export class VisitorService {
+
+  // --- Properties ---
+
   private apiBaseUrl = environment.apiUrl;
   private visitorApiUrl = `${this.apiBaseUrl}/Visitors`;
   private visitLogApiUrl = `${this.apiBaseUrl}/VisitLogs`;
+  // private apartmentApiUrl = `${this.apiBaseUrl}/Apartments`;
 
   constructor(private http: HttpClient) { }
 
-  // POST: api/Visitors
-  createVisitor(dto: VisitorCreateDto): Observable<Visitor> {
-    return this.http.post<Visitor>(this.visitorApiUrl, dto);
-  }
-  // GET: api/VisitLogs/apartment/{apartmentId}
-  getHistoryForApartment(apartmentId: string): Observable<VisitLog[]> {
-    return this.http.get<VisitLog[]>(`${this.visitLogApiUrl}/apartment/${apartmentId}`);
-  }
-  // GET: api/VisitLogs/staff/all
   getAllVisitors(): Observable<VisitLogStaffViewDto[]> {
     return this.http.get<VisitLogStaffViewDto[]>(`${this.visitLogApiUrl}/all`);
   }
+
 
   checkInVisitor(visitLogId: string): Observable<any> {
     return this.http.put(`${this.visitLogApiUrl}/${visitLogId}/checkin`, {});
   }
 
+
   checkOutVisitor(visitLogId: string): Observable<any> {
     return this.http.put(`${this.visitLogApiUrl}/${visitLogId}/checkout`, {});
   }
 
-  createAndCheckInVisitor(dto: VisitorCreateDto): Observable<Visitor> {
-    return this.http.post<Visitor>(`${this.visitorApiUrl}/create-and-checkin`, dto);
+
+  createVisitor(dto: VisitorCreateDto): Observable<Visitor> {
+    return this.http.post<Visitor>(`${this.visitorApiUrl}/fast-checkin`, dto);
   }
+
+ 
+
+  // getAllApartments(): Observable<ApartmentDto[]> {
+  //   return this.http.get<ApartmentDto[]>(`${this.apartmentApiUrl}/all`);
+  // }
+
 }

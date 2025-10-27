@@ -10,7 +10,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule, MatMenu } from '@angular/material/menu';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-admin-layout',
@@ -31,7 +31,6 @@ import { MatMenuModule, MatMenu } from '@angular/material/menu';
 export class AdminLayout {
 
   @ViewChild('drawer') drawer!: MatSidenav;
-  @ViewChild('userMenuRef') userMenu!: MatMenu;
 
   private isSmallScreenQuery = '(max-width: 959.98px)';
 

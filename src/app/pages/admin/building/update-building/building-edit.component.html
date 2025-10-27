@@ -1,0 +1,97 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Chỉnh sửa tòa nhà</mat-card-title>
+    <mat-card-subtitle>Cập nhật thông tin tòa nhà</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <!-- Loading State -->
+    <div *ngIf="loadingProject" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Đang tải thông tin tòa nhà...</p>
+    </div>
+
+    <!-- Building Info -->
+    <div *ngIf="currentBuilding && !loadingProject" class="building-info">
+      <div class="info-row">
+        <span class="info-label">Mã tòa nhà:</span>
+        <span class="building-code">{{ currentBuilding.buildingCode }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Mã dự án:</span>
+        <span class="building-id">{{ getProjectCode(currentBuilding.projectId) }}</span>
+      </div>
+    </div>
+
+    <!-- Edit Form -->
+    <form [formGroup]="buildingForm" (ngSubmit)="onSubmit()" class="building-form" *ngIf="!loadingProject">
+      
+      <!-- Building Name -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tên tòa nhà *</mat-label>
+        <input matInput 
+               formControlName="name" 
+               placeholder="VD: Tòa A, Tòa B"
+               maxlength="100">
+        <mat-icon matSuffix>home</mat-icon>
+        <mat-error *ngIf="isFieldInvalid('name')">
+          {{ getErrorMessage('name') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Read-only Information -->
+      <div class="form-row">
+        <!-- Number of Apartments (Read-only) -->
+        <mat-form-field appearance="outline" class="form-field-half">
+          <mat-label>Số căn hộ</mat-label>
+          <input matInput 
+                 type="number"
+                 [value]="currentBuilding?.numApartments || 0"
+                 readonly>
+          <mat-icon matSuffix>apartment</mat-icon>
+        </mat-form-field>
+
+        <!-- Number of Residents (Read-only) -->
+        <mat-form-field appearance="outline" class="form-field-half">
+          <mat-label>Số cư dân</mat-label>
+          <input matInput 
+                 type="number"
+                 [value]="currentBuilding?.numResidents || 0"
+                 readonly>
+          <mat-icon matSuffix>people</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Status -->
+      <mat-form-field appearance="outline">
+        <mat-label>Trạng thái</mat-label>
+        <mat-select formControlName="isActive">
+          <mat-option [value]="true">Hoạt động</mat-option>
+          <mat-option [value]="false">Không hoạt động</mat-option>
+        </mat-select>
+        <mat-icon matSuffix>toggle_on</mat-icon>
+      </mat-form-field>
+
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions align="end" *ngIf="!loadingProject">
+    <button mat-button 
+            type="button" 
+            (click)="onCancel()"
+            [disabled]="isSubmitting">
+      <mat-icon>arrow_back</mat-icon>
+      Quay lại
+    </button>
+    
+    <button mat-raised-button 
+            color="primary" 
+            type="submit"
+            (click)="onSubmit()"
+            [disabled]="buildingForm.invalid || isSubmitting">
+      <mat-icon *ngIf="!isSubmitting">save</mat-icon>
+      <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+      {{ isSubmitting ? 'Đang cập nhật...' : 'Cập nhật tòa nhà' }}
+    </button>
+  </mat-card-actions>
+</mat-card>

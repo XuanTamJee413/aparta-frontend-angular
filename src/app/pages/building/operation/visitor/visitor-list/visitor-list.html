@@ -1,164 +1,195 @@
-<button mat-fab 
-        color="primary" 
-        class="fab-add-button" 
-        matTooltip="Thêm khách vãng lai (check-in ngay)"
-        (click)="showManualAddForm = !showManualAddForm">
-  <mat-icon>{{ showManualAddForm ? 'close' : 'add' }}</mat-icon>
-</button>
+<app-fast-checkin 
+  *ngIf="showFastCheckin"
+  (checkinSuccess)="onFastCheckinSuccess($event)"
+  (closeForm)="onFastCheckinClose()">
+</app-fast-checkin>
 
-<div *ngIf="!showManualAddForm">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Quản lý khách thăm</mat-card-title>
-      <mat-card-subtitle>Danh sách tất cả khách thăm đã đăng ký và đã đến</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
+<div *ngIf="!showFastCheckin">
+  <div class="card shadow-sm border-0 container">
 
-      <div *ngIf="isLoading" class="loading-spinner">
-        <mat-spinner diameter="50"></mat-spinner>
+    <div class="card-header bg-light border-bottom p-3">
+      <div class="row align-items-center g-3">
+
+        <div class="col-md-4">
+          <h4 class="card-title mb-1">Quản lý khách thăm</h4>
+          <small class="text-muted">Danh sách tất cả khách thăm đã đăng ký</small>
+        </div>
+
+        <div class="col-md-8">
+          <div class="row g-2 align-items-center justify-content-md-end">
+            
+            <div class="col-sm-6 col-md-auto">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="search" class="form-control" placeholder="Tìm kiếm khách thăm...">
+              </div>
+            </div>
+            
+            <div class="col-sm-6 col-md-auto">
+              <select class="form-select form-select-sm" style="min-width: 150px;">
+                <option value="">Tất cả căn hộ</option>
+                <option *ngFor="let apt of apartmentList" [value]="apt.apartmentId">
+                  {{apt.apartmentCode}}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-auto">
+              <button type="button" class="btn btn-sm btn-primary w-100" (click)="showFastCheckin = true">
+                <i class="bi bi-person-plus-fill me-1"></i> Check-in nhanh
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-body">
+
+      <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center m-5 p-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div *ngIf="!isLoading && allVisitors.length === 0" class="text-center text-muted m-5 p-5">
+        <span><i class="bi bi-cloud-drizzle fs-1"></i></span>
+        <h5 class="mt-2">Chưa có dữ liệu</h5>
+        <p>Hiện không có khách thăm nào trong hệ thống.</p>
       </div>
 
-      <div *ngIf="!isLoading && allVisitors.length === 0" class="no-data">
-        <span>Chưa có khách thăm nào trong hệ thống.</span>
-      </div>
+      <div *ngIf="!isLoading && allVisitors.length > 0" class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="small text-uppercase text-muted fw-semibold">Tên khách</th>
+              <th scope="col" class="small text-uppercase text-muted fw-semibold">Thời gian Vào / Ra</th>
+              <th scope="col" class="small text-uppercase text-muted fw-semibold">Trạng thái</th>
+              <th scope="col" class="text-end small text-uppercase text-muted fw-semibold">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of allVisitors">
+              <td>
+                <button type="button" class="btn btn-link p-0 text-start" (click)="openVisitorDetails(log)">
+                  <div class="fw-bold">{{log.visitorFullName}}</div>
+                  <small class="text-muted">{{log.visitorIdNumber || 'N/A'}}</small>
+                </button>
+              </td>
 
-      <div *ngIf="!isLoading && allVisitors.length > 0" class="table-container">
-        <table mat-table [dataSource]="allVisitors">
-
-          <ng-container matColumnDef="visitorInfo">
-            <th mat-header-cell *matHeaderCellDef> Tên khách </th>
-            <td mat-cell *matCellDef="let log"> 
-              {{log.visitorFullName}} <br> <small>{{log.visitorIdNumber}}</small> 
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="apartmentCode">
-            <th mat-header-cell *matHeaderCellDef> Căn hộ </th>
-            <td mat-cell *matCellDef="let log"> {{log.apartmentCode}} </td>
-          </ng-container>
-
-          <ng-container matColumnDef="purpose">
-            <th mat-header-cell *matHeaderCellDef> Mục đích </th>
-            <td mat-cell *matCellDef="let log"> {{log.purpose}} </td>
-          </ng-container>
-          
-          <ng-container matColumnDef="checkinTime">
-            <th mat-header-cell *matHeaderCellDef> Thời gian </th>
-            <td mat-cell *matCellDef="let log">
-              <div *ngIf="log.status === 'Pending'" class="time-cell">
-                <span>Dự kiến:</span>
-                <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
-              </div>
-              <div *ngIf="log.status !== 'Pending' && log.status !== 'Cancelled'" class="time-cell">
-                <span>Thực tế:</span>
-                <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
-              </div>
-                <div *ngIf="log.status === 'Cancelled'" class="time-cell">
-                  <span>(Đã hủy)</span>
+              <td>
+                <div class="time-cell">
+                  <div *ngIf="log.status === 'Pending'" class="d-flex align-items-center">
+                    <i class="bi bi-clock-history me-2 text-warning"></i>
+                    <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
+                    <span class="text-muted small ms-1">(Dự kiến)</span>
+                  </div>
+                  <div *ngIf="log.status !== 'Pending' && log.status !== 'Cancelled'" class="d-flex align-items-center">
+                    <i class="bi bi-box-arrow-in-right me-2 text-success"></i>
+                    <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
+                    <span class="text-muted small ms-1">(Thực tế)</span>
+                  </div>
+                  <div *ngIf="log.status === 'Cancelled'" class="time-cell">
+                    <span class="text-danger small">(Đã hủy)</span>
+                  </div>
                 </div>
-            </td>
-          </ng-container>
+                <div class="time-cell mt-1">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-box-arrow-right me-2 text-secondary"></i>
+                    <span>{{log.checkoutTime ? (log.checkoutTime | date: 'HH:mm dd/MM/yy') : 'N/A'}}</span>
+                  </div>
+                </div>
+              </td>
 
-          <ng-container matColumnDef="checkoutTime">
-            <th mat-header-cell *matHeaderCellDef> Giờ ra </th>
-            <td mat-cell *matCellDef="let log"> {{log.checkoutTime ? (log.checkoutTime | date: 'HH:mm dd/MM/yy') : 'N/A'}} </td>
-          </ng-container>
+              <td>
+                <span class="badge rounded-pill" [ngClass]="getStatusBadge(log.status)">
+                  {{log.status}}
+                </span>
+              </td>
 
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
-            <td mat-cell *matCellDef="let log">
-              <span class="status-chip" [ngClass]="log.status.toLowerCase()">
-                {{log.status | uppercase}}
-              </span>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef> Hành động </th>
-            <td mat-cell *matCellDef="let log" align="right">
-              
-              <button mat-icon-button 
-                      color="primary" 
-                      (click)="onCheckIn(log)"
-                      matTooltip="Check-in cho khách"
-                      [disabled]="log.status === 'Checked-in' || log.status === 'Checked-out' || log.status === 'Cancelled'">
-                <mat-icon>login</mat-icon>
-              </button>
-
-              <button mat-icon-button 
-                      color="warn" 
-                      (click)="onCheckOut(log)"
-                      matTooltip="Check-out cho khách"
-                      [disabled]="log.status !== 'Checked-in'">
-                <mat-icon>logout</mat-icon>
-              </button>
-
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <td class="text-end action-cell">
+                <button type="button" class="btn btn-sm btn-outline-success" title="Check-in cho khách"
+                  (click)="onCheckIn(log)"
+                  [disabled]="log.status === 'Checked-in' || log.status === 'Checked-out' || log.status === 'Cancelled'">
+                  Check-in
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2" title="Check-out cho khách"
+                  (click)="onCheckOut(log)" [disabled]="log.status !== 'Checked-in'">
+                  Check-out
+                </button>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
 
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>
 
-<div *ngIf="showManualAddForm">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Thêm khách vãng lai (Check-in ngay)</mat-card-title>
-      <mat-card-subtitle>Khách sẽ được check-in ngay tại thời điểm tạo</mat-card-subtitle>
-    </mat-card-header>
-    
-    <mat-card-content>
-      <form [formGroup]="manualVisitorForm" (ngSubmit)="onManualSubmit()" class="visitor-form">
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Mã căn hộ</mat-label>
-          <input matInput formControlName="apartmentId" required placeholder="Ví dụ: A-101, B-202...">
-          <mat-error *ngIf="manualVisitorForm.get('apartmentId')?.hasError('required')">
-            Mã căn hộ là bắt buộc
-          </mat-error>
-        </mat-form-field>
+<div *ngIf="alertMessage" class="alert alert-dismissible fade show shadow-lg position-fixed bottom-0 end-0 p-3 m-3"
+  [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-danger'" style="z-index: 1080; min-width: 300px;"
+  role="alert">
+  <i class="bi me-2" [ngClass]="alertType === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+  {{ alertMessage }}
+  <button type="button" class="btn-close" (click)="alertMessage = null" aria-label="Close"></button>
+</div>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Họ và tên</mat-label>
-          <input matInput formControlName="fullName" required>
-          <mat-error *ngIf="manualVisitorForm.get('fullName')?.hasError('required')">
-            Họ tên là bắt buộc
-          </mat-error>
-        </mat-form-field>
+<div *ngIf="isModalVisible" class="modal-backdrop fade show"></div>
+<div *ngIf="isModalVisible" class="modal fade show d-block" tabindex="-1" role="dialog" (click)="closeVisitorDetails()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow">
 
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field-half">
-            <mat-label>Số điện thoại</mat-label>
-            <input matInput formControlName="phone">
-          </mat-form-field>
+      <div class="modal-header">
+        <h5 class="modal-title" id="visitorDetailsModalLabel">
+          Chi tiết khách thăm: {{selectedVisitor?.visitorFullName}}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeVisitorDetails()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedVisitor">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">Visit Log ID</span>
+            <strong class="text-dark">{{selectedVisitor.visitLogId}}</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">Họ và tên</span>
+            <strong class="text-dark">{{selectedVisitor.visitorFullName}}</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">CCCD/Số ID</span>
+            <strong class="text-dark">{{selectedVisitor.visitorIdNumber || 'N/A'}}</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">Căn hộ</span>
+            <strong class="text-primary fw-bold">{{selectedVisitor.apartmentCode}}</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">Trạng thái</span>
+            <span class="badge rounded-pill" [ngClass]="getStatusBadge(selectedVisitor.status)">
+              {{selectedVisitor.status}}
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">Thời gian Check-in</span>
+            <strong class="text-dark">{{selectedVisitor.checkinTime | date: 'HH:mm:ss dd/MM/yyyy'}}</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">Thời gian Check-out</span>
+            <strong class="text-dark">{{selectedVisitor.checkoutTime ? (selectedVisitor.checkoutTime | date: 'HH:mm:ss
+              dd/MM/yyyy') : 'Chưa check-out'}}</strong>
+          </li>
+          <li class="list-group-item">
+            <div class="text-muted mb-1">Mục đích</div>
+            <textarea class="form-control-plaintext" rows="2"
+              readonly>{{selectedVisitor.purpose || 'Không có mục đích cụ thể'}}</textarea>
+          </li>
+        </ul>
+      </div>
 
-          <mat-form-field appearance="outline" class="form-field-half">
-            <mat-label>Số CCCD / Hộ chiếu</mat-label>
-            <input matInput formControlName="idNumber" required>
-            <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('required')">
-              CCCD/Hộ chiếu là bắt buộc
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Mục đích</mat-label>
-          <textarea matInput formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..."></textarea>
-        </mat-form-field>
-
-        <mat-card-actions align="end">
-          <button mat-button type="button" (click)="resetManualForm()">Hủy</button>
-          <button mat-raised-button color="primary" type="submit" [disabled]="manualVisitorForm.invalid">
-            Tạo và Check-in
-          </button>
-        </mat-card-actions>
-
-      </form>
-    </mat-card-content>
-  </mat-card>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeVisitorDetails()">Đóng</button>
+      </div>
+    </div>
+  </div>
 </div>
