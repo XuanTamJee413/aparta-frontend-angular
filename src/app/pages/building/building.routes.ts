@@ -8,6 +8,7 @@ import { NewsEditComponent } from './management/news/news-edit/news-edit';
 import { AssetList } from './management/asset-management/asset-list/asset-list.component';
 import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail';
 import { CreateAsset } from './management/asset-management/create-asset/create-asset';
+import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle-list';
 
 
 export const MANAGER_ROUTES: Routes = [
@@ -71,6 +72,10 @@ export const MANAGER_ROUTES: Routes = [
   loadComponent: () => import('./operation/visitor/visitor-list/visitor-list')
     .then(m => m.VisitorList)
   },
+   {
+    path: 'vehicle-list',
+    component: VehicleList
+  },
   {
   path: 'fast-checkin',
   loadComponent: () => import('./operation/visitor/fast-checkin/fast-checkin')
@@ -85,14 +90,14 @@ export const MANAGER_ROUTES: Routes = [
 
   {
     path: 'manage-service', // Đây là URL: .../building/manage-service
-    loadComponent: () => import('./operation/service-list.component/service-list.component') 
+    loadComponent: () => import('./operation/service-list.component/service-list.component')
       .then(m => m.ServiceListComponent),
     title: 'Quản lý Dịch vụ'
   },
 
   {
     path: 'manage-utility', // URL: .../building/manage-utility
-    loadComponent: () => import('./operation/utility-list.component/utility-list.component') 
+    loadComponent: () => import('./operation/utility-list.component/utility-list.component')
       .then(m => m.UtilityListComponent),
     title: 'Quản lý Tiện ích'
   },

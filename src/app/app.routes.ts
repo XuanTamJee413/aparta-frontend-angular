@@ -8,27 +8,27 @@ import { LoginComponent } from './pages/auth/login.component';
 export const routes: Routes = [
   {
     path: 'admin',
-    component: AdminLayout, 
+    component: AdminLayout,
     loadChildren: () => import('./pages/admin/admin.routes')
       .then(m => m.ADMIN_ROUTES)
   },
 
   {
     path: 'manager',
-    component: ManagerLayout, 
+    component: ManagerLayout,
     loadChildren: () => import('./pages/building/building.routes')
       .then(m => m.MANAGER_ROUTES)
   },
-
-  {
-    path: '', 
-    component: LoginComponent, 
-    
-  },
-  
-  {
-    path: '**', 
+{
+    path: '',
     component: LoginComponent,
     pathMatch: 'full'
+  },
+
+  {
+    path: '',
+    component: ResidentLayoutComponent,
+     loadChildren: () => import('./pages/resident/resident.routes')
+      .then(m => m.RESIDENT_ROUTES)
   }
 ];
