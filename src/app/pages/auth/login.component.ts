@@ -58,15 +58,40 @@ export class LoginComponent {
     this.navigateByRole();
   }
 
+  // private navigateByRole(): void {
+  //   const payload = this.auth.user();
+  //   const role = String(payload?.role || '').trim().toLowerCase();
+  //   if (role === 'admin') {
+  //     this.router.navigateByUrl('/admin/dashboard');
+  //   } else if (role === 'staff') {
+  //     this.router.navigateByUrl('/manager');
+  //   } else {
+  //     this.router.navigateByUrl('/home');
+  //   }
+  // }
   private navigateByRole(): void {
     const payload = this.auth.user();
     const role = String(payload?.role || '').trim().toLowerCase();
-    if (role === 'admin') {
-      this.router.navigateByUrl('/admin/dashboard');
-    } else if (role === 'staff') {
-      this.router.navigateByUrl('/manager');
-    } else {
-      this.router.navigateByUrl('/home');
+
+    switch (role) {
+      case 'admin':
+        this.router.navigateByUrl('/admin/dashboard');
+        break;
+      
+      case 'manager':
+      case 'finance_staff':
+      case 'maintenance_staff':
+      case 'operation_staff':
+        this.router.navigateByUrl('/manager');
+        break;
+      
+      case 'resident':
+        this.router.navigateByUrl('/home');
+        break;
+
+      default:
+        this.router.navigateByUrl('/home');
+        break;
     }
   }
 

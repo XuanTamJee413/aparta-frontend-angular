@@ -9,6 +9,8 @@ import { AssetList } from './management/asset-management/asset-list/asset-list.c
 import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail';
 import { CreateAsset } from './management/asset-management/create-asset/create-asset';
 import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle-list';
+import { PriceQuotationFormComponent } from './management/price-quotation/pricequotation-form/pricequotation-form';
+import { PriceQuotationListComponent } from './management/price-quotation/pricequotation-list/pricequotation-list';
 
 
 export const MANAGER_ROUTES: Routes = [
@@ -43,6 +45,18 @@ export const MANAGER_ROUTES: Routes = [
     path: 'news/edit/:id',
     component: NewsEditComponent,
     title: 'Edit News'
+  },
+  { 
+    path: 'manage-quotation', 
+    component: PriceQuotationListComponent 
+  },
+  { 
+    path: 'manage-quotation/new', 
+    component: PriceQuotationFormComponent 
+  },
+  { 
+    path: 'manage-quotation/edit/:id', 
+    component: PriceQuotationFormComponent 
   },
   // --- END MANAGEMENT ---
 

@@ -1,10 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
 
-  <mat-sidenav #drawer class="sidenav"
-    fixedInViewport
-    [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
-    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'"
-    [opened]="(isSmallScreen$ | async) === false">
+  <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'" [opened]="(isSmallScreen$ | async) === false">
 
     <mat-toolbar class="sidenav-toolbar">
       <mat-icon class="toolbar-logo">corporate_fare</mat-icon>
@@ -30,8 +27,10 @@
         <mat-icon>article</mat-icon>
         <span>Quản lý News tòa nhà</span>
       </a>
-
-      <mat-divider></mat-divider>
+      <a mat-list-item routerLink="manage-quotation" routerLinkActive="active-link">
+        <mat-icon>request_quote</mat-icon>
+        <span>Quản lý Đơn giá</span>
+        </a> <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Tài chính</h3>
       <a mat-list-item routerLink="payment-receipt" routerLinkActive="active-link">
         <mat-icon>receipt_long</mat-icon>
@@ -81,11 +80,7 @@
 
     <mat-toolbar color="primary" class="main-toolbar">
 
-      <button
-        type="button"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        (click)="drawer.toggle()"
+      <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
         *ngIf="isSmallScreen$ | async">
         <mat-icon>menu</mat-icon>
       </button>

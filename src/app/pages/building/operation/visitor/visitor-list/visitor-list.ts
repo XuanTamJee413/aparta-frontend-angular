@@ -12,7 +12,6 @@ import {
   VisitorQueryParams 
 } from '../../../../../services/resident/visitor.service';
 
-// Import component con (tên file theo cấu trúc của bạn)
 import { FastCheckin } from '../fast-checkin/fast-checkin'; 
 
 @Component({
@@ -28,22 +27,18 @@ import { FastCheckin } from '../fast-checkin/fast-checkin';
 })
 export class VisitorList implements OnInit {
 
-  // --- Trạng thái UI ---
   isLoading = false;
-  showFastCheckin = false; // Ẩn/hiện form check-in nhanh
+  showFastCheckin = false; 
 
-  // --- Trạng thái Modal & Alert ---
   isModalVisible = false;
   selectedVisitor: VisitLogStaffViewDto | null = null;
   alertMessage: string | null = null;
   alertType: 'success' | 'danger' = 'success';
   private alertTimeout: any;
 
-  // --- Dữ liệu ---
-  apartmentList: ApartmentDto[] = []; // Danh sách căn hộ (mock)
-  paginatedVisitors: PagedList<VisitLogStaffViewDto> | null = null; // Dữ liệu phân trang
+  apartmentList: ApartmentDto[] = []; 
+  paginatedVisitors: PagedList<VisitLogStaffViewDto> | null = null;
   
-  // --- Quản lý Query & Phân trang ---
   queryParams: VisitorQueryParams = {
     pageNumber: 1,
     pageSize: 10,
@@ -53,34 +48,26 @@ export class VisitorList implements OnInit {
     sortDirection: 'desc'
   };
   
-  // Subject để debounce (trì hoãn) việc tìm kiếm khi gõ phím
   private searchSubject = new Subject<string>();
 
-  // Dữ liệu apartmentList sẽ được lấy từ API
-  // --- Constructor ---
   constructor(
     private visitorService: VisitorService
   ) { }
 
-  // --- Lifecycle Hooks ---
   ngOnInit(): void {
     this.loadAllVisitors();
-    this.loadApartments(); // Tải danh sách căn hộ (mock)
+    this.loadApartments(); 
 
-    // Cấu hình debounce cho search input
     this.searchSubject.pipe(
-      debounceTime(500), // Chờ 500ms sau khi ngừng gõ
-      distinctUntilChanged() // Chỉ tìm khi giá trị thay đổi
+      debounceTime(500), 
+      distinctUntilChanged() 
     ).subscribe(searchTerm => {
       this.queryParams.searchTerm = searchTerm;
-      this.queryParams.pageNumber = 1; // Reset về trang 1
+      this.queryParams.pageNumber = 1;
       this.loadAllVisitors();
     });
   }
 
-  // --- Tải Dữ liệu ---
-
-  /** Tải danh sách khách thăm từ API theo queryParams hiện tại */
   loadAllVisitors(): void {
     this.isLoading = true;
     this.visitorService.getAllVisitors(this.queryParams).subscribe({
@@ -96,12 +83,9 @@ export class VisitorList implements OnInit {
     });
   }
 
-  /** Tải danh sách căn hộ (hiện đang dùng dữ liệu mock) */
   loadApartments(): void {
-    // Gọi service để lấy dữ liệu thật
     this.visitorService.getAllApartments().subscribe({
       next: (data) => {
-        // Sắp xếp theo mã căn hộ (code) trước khi gán
         this.apartmentList = data.sort((a, b) => a.code.localeCompare(b.code));
       },
       error: (err) => {
@@ -111,15 +95,11 @@ export class VisitorList implements OnInit {
     });
   }
 
-  // --- Xử lý Sự kiện UI (Filter, Sort, Page) ---
-
-  /** Được gọi khi gõ vào ô tìm kiếm */
   onSearchInput(event: Event): void {
     const searchTerm = (event.target as HTMLInputElement).value;
     this.searchSubject.next(searchTerm);
   }
 
-  /** Được gọi khi chọn căn hộ từ combobox */
   onApartmentFilterChange(event: Event): void {
     const apartmentId = (event.target as HTMLSelectElement).value;
     this.queryParams.apartmentId = apartmentId;
@@ -127,7 +107,6 @@ export class VisitorList implements OnInit {
     this.loadAllVisitors();
   }
 
-  /** Được gọi khi click vào tiêu đề cột để sắp xếp */
   onSort(columnName: string): void {
     if (this.queryParams.sortColumn === columnName) {
       this.queryParams.sortDirection = this.queryParams.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -139,7 +118,6 @@ export class VisitorList implements OnInit {
     this.loadAllVisitors(); 
   }
 
-  /** Được gọi khi click vào nút phân trang */
   onPageChange(pageNumber: number): void {
     if (pageNumber < 1 || (this.paginatedVisitors && pageNumber > this.paginatedVisitors.totalPages) || pageNumber === this.queryParams.pageNumber) {
       return; 
@@ -148,21 +126,16 @@ export class VisitorList implements OnInit {
     this.loadAllVisitors();
   }
 
-  // --- Xử lý Hành động (Check-in/out, Modal) ---
-
-  /** Mở modal chi tiết khách thăm */
   openVisitorDetails(visitor: VisitLogStaffViewDto): void {
     this.selectedVisitor = visitor;
     this.isModalVisible = true;
   }
 
-  /** Đóng modal chi tiết khách thăm */
   closeVisitorDetails(): void {
     this.isModalVisible = false;
     this.selectedVisitor = null;
   }
 
-  /** Xử lý khi nhấn nút Check-in */
   onCheckIn(visitor: VisitLogStaffViewDto): void {
     if (visitor.status === 'Checked-in' || visitor.status === 'Checked-out' || visitor.status === 'Cancelled') {
       return;
@@ -184,7 +157,6 @@ export class VisitorList implements OnInit {
     });
   }
 
-  /** Xử lý khi nhấn nút Check-out */
   onCheckOut(visitor: VisitLogStaffViewDto): void {
     if (visitor.status !== 'Checked-in') {
       return;
@@ -194,7 +166,7 @@ export class VisitorList implements OnInit {
       next: (response) => {
         if (response.succeeded) {
           this.showAlert(response.message || `Đã check-out cho khách: ${visitor.visitorFullName}`, 'success');
-          this.loadAllVisitors(); // Tải lại danh sách
+          this.loadAllVisitors(); 
         } else {
           this.showAlert(response.message || 'Lỗi: Không thể check-out', 'danger');
         }
@@ -206,23 +178,16 @@ export class VisitorList implements OnInit {
     });
   }
 
-  // --- Xử lý sự kiện từ Component con (FastCheckin) ---
-
-  /** Xử lý khi check-in nhanh thành công */
   onFastCheckinSuccess(visitorName: string): void {
     this.showAlert(`Đã tạo và check-in khách: ${visitorName}`, 'success');
     this.showFastCheckin = false;
     this.loadAllVisitors(); 
   }
 
-  /** Xử lý khi đóng form check-in nhanh */
   onFastCheckinClose(): void {
     this.showFastCheckin = false;
   }
 
-  // --- Helpers ---
-
-  /** Lấy class màu cho badge trạng thái */
   getStatusBadge(status: string): string {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -238,7 +203,6 @@ export class VisitorList implements OnInit {
     }
   }
 
-  /** Hiển thị thông báo (alert) */
   private showAlert(message: string, type: 'success' | 'danger'): void {
     this.alertMessage = message;
     this.alertType = type;
@@ -250,7 +214,6 @@ export class VisitorList implements OnInit {
     }, 3000);
   }
 
-  /** Helper tạo mảng số trang [1, 2, 3...] cho UI */
   getPaginationArray(): number[] {
     if (!this.paginatedVisitors) return [];
     return Array(this.paginatedVisitors.totalPages).fill(0).map((x, i) => i + 1);
