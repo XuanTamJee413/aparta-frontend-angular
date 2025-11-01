@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '../../../../services/resident/household.service';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-register-household',
@@ -31,7 +32,6 @@ import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '
                     }
                   </div>
 
-                  <!-- Quan hệ -->
                   <div class="mb-3">
                     <label for="familyRole" class="form-label">Quan hệ với chủ hộ</label>
                     <select class="form-select" id="familyRole"
@@ -62,11 +62,9 @@ import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '
                       <option [value]="null">-- Chọn giới tính --</option>
                       <option value="Nam">Nam</option>
                       <option value="Nữ">Nữ</option>
-
                     </select>
                   </div>
 
-                  <!-- CCCD/ID -->
                   <div class="mb-3">
                     <label for="idNumber" class="form-label">Số CCCD</label>
                     <input type="text" class="form-control" id="idNumber"
@@ -77,27 +75,18 @@ import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '
                     }
                   </div>
 
-                  <!-- Số điện thoại -->
                   <div class="mb-3">
                     <label for="phoneNumber" class="form-label">Số điện thoại</label>
                     <input type="tel" class="form-control" id="phoneNumber"
                            formControlName="phoneNumber">
                   </div>
 
-                  <!-- Trường Status -->
                   <div class="mb-3">
-                    <label for="status" class="form-label">Trạng thái</label>
-                    <select class="form-select" id="status"
-                            formControlName="status"
-                            [class.is-invalid]="isInvalid('status')">
-                      <option [value]="null" disabled>-- Chọn trạng thái --</option>
-                      <option value="Đang Thuê">Đang Cư Trú</option>
-                      <option value="Đi Vắng">Đi Vắng</option>
-                    </select>
-                    @if (isInvalid('status')) {
-                      <div class="invalid-feedback">Vui lòng chọn trạng thái.</div>
-                    }
+                    <label for="nationality" class="form-label">Quốc tịch</label>
+                    <input type="text" class="form-control" id="nationality"
+                           formControlName="nationality" placeholder="Việt Nam">
                   </div>
+
 
                   <div class="d-grid">
                     <button type="submit" class="btn btn-success"
@@ -148,7 +137,6 @@ import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '
                           <th>Quan hệ</th>
                           <th>Ngày sinh</th>
                           <th>Giới tính</th>
-                          <th>Hành động</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -158,22 +146,6 @@ import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '
                             <td>{{ member.familyRole }}</td>
                             <td>{{ member.dateOfBirth }}</td>
                             <td>{{ member.gender }}</td>
-                            <td>
-                              @if (confirmingDeleteId() === member.apartmentMemberId) {
-                                <span class="me-2 text-danger">Xóa?</span>
-                                <button class="btn btn-danger btn-sm me-1" (click)="confirmDelete()">Có</button>
-                                <button class="btn btn-secondary btn-sm" (click)="cancelDelete()">Không</button>
-                              } @else {
-                                @if (!member.isOwner) {
-                                  <button class="btn btn-danger btn-sm"
-                                          (click)="onDelete(member.apartmentMemberId)">
-                                    Xóa
-                                  </button>
-                                } @else {
-                                  <span class="text-muted fst-italic"></span>
-                                }
-                              }
-                            </td>
                           </tr>
                         }
                       </tbody>
@@ -190,9 +162,9 @@ import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '
   styles: ``
 })
 export class RegisterHousehold implements OnInit {
-
   private fb = inject(FormBuilder);
   private householdService = inject(HouseholdService);
+  private auth = inject(AuthService);
 
   memberForm!: FormGroup;
   isSubmitting = signal(false);
@@ -204,6 +176,12 @@ export class RegisterHousehold implements OnInit {
 
   confirmingDeleteId = signal<string | null>(null);
 
+  private getApartmentId(): string | null {
+    const payload = this.auth.user();
+    const id = payload?.apartment_id;
+    return id ? String(id) : null;
+  }
+
   ngOnInit(): void {
     this.memberForm = this.fb.group({
       name: ['', Validators.required],
@@ -213,7 +191,6 @@ export class RegisterHousehold implements OnInit {
       idNumber: ['', Validators.required],
       phoneNumber: [''],
       nationality: ['Việt Nam'],
-      status: [null, Validators.required]
     });
 
     this.loadMembers();
@@ -222,11 +199,16 @@ export class RegisterHousehold implements OnInit {
   loadMembers(): void {
     this.isLoading.set(true);
     this.loadError.set(null);
-    this.householdService.getMyHousehold().subscribe({
-      next: (data) => {
-        this.members.set(data);
-        this.isLoading.set(false);
-      },
+
+    const apartmentId = this.getApartmentId();
+    if (!apartmentId) {
+      this.isLoading.set(false);
+      this.loadError.set('Không tìm thấy apartmentId trong phiên đăng nhập.');
+      return;
+    }
+
+    this.householdService.getMembersByApartment(apartmentId).subscribe({
+      next: (data) => { this.members.set(data); this.isLoading.set(false); },
       error: (err) => {
         this.isLoading.set(false);
         this.loadError.set('Không thể tải danh sách hộ khẩu. Vui lòng thử lại.');
@@ -242,99 +224,60 @@ export class RegisterHousehold implements OnInit {
 
   onSubmit(): void {
     this.memberForm.markAllAsTouched();
-    if (this.memberForm.invalid) {
+    if (this.memberForm.invalid) return;
+
+    const apartmentId = this.getApartmentId();
+    if (!apartmentId) {
+      this.submitError.set('Không tìm thấy apartmentId trong phiên đăng nhập.');
       return;
     }
 
     this.isSubmitting.set(true);
     this.submitError.set(null);
 
-    const formValue = this.memberForm.value;
-    const isOwner = formValue.familyRole === 'Chủ hộ';
-
+    const v = this.memberForm.value;
     const createDto: ApartmentMemberCreateDto = {
-      apartmentId: '1',
-      name: formValue.name,
-      familyRole: formValue.familyRole,
-      dateOfBirth: formValue.dateOfBirth || null,
-      gender: formValue.gender || null,
-      idNumber: formValue.idNumber,
-      phoneNumber: formValue.phoneNumber || null,
-      nationality: formValue.nationality || 'Việt Nam',
-      isOwner: isOwner,
-      status: formValue.status,
+      apartmentId,
+      name: v.name!,
+      familyRole: v.familyRole!,
+      dateOfBirth: v.dateOfBirth || null,
+      gender: v.gender || null,
+      idNumber: v.idNumber!,
+      phoneNumber: v.phoneNumber || null,
+      nationality: v.nationality || 'Việt Nam',
+      isOwner: v.familyRole === 'Chủ hộ' || false,
+      status: 'Đang cư trú',
       faceImageUrl: null,
       info: null
     };
 
     this.householdService.addHouseholdMember(createDto).subscribe({
-      next: (newMember) => {
+      next: () => {
         this.isSubmitting.set(false);
-        this.memberForm.reset({
-          nationality: 'Việt Nam'
-        });
+        this.memberForm.reset({ nationality: 'Việt Nam' });
         this.loadMembers();
       },
       error: (err) => {
         this.isSubmitting.set(false);
-
-        let specificError = 'Vui lòng kiểm tra lại thông tin.';
-
+        let msg = 'Vui lòng kiểm tra lại thông tin.';
         if (err.status === 500) {
-           if (err.error?.message?.includes('column does not allow nulls')) {
-                specificError = "Lỗi máy chủ (500): Một trường bắt buộc (như status) đang bị thiếu giá trị.";
-           } else {
-               specificError = "Lỗi máy chủ (500). Rất có thể 'ApartmentId' = '1' không tồn tại, hoặc CCCD/Số điện thoại bị trùng lặp.";
-           }
-        }
-        else if (err.status === 400) {
-          if (err.error && err.error.errors) {
-            specificError = Object.values(err.error.errors).flat().join(' ');
-          } else if (err.error && typeof err.error.title === 'string' && err.error.title.includes('JSON')) {
-             specificError = "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại các trường.";
-          } else if (err.error?.message) {
-            specificError = err.error.message;
+          if (err.error?.message?.includes('column does not allow nulls')) {
+            msg = 'Lỗi máy chủ (500): Một trường bắt buộc đang thiếu giá trị.';
           } else {
-            specificError = "Dữ liệu gửi lên không hợp lệ (lỗi 400).";
+            msg = 'Lỗi máy chủ (500). Có thể trùng CCCD/SĐT hoặc dữ liệu không hợp lệ.';
           }
-        }
-        else if (err.error?.message) {
-          specificError = err.error.message;
-        } else if (err.message) {
-          specificError = err.message;
-        }
+        } else if (err.status === 400) {
+          if (err.error?.errors) msg = Object.values(err.error.errors).flat().join(' ');
+          else if (typeof err.error?.title === 'string' && err.error.title.includes('JSON')) msg = 'Dữ liệu gửi lên không hợp lệ.';
+          else if (err.error?.message) msg = err.error.message;
+          else msg = 'Dữ liệu gửi lên không hợp lệ (400).';
+        } else if (err.error?.message) msg = err.error.message;
+        else if (err.message) msg = err.message;
 
-        this.submitError.set(`Thêm thành viên thất bại. ${specificError}`);
+        this.submitError.set(`Thêm thành viên thất bại. ${msg}`);
         console.error('Lỗi thêm thành viên:', err);
       }
     });
   }
 
-  onDelete(memberId: string): void {
-    this.confirmingDeleteId.set(memberId);
-  }
-
-  cancelDelete(): void {
-    this.confirmingDeleteId.set(null);
-  }
-
-  confirmDelete(): void {
-    const memberIdToDelete = this.confirmingDeleteId();
-    if (!memberIdToDelete) {
-      return;
-    }
-
-    this.householdService.deleteHouseholdMember(memberIdToDelete).subscribe({
-      next: () => {
-        this.loadMembers();
-        this.cancelDelete();
-      },
-      error: (err) => {
-        alert('Xóa thất bại. Vui lòng thử lại.');
-        console.error('Lỗi xóa thành viên:', err);
-        this.cancelDelete();
-      }
-    });
-  }
 }
-

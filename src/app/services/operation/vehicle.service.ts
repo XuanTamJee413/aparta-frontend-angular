@@ -3,6 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Vehicle, VehicleQueryParameters,ApiResponse, VehicleUpdateDto, Apartment } from '../../pages/building/operation/vehicle-management/vehicle-list/vehicle-list';
 
+export interface VehicleCreateDto {
+  apartmentId: string;
+  vehicleNumber: string;
+  info: string | null;
+  status: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -43,5 +49,8 @@ export class VehicleService {
   getApartments(): Observable<ApiResponse<Apartment[]>> {
 
     return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
+  }
+  createVehicle(dto: VehicleCreateDto): Observable<Vehicle> {
+    return this.http.post<Vehicle>(this.apiUrl, dto);
   }
 }
