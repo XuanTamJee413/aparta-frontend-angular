@@ -19,7 +19,12 @@ export const routes: Routes = [
     loadChildren: () => import('./pages/building/building.routes')
       .then(m => m.MANAGER_ROUTES)
   },
-{
+  {
+    path: 'login',
+    component: LoginComponent,
+    pathMatch: 'full'
+  },
+  {
     path: '',
     component: LoginComponent,
     pathMatch: 'full'
@@ -28,7 +33,7 @@ export const routes: Routes = [
   {
     path: '',
     component: ResidentLayoutComponent,
-     loadChildren: () => import('./pages/resident/resident.routes')
+    loadChildren: () => import('./pages/resident/resident.routes')
       .then(m => m.RESIDENT_ROUTES)
   }
 ];
