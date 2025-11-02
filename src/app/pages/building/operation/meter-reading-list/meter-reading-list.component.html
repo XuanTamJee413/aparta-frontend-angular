@@ -23,7 +23,7 @@
   <div *ngIf="progressData && !loading" class="progress-container">
     <div class="progress-header">
       <h3 class="progress-title">Tiến độ ghi chỉ số</h3>
-      <small class="progress-updated">Cập nhật lúc: {{ formatDateTime(progressData.lastUpdated) }}</small>
+      <small class="progress-updated" *ngIf="progressData.lastUpdated">Cập nhật lúc: {{ formatDateTime(progressData.lastUpdated) }}</small>
     </div>
     <div class="progress-content">
       <div class="progress-item" *ngFor="let type of ['WATER', 'ELECTRIC']">

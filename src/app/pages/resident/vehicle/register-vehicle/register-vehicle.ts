@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 import { VehicleCreateDto, VehicleService } from '../../../../services/operation/vehicle.service';
 import { Vehicle, VehicleQueryParameters } from '../../../building/operation/vehicle-management/vehicle-list/vehicle-list';
@@ -10,7 +10,7 @@ import { Vehicle, VehicleQueryParameters } from '../../../building/operation/veh
 @Component({
   selector: 'app-register-vehicle',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
 
 
   template: `
