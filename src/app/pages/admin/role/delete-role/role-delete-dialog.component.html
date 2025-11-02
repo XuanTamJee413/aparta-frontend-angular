@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>Xóa Role</h2>
+<div mat-dialog-content>
+  <p>Bạn có chắc chắn muốn xóa role "{{ data.role.roleName }}"?</p>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Hủy</button>
+  <button mat-button color="warn" (click)="confirm()" [disabled]="data.role.isSystemDefined || !data.role.isActive">Xóa</button>
+</div>

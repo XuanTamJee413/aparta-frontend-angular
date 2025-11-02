@@ -1,0 +1,69 @@
+<div class="meter-page-wrapper">
+  <h1 class="meter-title">Nhập chỉ số điện nước</h1>
+  <!-- <div class="meter-desc">Nhập số điện nước cho từng căn hộ. Lựa chọn tòa nhà cần nhập chỉ số ở bên dưới.</div> -->
+
+  <div class="search-bar">
+    <select [(ngModel)]="buildingCode" name="buildingCode" class="building-dropdown" required>
+      <option value="" disabled>-- Chọn tòa nhà --</option>
+      <option *ngFor="let b of buildings" [value]="b.buildingCode">{{ b.buildingCode }} - {{ b.name || 'No name' }}</option>
+    </select>
+    <button class="btn-primary" [disabled]="!buildingCode" (click)="fetchRecordingSheet()">Lấy bảng nhập số</button>
+  </div>
+
+  <div *ngIf="error" class="alert-error">{{ error }}</div>
+  <div *ngIf="loading">Đang tải dữ liệu...</div>
+
+  <div *ngIf="apartmentsCurrentPage.length > 0">
+    <!-- <div class="table-info">Tổng số căn: {{ totalItems }} &mdash; Trang {{ page }}/{{ totalPages }}</div> -->
+    <div class="table-container">
+      <table class="data-table meter-table-full">
+        <thead>
+          <tr>
+            <th class="left-th">MÃ CĂN HỘ</th>
+            <th *ngFor="let type of meterTypes">CHỈ SỐ {{ type == 'ELECTRIC' ? 'ĐIỆN' : 'NƯỚC' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let apartment of apartmentsCurrentPage">
+            <ng-container *ngIf="isRented(apartment)">
+              <td class="font-medium left-th">{{ apartment.apartmentCode }}</td>
+              <td *ngFor="let meter of apartment.meters" class="meter-cell">
+                <div *ngIf="meter">
+                  <div class="last-reading">chỉ số cũ: {{ meter.lastReading }}</div>
+                  <div class="meter-inline">
+                    <input type="number" [min]="meter.lastReading" [(ngModel)]="meter.currentReading"
+                      (change)="validateCurrentReading(meter)" class="form-input meter-input"
+                      [ngClass]="{'input-error': meter.inputError}"
+                      [attr.name]="'cr_' + apartment.apartmentId + '_' + meter.meterId"
+                      placeholder="Chỉ số mới" />
+                    <button (click)="saveReading(apartment, meter)" class="btn-primary meter-save-btn" style="margin-left:0.5rem;">Lưu</button>
+                  </div>
+                  <span class="error-inline" *ngIf="meter.inputError">
+                    <svg class="icon-error" viewBox="0 0 24 24"><path stroke="red" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Số mới không nhỏ hơn số cũ!
+                  </span>
+                  <span class="error-inline" *ngIf="meter.saveError && !meter.inputError">{{ meter.saveError }}</span>
+                  <div *ngIf="meter.saveSuccess" class="meter-status meter-updated-success">
+                    Đã cập nhật thành công!
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+            <ng-container *ngIf="!isRented(apartment)">
+              <td class="font-medium left-th">{{ apartment.apartmentCode }}</td>
+              <td [attr.colspan]="meterTypes.length" class="apartment-empty-msg">Chưa thuê → Không nhập chỉ số!</td>
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-controls meter-pagination">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="page <= 1">&lt; Trước</button>
+      <span>Trang {{ page }} / {{ totalPages }}</span>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="page >= totalPages">Sau &gt;</button>
+    </div>
+  </div>
+  <div *ngIf="sheetHasBeenLoaded && !loading && apartments.length === 0" class="meter-no-data">
+    Tòa nhà hiện không có căn hộ nào.
+  </div>
+</div>

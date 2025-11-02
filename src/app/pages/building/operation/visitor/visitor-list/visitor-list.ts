@@ -1,13 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { VisitorService, VisitLogStaffViewDto, ApartmentDto } from '../../../../../services/resident/visitor.service';
-import { FastCheckin } from '../fast-checkin/fast-checkin';
+import { FormsModule } from '@angular/forms'; 
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+import { 
+  VisitorService, 
+  VisitLogStaffViewDto, 
+  ApartmentDto, 
+  PagedList, 
+  VisitorQueryParams 
+} from '../../../../../services/resident/visitor.service';
+
+import { FastCheckin } from '../fast-checkin/fast-checkin'; 
 
 @Component({
   selector: 'app-visitor-list',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     FastCheckin
   ],
   templateUrl: './visitor-list.html',
@@ -15,17 +27,28 @@ import { FastCheckin } from '../fast-checkin/fast-checkin';
 })
 export class VisitorList implements OnInit {
 
-  allVisitors: VisitLogStaffViewDto[] = [];
   isLoading = false;
-  showFastCheckin = false;
+  showFastCheckin = false; 
 
+  isModalVisible = false;
+  selectedVisitor: VisitLogStaffViewDto | null = null;
   alertMessage: string | null = null;
   alertType: 'success' | 'danger' = 'success';
   private alertTimeout: any;
 
-  isModalVisible = false;
-  selectedVisitor: VisitLogStaffViewDto | null = null;
-  apartmentList: ApartmentDto[] = [];
+  apartmentList: ApartmentDto[] = []; 
+  paginatedVisitors: PagedList<VisitLogStaffViewDto> | null = null;
+  
+  queryParams: VisitorQueryParams = {
+    pageNumber: 1,
+    pageSize: 10,
+    apartmentId: '', 
+    searchTerm: '',
+    sortColumn: 'checkinTime',
+    sortDirection: 'desc'
+  };
+  
+  private searchSubject = new Subject<string>();
 
   constructor(
     private visitorService: VisitorService
@@ -33,14 +56,23 @@ export class VisitorList implements OnInit {
 
   ngOnInit(): void {
     this.loadAllVisitors();
-    this.loadApartments();
+    this.loadApartments(); 
+
+    this.searchSubject.pipe(
+      debounceTime(500), 
+      distinctUntilChanged() 
+    ).subscribe(searchTerm => {
+      this.queryParams.searchTerm = searchTerm;
+      this.queryParams.pageNumber = 1;
+      this.loadAllVisitors();
+    });
   }
 
   loadAllVisitors(): void {
     this.isLoading = true;
-    this.visitorService.getAllVisitors().subscribe({
+    this.visitorService.getAllVisitors(this.queryParams).subscribe({
       next: (data) => {
-        this.allVisitors = data;
+        this.paginatedVisitors = data; 
         this.isLoading = false;
       },
       error: (err) => {
@@ -50,26 +82,50 @@ export class VisitorList implements OnInit {
       }
     });
   }
-  loadApartments(): void {
-    this.apartmentList = [
-      { apartmentId: 'ap1', apartmentCode: 'TX_101' },
-      { apartmentId: 'ap2', apartmentCode: 'TX_102' },
-      { apartmentId: 'ap3', apartmentCode: 'TX_201' },
-      { apartmentId: 'ap4', apartmentCode: 'TX_202' },
-      { apartmentId: 'ap5', apartmentCode: 'B-305' }
-    ];
 
-    /*
+  loadApartments(): void {
     this.visitorService.getAllApartments().subscribe({
       next: (data) => {
-        this.apartmentList = data;
+        this.apartmentList = data.sort((a, b) => a.code.localeCompare(b.code));
       },
       error: (err) => {
         console.error('Lỗi tải danh sách căn hộ', err);
+        this.showAlert('Không thể tải danh sách căn hộ', 'danger');
       }
     });
-    */
   }
+
+  onSearchInput(event: Event): void {
+    const searchTerm = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(searchTerm);
+  }
+
+  onApartmentFilterChange(event: Event): void {
+    const apartmentId = (event.target as HTMLSelectElement).value;
+    this.queryParams.apartmentId = apartmentId;
+    this.queryParams.pageNumber = 1; 
+    this.loadAllVisitors();
+  }
+
+  onSort(columnName: string): void {
+    if (this.queryParams.sortColumn === columnName) {
+      this.queryParams.sortDirection = this.queryParams.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.queryParams.sortColumn = columnName;
+      this.queryParams.sortDirection = 'desc';
+    }
+    this.queryParams.pageNumber = 1;
+    this.loadAllVisitors(); 
+  }
+
+  onPageChange(pageNumber: number): void {
+    if (pageNumber < 1 || (this.paginatedVisitors && pageNumber > this.paginatedVisitors.totalPages) || pageNumber === this.queryParams.pageNumber) {
+      return; 
+    }
+    this.queryParams.pageNumber = pageNumber;
+    this.loadAllVisitors();
+  }
+
   openVisitorDetails(visitor: VisitLogStaffViewDto): void {
     this.selectedVisitor = visitor;
     this.isModalVisible = true;
@@ -81,17 +137,21 @@ export class VisitorList implements OnInit {
   }
 
   onCheckIn(visitor: VisitLogStaffViewDto): void {
-    if (visitor.status === 'Checked-in' || visitor.status === 'Checked-out') {
+    if (visitor.status === 'Checked-in' || visitor.status === 'Checked-out' || visitor.status === 'Cancelled') {
       return;
     }
 
     this.visitorService.checkInVisitor(visitor.visitLogId).subscribe({
-      next: () => {
-        this.showAlert(`Đã check-in cho khách: ${visitor.visitorFullName}`, 'success');
-        this.loadAllVisitors();
+      next: (response) => {
+        if (response.succeeded) {
+          this.showAlert(response.message || `Đã check-in cho khách: ${visitor.visitorFullName}`, 'success');
+          this.loadAllVisitors(); // Tải lại danh sách
+        } else {
+          this.showAlert(response.message || 'Lỗi: Không thể check-in', 'danger');
+        }
       },
       error: (err) => {
-        this.showAlert(err?.error?.message || 'Lỗi: Không thể check-in', 'danger');
+        this.showAlert(err?.error?.message || 'Lỗi máy chủ: Không thể check-in', 'danger');
         console.error(err);
       }
     });
@@ -103,16 +163,21 @@ export class VisitorList implements OnInit {
     }
 
     this.visitorService.checkOutVisitor(visitor.visitLogId).subscribe({
-      next: () => {
-        this.showAlert(`Đã check-out cho khách: ${visitor.visitorFullName}`, 'success');
-        this.loadAllVisitors();
+      next: (response) => {
+        if (response.succeeded) {
+          this.showAlert(response.message || `Đã check-out cho khách: ${visitor.visitorFullName}`, 'success');
+          this.loadAllVisitors(); 
+        } else {
+          this.showAlert(response.message || 'Lỗi: Không thể check-out', 'danger');
+        }
       },
       error: (err) => {
-        this.showAlert(err?.error?.message || 'Lỗi: Không thể check-out', 'danger');
+        this.showAlert(err?.error?.message || 'Lỗi máy chủ: Không thể check-out', 'danger');
         console.error(err);
       }
     });
   }
+
   onFastCheckinSuccess(visitorName: string): void {
     this.showAlert(`Đã tạo và check-in khách: ${visitorName}`, 'success');
     this.showFastCheckin = false;
@@ -122,6 +187,7 @@ export class VisitorList implements OnInit {
   onFastCheckinClose(): void {
     this.showFastCheckin = false;
   }
+
   getStatusBadge(status: string): string {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -136,16 +202,20 @@ export class VisitorList implements OnInit {
         return 'text-bg-light';
     }
   }
+
   private showAlert(message: string, type: 'success' | 'danger'): void {
     this.alertMessage = message;
     this.alertType = type;
-
     if (this.alertTimeout) {
       clearTimeout(this.alertTimeout);
     }
-
     this.alertTimeout = setTimeout(() => {
       this.alertMessage = null;
     }, 3000);
+  }
+
+  getPaginationArray(): number[] {
+    if (!this.paginatedVisitors) return [];
+    return Array(this.paginatedVisitors.totalPages).fill(0).map((x, i) => i + 1);
   }
 }

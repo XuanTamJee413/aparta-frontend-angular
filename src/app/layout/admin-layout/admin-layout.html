@@ -39,6 +39,10 @@
         <mat-icon>topic</mat-icon>
         <span>Tòa nhà</span>
       </a>
+      <a mat-list-item routerLink="role/list" routerLinkActive="active-link">
+        <mat-icon>admin_panel_settings</mat-icon>
+        <span>Phân quyền</span>
+      </a>
       
       <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Tài khoản</h3>
@@ -80,7 +84,7 @@
           <mat-icon>person_outline</mat-icon>
           <span>Hồ sơ</span>
         </button>
-        <button mat-menu-item>
+        <button mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
           <span>Đăng xuất</span>
         </button>
@@ -92,7 +96,7 @@
     </main>
 
     <footer class="layout-footer">
-      <span>© 2025 Condominium Management. All rights reserved.</span>
+      <span>© 2025 Aparta Co., Ltd. All rights reserved.</span>
     </footer>
 
   </mat-sidenav-content>

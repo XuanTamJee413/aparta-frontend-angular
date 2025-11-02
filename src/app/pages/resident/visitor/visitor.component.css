@@ -18,6 +18,8 @@
 mat-card-actions {
   margin-top: 16px;
 }
+
+/* --- THÊM LẠI: CSS CHO LỊCH SỬ --- */
 .history-card {
   margin-top: 24px;
 }
@@ -37,4 +39,9 @@ mat-card-actions {
 
 table {
   width: 100%;
+}
+
+/* Tô mờ nút Sửa/Xóa khi bị disabled */
+button[disabled] mat-icon {
+  color: rgba(0, 0, 0, 0.26);
 }

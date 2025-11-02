@@ -10,6 +10,7 @@ import { AnnouncementComponent } from './announcement/announcement.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { ProfileComponent } from '../common/profile/profile.component';
 import { RegisterHousehold } from './household/register-household/register-household';
+import { RegisterVehicle } from './vehicle/register-vehicle/register-vehicle';
 
 export const RESIDENT_ROUTES: Routes = [
     {
@@ -39,6 +40,10 @@ export const RESIDENT_ROUTES: Routes = [
   {
     path: 'household',
     component:RegisterHousehold
+  },
+   {
+    path: 'vehicle',
+    component:RegisterVehicle
   },
   {
     path: 'facility',

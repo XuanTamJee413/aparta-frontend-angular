@@ -1,39 +1,56 @@
+<!-- KHU VỰC 1: FORM CHECK-IN NHANH (Component con) -->
 <app-fast-checkin 
   *ngIf="showFastCheckin"
   (checkinSuccess)="onFastCheckinSuccess($event)"
   (closeForm)="onFastCheckinClose()">
 </app-fast-checkin>
 
+<!-- KHU VỰC 2: DANH SÁCH KHÁCH THĂM (Component cha) -->
 <div *ngIf="!showFastCheckin">
   <div class="card shadow-sm border-0 container">
 
+    <!-- HEADER: Tiêu đề và Thanh Filter -->
     <div class="card-header bg-light border-bottom p-3">
       <div class="row align-items-center g-3">
 
+        <!-- Tiêu đề -->
         <div class="col-md-4">
           <h4 class="card-title mb-1">Quản lý khách thăm</h4>
           <small class="text-muted">Danh sách tất cả khách thăm đã đăng ký</small>
         </div>
 
+        <!-- Các nút điều khiển -->
         <div class="col-md-8">
           <div class="row g-2 align-items-center justify-content-md-end">
             
+            <!-- Ô tìm kiếm -->
             <div class="col-sm-6 col-md-auto">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="search" class="form-control" placeholder="Tìm kiếm khách thăm...">
+                <input 
+                  type="search" 
+                  class="form-control" 
+                  placeholder="Tìm tên hoặc căn hộ..."
+                  [ngModel]="queryParams.searchTerm"
+                  (input)="onSearchInput($event)">
               </div>
             </div>
             
+            <!-- Combobox lọc căn hộ -->
             <div class="col-sm-6 col-md-auto">
-              <select class="form-select form-select-sm" style="min-width: 150px;">
+              <select 
+                class="form-select form-select-sm" 
+                style="min-width: 150px;"
+                [ngModel]="queryParams.apartmentId"
+                (change)="onApartmentFilterChange($event)">
                 <option value="">Tất cả căn hộ</option>
                 <option *ngFor="let apt of apartmentList" [value]="apt.apartmentId">
-                  {{apt.apartmentCode}}
+                  {{apt.code}}
                 </option>
               </select>
             </div>
 
+            <!-- Nút mở form Check-in nhanh -->
             <div class="col-12 col-md-auto">
               <button type="button" class="btn btn-sm btn-primary w-100" (click)="showFastCheckin = true">
                 <i class="bi bi-person-plus-fill me-1"></i> Check-in nhanh
@@ -45,88 +62,151 @@
       </div>
     </div>
     
+    <!-- BODY: Bảng dữ liệu và Phân trang -->
     <div class="card-body">
 
+      <!-- Trạng thái Loading -->
       <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center m-5 p-5">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
-      <div *ngIf="!isLoading && allVisitors.length === 0" class="text-center text-muted m-5 p-5">
+      
+      <!-- Trạng thái không có dữ liệu -->
+      <div *ngIf="!isLoading && (!paginatedVisitors || paginatedVisitors.totalCount === 0)" class="text-center text-muted m-5 p-5">
         <span><i class="bi bi-cloud-drizzle fs-1"></i></span>
         <h5 class="mt-2">Chưa có dữ liệu</h5>
-        <p>Hiện không có khách thăm nào trong hệ thống.</p>
+        <p>Không tìm thấy khách thăm nào phù hợp với tiêu chí.</p>
       </div>
 
-      <div *ngIf="!isLoading && allVisitors.length > 0" class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
-            <tr>
-              <th scope="col" class="small text-uppercase text-muted fw-semibold">Tên khách</th>
-              <th scope="col" class="small text-uppercase text-muted fw-semibold">Thời gian Vào / Ra</th>
-              <th scope="col" class="small text-uppercase text-muted fw-semibold">Trạng thái</th>
-              <th scope="col" class="text-end small text-uppercase text-muted fw-semibold">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let log of allVisitors">
-              <td>
-                <button type="button" class="btn btn-link p-0 text-start" (click)="openVisitorDetails(log)">
-                  <div class="fw-bold">{{log.visitorFullName}}</div>
-                  <small class="text-muted">{{log.visitorIdNumber || 'N/A'}}</small>
-                </button>
-              </td>
+      <!-- Bảng dữ liệu -->
+      <div *ngIf="!isLoading && paginatedVisitors && paginatedVisitors.totalCount > 0">
+        
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <!-- Tiêu đề bảng (có sắp xếp) -->
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="small text-uppercase text-muted fw-semibold" (click)="onSort('visitorFullName')" style="cursor: pointer;">
+                  Tên khách
+                  <i *ngIf="queryParams.sortColumn === 'visitorFullName'" class="bi ms-1" 
+                     [ngClass]="{'bi-arrow-down': queryParams.sortDirection === 'desc', 'bi-arrow-up': queryParams.sortDirection === 'asc'}"></i>
+                </th>
+                <th scope="col" class="small text-uppercase text-muted fw-semibold" (click)="onSort('checkinTime')" style="cursor: pointer;">
+                  Thời gian Vào / Ra
+                  <i *ngIf="queryParams.sortColumn === 'checkinTime'" class="bi ms-1" 
+                     [ngClass]="{'bi-arrow-down': queryParams.sortDirection === 'desc', 'bi-arrow-up': queryParams.sortDirection === 'asc'}"></i>
+                </th>
+                <th scope="col" class="small text-uppercase text-muted fw-semibold">Trạng thái</th>
+                <th scope="col" class="text-end small text-uppercase text-muted fw-semibold">Hành động</th>
+              </tr>
+            </thead>
+            <!-- Nội dung bảng -->
+            <tbody>
+              <tr *ngFor="let log of paginatedVisitors.items">
+                <!-- Cột Tên khách & Căn hộ -->
+                <td>
+                  <button type="button" class="btn btn-link p-0 text-start" (click)="openVisitorDetails(log)">
+                    <div class="fw-bold">{{log.visitorFullName}}</div>
+                    <small class="text-primary">{{log.apartmentCode}}</small>
+                  </button>
+                </td>
 
-              <td>
-                <div class="time-cell">
-                  <div *ngIf="log.status === 'Pending'" class="d-flex align-items-center">
-                    <i class="bi bi-clock-history me-2 text-warning"></i>
-                    <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
-                    <span class="text-muted small ms-1">(Dự kiến)</span>
+                <!-- Cột Thời gian -->
+                <td>
+                  <div class="time-cell">
+                    <div *ngIf="log.status === 'Pending'" class="d-flex align-items-center">
+                      <i class="bi bi-clock-history me-2 text-warning"></i>
+                      <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
+                      <span class="text-muted small ms-1">(Dự kiến)</span>
+                    </div>
+                    <div *ngIf="log.status !== 'Pending' && log.status !== 'Cancelled'" class="d-flex align-items-center">
+                      <i class="bi bi-box-arrow-in-right me-2 text-success"></i>
+                      <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
+                      <span class="text-muted small ms-1">(Thực tế)</span>
+                    </div>
+                    <div *ngIf="log.status === 'Cancelled'" class="time-cell">
+                      <span class="text-danger small">(Đã hủy)</span>
+                    </div>
                   </div>
-                  <div *ngIf="log.status !== 'Pending' && log.status !== 'Cancelled'" class="d-flex align-items-center">
-                    <i class="bi bi-box-arrow-in-right me-2 text-success"></i>
-                    <strong>{{log.checkinTime | date: 'HH:mm dd/MM/yy'}}</strong>
-                    <span class="text-muted small ms-1">(Thực tế)</span>
+                  <div class="time-cell mt-1">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-box-arrow-right me-2 text-secondary"></i>
+                      <span>{{log.checkoutTime ? (log.checkoutTime | date: 'HH:mm dd/MM/yy') : 'N/A'}}</span>
+                    </div>
                   </div>
-                  <div *ngIf="log.status === 'Cancelled'" class="time-cell">
-                    <span class="text-danger small">(Đã hủy)</span>
-                  </div>
-                </div>
-                <div class="time-cell mt-1">
-                  <div class="d-flex align-items-center">
-                    <i class="bi bi-box-arrow-right me-2 text-secondary"></i>
-                    <span>{{log.checkoutTime ? (log.checkoutTime | date: 'HH:mm dd/MM/yy') : 'N/A'}}</span>
-                  </div>
-                </div>
-              </td>
+                </td>
 
-              <td>
-                <span class="badge rounded-pill" [ngClass]="getStatusBadge(log.status)">
-                  {{log.status}}
-                </span>
-              </td>
+                <!-- Cột Trạng thái -->
+                <td>
+                  <span class="badge rounded-pill" [ngClass]="getStatusBadge(log.status)">
+                    {{log.status}}
+                  </span>
+                </td>
 
-              <td class="text-end action-cell">
-                <button type="button" class="btn btn-sm btn-outline-success" title="Check-in cho khách"
-                  (click)="onCheckIn(log)"
-                  [disabled]="log.status === 'Checked-in' || log.status === 'Checked-out' || log.status === 'Cancelled'">
-                  Check-in
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger ms-2" title="Check-out cho khách"
-                  (click)="onCheckOut(log)" [disabled]="log.status !== 'Checked-in'">
-                  Check-out
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                <!-- Cột Hành động -->
+                <td class="text-end action-cell">
+                  <button type="button" class="btn btn-sm btn-outline-success" title="Check-in cho khách"
+                    (click)="onCheckIn(log)"
+                    [disabled]="log.status === 'Checked-in' || log.status === 'Checked-out' || log.status === 'Cancelled'">
+                    Check-in
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger ms-2" title="Check-out cho khách"
+                    (click)="onCheckOut(log)" [disabled]="log.status !== 'Checked-in'">
+                    Check-out
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div> <!-- /table-responsive -->
 
-    </div>
-  </div>
-</div>
+        <!-- Thanh phân trang -->
+        <nav *ngIf="paginatedVisitors.totalPages > 1" class="d-flex justify-content-between align-items-center mt-3" aria-label="Page navigation">
+          <!-- Thông tin số lượng -->
+          <small class="text-muted">
+            Hiển thị 
+            <strong>{{ paginatedVisitors.items.length }}</strong> 
+            trong tổng số 
+            <strong>{{ paginatedVisitors.totalCount }}</strong> 
+            mục
+          </small>
+          
+          <!-- Các nút trang -->
+          <ul class="pagination pagination-sm mb-0">
+            <!-- Nút Trước -->
+            <li class="page-item" [class.disabled]="!paginatedVisitors.hasPreviousPage">
+              <a class="page-link" href="#" aria-label="Previous" (click)="onPageChange(paginatedVisitors.pageNumber - 1); $event.preventDefault()">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            
+            <!-- Danh sách số trang -->
+            <li class="page-item" 
+                *ngFor="let pageNum of getPaginationArray()" 
+                [class.active]="pageNum === paginatedVisitors.pageNumber">
+              <a class="page-link" href="#" (click)="onPageChange(pageNum); $event.preventDefault()">
+                {{ pageNum }}
+              </a>
+            </li>
+            
+            <!-- Nút Sau -->
+            <li class="page-item" [class.disabled]="!paginatedVisitors.hasNextPage">
+              <a class="page-link" href="#" aria-label="Next" (click)="onPageChange(paginatedVisitors.pageNumber + 1); $event.preventDefault()">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
 
+      </div> <!-- /div data table -->
+    </div> <!-- /card-body -->
+  </div> <!-- /card -->
+</div> <!-- /div v-if -->
+
+<!-- KHU VỰC 3: ALERT VÀ MODAL -->
+
+<!-- Alert (Thông báo) -->
 <div *ngIf="alertMessage" class="alert alert-dismissible fade show shadow-lg position-fixed bottom-0 end-0 p-3 m-3"
   [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-danger'" style="z-index: 1080; min-width: 300px;"
   role="alert">
@@ -135,6 +215,7 @@
   <button type="button" class="btn-close" (click)="alertMessage = null" aria-label="Close"></button>
 </div>
 
+<!-- Modal (Chi tiết khách thăm) -->
 <div *ngIf="isModalVisible" class="modal-backdrop fade show"></div>
 <div *ngIf="isModalVisible" class="modal fade show d-block" tabindex="-1" role="dialog" (click)="closeVisitorDetails()">
   <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">

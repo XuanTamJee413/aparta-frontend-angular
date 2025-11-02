@@ -1,10 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
 
-  <mat-sidenav #drawer class="sidenav"
-    fixedInViewport
-    [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
-    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'"
-    [opened]="(isSmallScreen$ | async) === false">
+  <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'" [opened]="(isSmallScreen$ | async) === false">
 
     <mat-toolbar class="sidenav-toolbar">
       <mat-icon class="toolbar-logo">corporate_fare</mat-icon>
@@ -30,12 +27,28 @@
         <mat-icon>article</mat-icon>
         <span>Quản lý News tòa nhà</span>
       </a>
-
-      <mat-divider></mat-divider>
+      <a mat-list-item routerLink="manage-quotation" routerLinkActive="active-link">
+        <mat-icon>request_quote</mat-icon>
+        <span>Quản lý Đơn giá</span>
+        </a> <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Tài chính</h3>
       <a mat-list-item routerLink="payment-receipt" routerLinkActive="active-link">
         <mat-icon>receipt_long</mat-icon>
         <span>Xem biên lai</span>
+      </a>
+      <a mat-list-item routerLink="invoice-list" routerLinkActive="active-link">
+        <mat-icon>description</mat-icon>
+        <span>Danh sách hóa đơn</span>
+      </a>
+      <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Bảo Trì</h3>
+      <a mat-list-item routerLink="meter-record" routerLinkActive="active-link">
+        <mat-icon>speed</mat-icon>
+        <span>Ghi điện nước</span>
+      </a>
+      <a mat-list-item routerLink="meter-reading-list" routerLinkActive="active-link">
+        <mat-icon>history</mat-icon>
+        <span>Xem lịch sử ghi điện nước</span>
       </a>
 
       <mat-divider></mat-divider>
@@ -81,11 +94,7 @@
 
     <mat-toolbar color="primary" class="main-toolbar">
 
-      <button
-        type="button"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        (click)="drawer.toggle()"
+      <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
         *ngIf="isSmallScreen$ | async">
         <mat-icon>menu</mat-icon>
       </button>
@@ -96,7 +105,7 @@
       <button mat-icon-button>
         <mat-icon>notifications_none</mat-icon>
       </button>
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button [matMenuTriggerFor]="userMenuRef">
         <mat-icon>account_circle</mat-icon>
       </button>
       <mat-menu #userMenuRef>
@@ -104,7 +113,7 @@
           <mat-icon>person_outline</mat-icon>
           <span>Hồ sơ</span>
         </button>
-        <button mat-menu-item>
+        <button mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
           <span>Đăng xuất</span>
         </button>
@@ -116,7 +125,7 @@
     </main>
 
     <footer class="layout-footer">
-      <span>© 2025 Condominium Management. All rights reserved.</span>
+      <span>© 2025 Aparta Co., Ltd. All rights reserved.</span>
     </footer>
 
   </mat-sidenav-content>

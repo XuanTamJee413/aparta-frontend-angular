@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>Cập nhật Role</h2>
+<div mat-dialog-content>
+  <label>Tên mới</label>
+  <input type="text" [(ngModel)]="name" placeholder="Nhập tên mới (>=3 ký tự)" />
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Hủy</button>
+  <button mat-button color="primary" [disabled]="name.trim().length < 3" (click)="save()">Lưu</button>
+</div>

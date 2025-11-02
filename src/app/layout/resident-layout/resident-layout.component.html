@@ -1,10 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
 
-  <mat-sidenav #drawer class="sidenav"
-    fixedInViewport
-    [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
-    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'"
-    [opened]="(isSmallScreen$ | async) === false">
+  <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isSmallScreen$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isSmallScreen$ | async) ? 'over' : 'side'" [opened]="(isSmallScreen$ | async) === false">
 
     <mat-toolbar class="sidenav-toolbar">
       <mat-icon class="toolbar-logo">home_work</mat-icon>
@@ -45,6 +42,10 @@
         <mat-icon>people</mat-icon>
         <span>Hộ Khẩu</span>
       </a>
+      <a mat-list-item routerLink="vehicle" routerLinkActive="active-link">
+        <mat-icon>people</mat-icon>
+        <span>Đăng Ký Phương Tiện</span>
+      </a>
       <a mat-list-item routerLink="facility" routerLinkActive="active-link">
         <mat-icon>apartment</mat-icon>
         <span>Cơ sở & Tiện ích</span>
@@ -68,11 +69,7 @@
 
     <mat-toolbar class="main-toolbar">
 
-      <button
-        type="button"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        (click)="drawer.toggle()"
+      <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
         *ngIf="isSmallScreen$ | async">
         <mat-icon>menu</mat-icon>
       </button>
@@ -82,7 +79,7 @@
       <button mat-icon-button>
         <mat-icon>notifications_none</mat-icon>
       </button>
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button [matMenuTriggerFor]="userMenuRef">
         <mat-icon>account_circle</mat-icon>
       </button>
       <mat-menu #userMenuRef>
@@ -90,7 +87,7 @@
           <mat-icon>settings_outline</mat-icon>
           <span>Cài đặt</span>
         </button>
-        <button mat-menu-item routerLink="/auth/login"> <mat-icon>exit_to_app</mat-icon>
+        <button mat-menu-item (click)="logout()"> <mat-icon>exit_to_app</mat-icon>
           <span>Đăng xuất</span>
         </button>
       </mat-menu>
@@ -101,7 +98,7 @@
     </main>
 
     <footer class="layout-footer">
-      <span>© 2025 Condominium Management. All rights reserved.</span>
+      <span>© 2025 Aparta Co., Ltd. All rights reserved.</span>
     </footer>
 
   </mat-sidenav-content>

@@ -10,7 +10,6 @@
   white-space: nowrap;
 }
 
-
 .btn-link {
   text-decoration: none;
 }
@@ -21,8 +20,7 @@
   color: var(--bs-body-color);
 }
 
-
-
+/* --- CSS cho Modal --- */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -54,6 +52,7 @@
   padding-left: 10px;
 }
 
+/* --- CSS cho Nút disabled --- */
 .btn-outline-success:disabled,
 .btn-outline-danger:disabled {
   color: #6c757d; 

@@ -9,8 +9,8 @@ export interface News {
   content: string;
   authorUserId: string;
   authorName: string;
-  status: string;
-  publishedDate: string;
+  status: string | null;
+  publishedDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -44,16 +44,13 @@ export class NewsService {
     let url = this.apiUrl;
     const params: string[] = [];
     
-    if (searchTerm && searchTerm.trim()) {
-      params.push(`searchTerm=${encodeURIComponent(searchTerm.trim())}`);
-    } else {
-      params.push('searchTerm=');
-    }
+    // Always include searchTerm parameter (can be empty string)
+    const searchValue = searchTerm && searchTerm.trim() ? searchTerm.trim() : '';
+    params.push(`searchTerm=${encodeURIComponent(searchValue)}`);
     
-    if (status !== undefined && status !== null) {
+    // Only include status parameter if it's provided and not empty
+    if (status !== undefined && status !== null && status !== '') {
       params.push(`status=${encodeURIComponent(status)}`);
-    } else {
-      params.push('status=active');
     }
     
     if (params.length > 0) {
@@ -75,4 +72,3 @@ export class NewsService {
     return this.http.put<NewsResponse>(`${this.apiUrl}/${id}`, data);
   }
 }
-
