@@ -1,0 +1,108 @@
+<div class="invoice-list-wrapper">
+  <h1 class="invoice-title">Danh sách hóa đơn</h1>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label for="status">Trạng thái:</label>
+        <select id="status" [(ngModel)]="status" (change)="onFilterChange()" class="filter-input">
+          <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="month">Tháng:</label>
+        <input type="month" id="month" [(ngModel)]="month" (change)="onFilterChange()" 
+               class="filter-input" [value]="month || getCurrentMonth()" />
+      </div>
+
+      <div class="filter-group">
+        <label for="sortBy">Sắp xếp theo:</label>
+        <select id="sortBy" [(ngModel)]="sortBy" (change)="onFilterChange()" class="filter-input">
+          <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sortOrder">Thứ tự:</label>
+        <select id="sortOrder" [(ngModel)]="sortOrder" (change)="onFilterChange()" class="filter-input">
+          <option value="asc">Tăng dần</option>
+          <option value="desc">Giảm dần</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-group search-group">
+        <label for="search">Tìm kiếm:</label>
+        <input type="text" id="search" [(ngModel)]="searchTerm" 
+               (keyup.enter)="onFilterChange()" 
+               placeholder="Mã hóa đơn, mã căn hộ, tên cư dân..."
+               class="filter-input search-input" />
+        <button type="button" (click)="onFilterChange()" class="btn-search">Tìm kiếm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert-error">{{ error }}</div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-message">Đang tải dữ liệu...</div>
+
+  <!-- Invoice Table -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>Mã HĐ</th>
+          <th>Mã căn hộ</th>
+          <th>Cư dân</th>
+          <th>Kỳ thanh toán</th>
+          <th>Ngày phát hành</th>
+          <th>Ngày đến hạn</th>
+          <th>Tổng tiền</th>
+          <th>Đã thanh toán</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let invoice of invoices" class="invoice-row">
+          <td class="invoice-number">{{ invoice.invoiceId }}</td>
+          <td>{{ invoice.apartmentCode }}</td>
+          <td>{{ invoice.residentName || '-' }}</td>
+          <td>{{ getBillingPeriod(invoice.startDate, invoice.endDate) }}</td>
+          <td>{{ formatDate(invoice.createdAt) }}</td>
+          <td>{{ formatDate(invoice.endDate) }}</td>
+          <td class="amount">{{ formatCurrency(invoice.price) }}</td>
+          <td class="amount">{{ invoice.status === 'PAID' ? formatCurrency(invoice.price) : formatCurrency(0) }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(invoice.status)">
+              {{ getStatusLabel(invoice.status) }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="invoices.length === 0">
+          <td colspan="9" class="no-data">Không có dữ liệu</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && totalPages > 0" class="pagination-container">
+    <div class="pagination-info">
+      Hiển thị {{ (pageNumber - 1) * pageSize + 1 }} đến 
+      {{ Math.min(pageNumber * pageSize, totalCount) }} của {{ totalCount }} kết quả
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="onPageChange(pageNumber - 1)" 
+              [disabled]="!hasPreviousPage">&lt; Trước</button>
+      <span class="page-info">Trang {{ pageNumber }} / {{ totalPages }}</span>
+      <button class="pagination-btn" (click)="onPageChange(pageNumber + 1)" 
+              [disabled]="!hasNextPage">Sau &gt;</button>
+    </div>
+  </div>
+</div>
+

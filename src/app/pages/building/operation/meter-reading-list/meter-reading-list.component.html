@@ -1,0 +1,88 @@
+<div class="meter-page-wrapper">
+  <h1 class="meter-title">Lịch sử ghi điện nước</h1>
+
+  <div class="search-bar">
+    <select [(ngModel)]="selectedBuilding" (change)="onBuildingChange()" class="building-dropdown" required>
+      <option value="" disabled>-- Chọn tòa nhà --</option>
+      <option *ngFor="let building of buildings" [value]="building.buildingCode">
+        {{ building.buildingCode }} - {{ building.name }}
+      </option>
+    </select>
+    <input type="month" [(ngModel)]="selectedPeriod" (change)="onPeriodChange()" class="period-input" />
+    <button class="btn-primary" [disabled]="!selectedBuilding || generatingInvoices" (click)="generateInvoices()">
+      <span *ngIf="!generatingInvoices">Generate Invoice</span>
+      <span *ngIf="generatingInvoices">Đang tạo...</span>
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert-error">{{ error }}</div>
+  <div *ngIf="successMessage" class="alert-success">{{ successMessage }}</div>
+  <div *ngIf="loading" class="meter-loading">Đang tải dữ liệu...</div>
+
+  <!-- Progress Display -->
+  <div *ngIf="progressData && !loading" class="progress-container">
+    <div class="progress-header">
+      <h3 class="progress-title">Tiến độ ghi chỉ số</h3>
+      <small class="progress-updated">Cập nhật lúc: {{ formatDateTime(progressData.lastUpdated) }}</small>
+    </div>
+    <div class="progress-content">
+      <div class="progress-item" *ngFor="let type of ['WATER', 'ELECTRIC']">
+        <div class="progress-header-item">
+          <span class="progress-type">{{ type === 'WATER' ? 'NƯỚC' : 'ĐIỆN' }}</span>
+          <span class="progress-percentage">{{ (progressData.progressByMeterType[type] || 0) }}%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" [style.width.%]="progressData.progressByMeterType[type] || 0"></div>
+        </div>
+        <div class="progress-info">
+          Đã ghi: {{ progressData.recordedByMeterType[type] || 0 }}/{{ progressData.totalApartments }} căn hộ
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !error && groupedReadings.length > 0">
+    <div class="table-container">
+      <table class="data-table meter-table-full">
+        <thead>
+          <tr>
+            <th class="left-th">MÃ CĂN HỘ</th>
+            <th>CHỈ SỐ NƯỚC</th>
+            <th>CHỈ SỐ ĐIỆN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let group of paginatedGroups">
+            <td class="font-medium left-th">{{ group.apartmentCode }}</td>
+            <td class="meter-cell">
+              <div *ngIf="group.waterReading">
+                <div class="last-reading">chỉ số cũ: {{ group.waterReading.previousReading }}</div>
+                <div class="meter-inline">
+                  <input type="number" [value]="group.waterReading.currentReading" readonly class="form-input meter-input readonly-input" />
+                </div>
+              </div>
+              <div *ngIf="!group.waterReading" class="apartment-empty-msg">-</div>
+            </td>
+            <td class="meter-cell">
+              <div *ngIf="group.electricReading">
+                <div class="last-reading">chỉ số cũ: {{ group.electricReading.previousReading }}</div>
+                <div class="meter-inline">
+                  <input type="number" [value]="group.electricReading.currentReading" readonly class="form-input meter-input readonly-input" />
+                </div>
+              </div>
+              <div *ngIf="!group.electricReading" class="apartment-empty-msg">-</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-controls meter-pagination">
+      <button class="pagination-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage <= 1">&lt; Trước</button>
+      <span>Trang {{ currentPage }} / {{ getTotalPages().length || 1 }}</span>
+      <button class="pagination-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage * itemsPerPage >= totalItems">Sau &gt;</button>
+    </div>
+  </div>
+  <div *ngIf="!loading && !error && groupedReadings.length === 0" class="meter-no-data">
+    Không có dữ liệu chỉ số điện nước.
+  </div>
+</div>
