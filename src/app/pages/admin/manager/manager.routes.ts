@@ -19,6 +19,7 @@ export const MANAGER_ROUTES: Routes = [
       .then(m => m.ManagerEditComponent),
     title: 'Chỉnh sửa Manager'
   },
+
   {
     path: '',
     redirectTo: 'list',
