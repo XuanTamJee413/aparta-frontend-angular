@@ -10,11 +10,14 @@ import { CreateAsset } from './management/asset-management/create-asset/create-a
 import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle-list';
 import { PriceQuotationFormComponent } from './management/price-quotation/pricequotation-form/pricequotation-form';
 import { PriceQuotationListComponent } from './management/price-quotation/pricequotation-list/pricequotation-list';
+import { EditApartment } from './management/apartment-management/edit-apartment/edit-apartment';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
   { path: 'manage-resident', component: ResidentList },
   { path: 'manage-apartment', component: ApartmentList },
+  { path: 'manage-apartment/edit/:id', component: EditApartment },
+
   { path: 'manage-asset', component: AssetList },
   { path: 'manage-asset/create', component: CreateAsset },
   { path: 'news/list', component: NewsListComponent, title: 'News List' },
@@ -40,11 +43,11 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'profile', loadComponent: () => import('../common/profile/profile.component').then(m => m.ProfileComponent), title: 'Profile' },
   { path: 'manage-service', loadComponent: () => import('./operation/service-list.component/service-list.component').then(m => m.ServiceListComponent), title: 'Quản lý Dịch vụ' },
   { path: 'manage-utility', loadComponent: () => import('./operation/utility-list.component/utility-list.component').then(m => m.UtilityListComponent), title: 'Quản lý Tiện ích' },
-  
+
   // Routes mới từ nhánh Son
   { path: 'meter-record', loadComponent: () => import('./management/meter-recording-sheet/meter-recording-sheet.component').then(m => m.MeterRecordingSheetComponent), title: 'Nhập chỉ số điện nước' },
   { path: 'meter-reading-list', loadComponent: () => import('./operation/meter-reading-list/meter-reading-list.component').then(m => m.MeterReadingListComponent), title: 'Danh sách chỉ số điện nước' },
-  
+
   // --- END OPERATION  ---
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
 ];

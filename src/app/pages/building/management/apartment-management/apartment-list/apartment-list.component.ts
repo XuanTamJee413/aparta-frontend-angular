@@ -1,20 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-
-interface Apartment {
-  id: string;
-  name: string;
-  area: number;
-  residents: number;
-  status: 'Đang thuê' | 'Còn trống';
-}
+import { HttpClientModule } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ApartmentQueryParameters, ApartmentService, Apartment} from '../../../../../services/building/apartment.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-apartment-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, RouterLink],
   template: `
     <div class="container">
       <div class="card">
@@ -33,37 +29,43 @@ interface Apartment {
             <input
               type="text"
               class="search-input"
-              placeholder="Tìm theo mã, tên căn hộ, số cư dân hoặc trạng thái..."
+              placeholder="Tìm theo mã, tên căn hộ..."
               [(ngModel)]="searchTerm"
-              (input)="filterApartments()"
+              (input)="onSearchChange()"
             />
           </div>
         </div>
 
-        <div class="table-container">
-          <div class="table-wrapper">
-                <table class="data-table">
-                  <thead>
+        @if (isLoading()) {
+          <div class="text-center" style="padding: 2rem;">
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        } @else if (error()) {
+          <div class="alert alert-danger" style="margin-top: 1.5rem;">
+            {{ error() }}
+          </div>
+        } @else {
+          <div class="table-container">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã căn hộ</th>
+                    <th>Diện tích</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (apartment of paginatedApartments(); track apartment.apartmentId) {
                     <tr>
-                      <th>Mã căn hộ</th>
-                      <th>Tên căn hộ</th>
-                      <th>Diện tích</th>
-                      <th>Số cư dân</th>
-                      <th>Trạng thái</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let apartment of filteredApartments">
-                      <td class="font-medium">{{ apartment.id }}</td>
-                      <td>{{ apartment.name }}</td>
+                      <td class="font-medium">{{ apartment.code }}</td>
                       <td>{{ apartment.area }} m²</td>
-                      <td>{{ apartment.residents }}</td>
                       <td>
                         <span class="status-badge"
                           [ngClass]="{
-                            'status-rented': apartment.status === 'Đang thuê',
-                            'status-available': apartment.status === 'Còn trống'
+                            'status-rented': apartment.status === 'Đã thuê',
+                            'status-available': apartment.status === 'Chưa thuê'
                           }">
                           <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
                             <circle cx="4" cy="4" r="3" />
@@ -76,36 +78,42 @@ interface Apartment {
                           <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           Xem
                         </a>
-                        <button class="action-edit-btn">
+
+                        <a
+                          [routerLink]="['edit', apartment.apartmentId]"
+                          class="action-edit-btn"
+                          >
                           <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
                           Sửa
-                        </button>
+                        </a>
                       </td>
                     </tr>
-                    <tr *ngIf="filteredApartments.length === 0">
-                        <td colspan="6" class="no-results">
-                            Không tìm thấy căn hộ nào phù hợp.
-                        </td>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="no-results">
+                        Không tìm thấy căn hộ nào phù hợp.
+                      </td>
                     </tr>
-                  </tbody>
-                </table>
-              </div>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
 
-        <div class="pagination">
+          <div class="pagination" *ngIf="totalPages() > 1">
             <span class="page-info">
-                Trang <span class="font-medium">1</span> / <span class="font-medium">1</span>
+              Trang <span class="font-medium">{{ currentPage() }}</span> / <span class="font-medium">{{ totalPages() }}</span>
             </span>
             <div class="pagination-buttons">
-                <button class="pagination-btn" disabled>
-                    Trước
-                </button>
-                <button class="pagination-btn" disabled>
-                    Tiếp
-                </button>
+              <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="previousPage()">
+                Trước
+              </button>
+              <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                Tiếp
+              </button>
             </div>
-        </div>
-
+          </div>
+        }
       </div>
     </div>
   `,
@@ -273,6 +281,7 @@ interface Apartment {
       display: inline-flex;
       align-items: center;
       cursor: pointer;
+      text-decoration: none;
     }
     .action-edit-btn:hover {
       background-color: #4338ca;
@@ -319,45 +328,94 @@ interface Apartment {
     .pagination-buttons button + button {
         margin-left: 0.5rem;
     }
+    .alert.alert-danger {
+      color: #721c24;
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      padding: 0.75rem 1.25rem;
+      border: 1px solid transparent;
+      border-radius: 0.375rem;
+    }
   `]
 })
 export class ApartmentList implements OnInit {
+
+  private apartmentService = inject(ApartmentService);
+  apartments = signal<Apartment[]>([]);
+  isLoading = signal(true);
+  error = signal<string | null>(null);
+
   searchTerm: string = '';
+  public query: ApartmentQueryParameters = {
+    searchTerm: null,
+    sortBy: 'code',
+    sortOrder: 'asc'
+  };
+  private searchDebouncer = new Subject<string>();
 
-  allApartments: Apartment[] = [
-    { id: 'A-101', name: 'Lotus A-101', area: 72, residents: 2, status: 'Đang thuê' },
-    { id: 'A-102', name: 'Lotus A-102', area: 65, residents: 1, status: 'Đang thuê' },
-    { id: 'B-203', name: 'Sunrise B-203', area: 88, residents: 2, status: 'Đang thuê' },
-    { id: 'C-305', name: 'Riverside C-305', area: 54, residents: 1, status: 'Đang thuê' },
-    { id: 'D-407', name: 'Green D-407', area: 102, residents: 2, status: 'Đang thuê' },
-    { id: 'E-509', name: 'Skyline E-509', area: 76, residents: 1, status: 'Đang thuê' },
-    { id: 'F-610', name: 'Harmony F-610', area: 63, residents: 2, status: 'Đang thuê' },
-    { id: 'G-711', name: 'Central G-711', area: 90, residents: 1, status: 'Đang thuê' },
-    { id: 'H-801', name: 'Orchid H-801', area: 120, residents: 3, status: 'Còn trống' },
-  ];
+  currentPage = signal(1);
+  itemsPerPage = 10;
+  totalPages = computed(() => {
+    return Math.ceil(this.apartments().length / this.itemsPerPage);
+  });
+  paginatedApartments = computed(() => {
+    const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.apartments().slice(startIndex, endIndex);
+  });
 
-  filteredApartments: Apartment[] = [];
 
   constructor() {}
 
   ngOnInit(): void {
-    this.filteredApartments = this.allApartments;
+    this.loadApartments();
+    this.searchDebouncer.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.loadApartments();
+    });
   }
 
-  filterApartments(): void {
-    if (!this.searchTerm) {
-      this.filteredApartments = this.allApartments;
-      return;
+  loadApartments(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+    this.query.searchTerm = this.searchTerm || null;
+
+    this.apartmentService.getApartments(this.query).subscribe({
+      next: (response) => {
+        if (response.succeeded) {
+          this.apartments.set(response.data);
+        } else {
+          this.apartments.set([]);
+          if (response.message !== 'SM01') {
+            this.error.set(response.message);
+          }
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Không thể tải danh sách căn hộ. Vui lòng thử lại.');
+        this.isLoading.set(false);
+        console.error('Lỗi khi gọi API:', err);
+      }
+    });
+  }
+
+  onSearchChange(): void {
+    this.currentPage.set(1);
+    this.searchDebouncer.next(this.searchTerm);
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
     }
+  }
 
-    const lowerCaseSearchTerm = this.searchTerm.toLowerCase();
-
-    this.filteredApartments = this.allApartments.filter(apartment =>
-      apartment.id.toLowerCase().includes(lowerCaseSearchTerm) ||
-      apartment.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-      apartment.residents.toString().includes(lowerCaseSearchTerm) ||
-      apartment.status.toLowerCase().includes(lowerCaseSearchTerm)
-    );
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
   }
 }
-
