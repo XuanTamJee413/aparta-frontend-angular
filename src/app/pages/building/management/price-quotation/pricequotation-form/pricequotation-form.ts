@@ -33,25 +33,21 @@ import { Observable } from 'rxjs';
 })
 export class PriceQuotationFormComponent implements OnInit {
 
-  // --- Services ---
   private fb = inject(FormBuilder);
   private quotationService = inject(PriceQuotationService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private snackBar = inject(MatSnackBar);
 
-  // --- Dữ liệu ---
   form!: FormGroup;
   buildings: BuildingDto[] = [];
   calcMethods: CalculationMethodOption[] = [];
 
-  // --- Trạng thái ---
   isEditMode = false;
   editId: string | null = null;
   isLoading = false;
   isSaving = false;
   
-  // Enum để dùng trong HTML
   ECalcMethod = ECalculationMethod;
 
   constructor() {
@@ -63,32 +59,26 @@ export class PriceQuotationFormComponent implements OnInit {
     this.loadBuildings();
     this.checkEditMode();
 
-    // Theo dõi sự thay đổi của 'calculationMethod'
     this.form.get('calculationMethod')?.valueChanges.subscribe(value => {
       this.onCalcMethodChange(value);
     });
   }
 
-  /** Khởi tạo Form (Reactive) */
   initForm(): void {
     this.form = this.fb.group({
       buildingId: ['', Validators.required],
       feeType: ['', Validators.required],
       calculationMethod: [null, Validators.required],
-      // Trường này sẽ bị disable/enable
       unitPrice: [{ value: 0, disabled: false }, [Validators.required, Validators.min(0)]], 
       unit: [''],
-      // FormArray cho TIERED (lũy tiến)
       tiers: this.fb.array([]) 
     });
   }
 
-  /** Lấy FormArray 'tiers' (để dùng trong HTML) */
   get tiers(): FormArray {
     return this.form.get('tiers') as FormArray;
   }
 
-  /** Tạo một FormGroup cho 1 bậc giá */
   createTierGroup(data?: TieredPrice): FormGroup {
     return this.fb.group({
       fromValue: [data?.fromValue ?? 0, Validators.required],
@@ -97,17 +87,14 @@ export class PriceQuotationFormComponent implements OnInit {
     });
   }
 
-  /** Thêm 1 bậc giá mới */
   addTier(): void {
     this.tiers.push(this.createTierGroup());
   }
 
-  /** Xóa 1 bậc giá */
   removeTier(index: number): void {
     this.tiers.removeAt(index);
   }
 
-  /** Kiểm tra xem có đang ở chế độ Sửa không */
   checkEditMode(): void {
     this.editId = this.route.snapshot.paramMap.get('id');
     if (this.editId) {
@@ -116,12 +103,10 @@ export class PriceQuotationFormComponent implements OnInit {
     }
   }
 
-  /** Tải dữ liệu (nếu ở chế độ Sửa) */
   loadQuotationData(id: string): void {
     this.isLoading = true;
     this.quotationService.getPriceQuotationById(id).subscribe({
       next: (data) => {
-        // Patch các giá trị cơ bản
         this.form.patchValue({
           buildingId: data.buildingId,
           feeType: data.feeType,
@@ -130,13 +115,10 @@ export class PriceQuotationFormComponent implements OnInit {
           unit: data.unit
         });
 
-        // Nếu là TIERED, xử lý JSON trong 'note'
         if (data.calculationMethod === ECalculationMethod.TIERED && data.note) {
           try {
             const tiersData: TieredPrice[] = JSON.parse(data.note);
-            // Xóa mảng cũ
             this.tiers.clear();
-            // Thêm các bậc giá vào FormArray
             tiersData.forEach(tier => {
               this.tiers.push(this.createTierGroup(tier));
             });
@@ -146,7 +128,7 @@ export class PriceQuotationFormComponent implements OnInit {
           }
         }
         
-        this.onCalcMethodChange(data.calculationMethod); // Cập nhật UI
+        this.onCalcMethodChange(data.calculationMethod); 
         this.isLoading = false;
       },
       error: (err) => {
@@ -158,7 +140,6 @@ export class PriceQuotationFormComponent implements OnInit {
     });
   }
 
-  /** Tải danh sách Tòa nhà (cho combobox) */
   loadBuildings(): void {
     this.quotationService.getBuildings().subscribe({
       next: (data) => {
@@ -171,25 +152,20 @@ export class PriceQuotationFormComponent implements OnInit {
     });
   }
 
-  /** Logic động: Ẩn/hiện trường dựa trên Phương thức tính */
   onCalcMethodChange(method: ECalculationMethod): void {
     const unitPriceControl = this.form.get('unitPrice');
 
     if (method === ECalculationMethod.TIERED) {
-      // Nếu là Lũy tiến:
-      unitPriceControl?.disable(); // Tắt ô Đơn giá
-      // Nếu mảng rỗng, thêm 1 bậc mặc định
+      unitPriceControl?.disable();
       if (this.tiers.length === 0) {
         this.addTier();
       }
     } else {
-      // Nếu là các loại khác:
-      unitPriceControl?.enable(); // Bật ô Đơn giá
-      this.tiers.clear(); // Xóa hết các bậc giá (nếu có)
+      unitPriceControl?.enable(); 
+      this.tiers.clear(); 
     }
   }
 
-  /** Xử lý Submit Form (Thêm/Sửa) */
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -198,28 +174,24 @@ export class PriceQuotationFormComponent implements OnInit {
     }
 
     this.isSaving = true;
-    const formValue = this.form.getRawValue(); // Lấy cả giá trị bị disable
+    const formValue = this.form.getRawValue(); 
 
-    // Chuẩn bị DTO
     const dto: PriceQuotationCreateDto = {
       buildingId: formValue.buildingId,
       feeType: formValue.feeType,
       calculationMethod: formValue.calculationMethod,
-      unitPrice: 0, // Giá trị mặc định
+      unitPrice: 0, 
       unit: formValue.unit,
       note: null
     };
 
-    // Xử lý logic TIERED vs Giá cố định
     if (formValue.calculationMethod === ECalculationMethod.TIERED) {
-      dto.note = JSON.stringify(formValue.tiers); // Chuyển mảng bậc giá thành JSON
-      // Lưu giá bậc đầu tiên vào unitPrice (theo yêu cầu của bạn)
+      dto.note = JSON.stringify(formValue.tiers); 
       dto.unitPrice = formValue.tiers.length > 0 ? formValue.tiers[0].unitPrice : 0;
     } else {
-      dto.unitPrice = formValue.unitPrice; // Lấy giá từ ô Đơn giá
+      dto.unitPrice = formValue.unitPrice; 
     }
 
-    // Quyết định gọi API Thêm mới hay Cập nhật
     const saveObservable: Observable<any> = this.isEditMode
       ? this.quotationService.updatePriceQuotation(this.editId!, dto)
       : this.quotationService.createPriceQuotation(dto);
@@ -229,7 +201,7 @@ export class PriceQuotationFormComponent implements OnInit {
         this.isSaving = false;
         const successMsg = this.isEditMode ? 'Cập nhật thành công' : 'Thêm mới thành công';
         this.snackBar.open(successMsg, 'Đóng', { duration: 3000 });
-        this.router.navigate(['/manager/manage-quotation']); // Quay về trang danh sách
+        this.router.navigate(['/manager/manage-quotation']); 
       },
       error: (err) => {
         this.isSaving = false;
@@ -239,7 +211,6 @@ export class PriceQuotationFormComponent implements OnInit {
     });
   }
 
-  /** Quay về trang danh sách */
   goBack(): void {
     this.router.navigate(['/manager/manage-quotation']);
   }
