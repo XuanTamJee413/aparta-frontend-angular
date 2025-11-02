@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>Tạo Role mới</h2>
+<div mat-dialog-content>
+  <label>Tên Role</label>
+  <input type="text" [(ngModel)]="roleName" placeholder="Nhập tên role (>=3 ký tự)" />
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Hủy</button>
+  <button mat-button color="primary" [disabled]="roleName.trim().length < 3" (click)="confirm()">Tạo</button>
+</div>

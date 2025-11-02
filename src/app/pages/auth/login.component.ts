@@ -23,88 +23,69 @@ export class LoginComponent {
   error = signal<string | null>(null);
 
   form = this.fb.group({
-    phone: ['', [Validators.required]],
-    password: ['', [Validators.required]]
+    phone: ['', [Validators.required, Validators.pattern(/^\d{9,11}$/)]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.submitting.set(true);
     this.error.set(null);
     const body = {
       phone: this.form.value.phone,
       password: this.form.value.password
     };
-    const baseUrl = (location.host.includes('localhost:4200') || location.hostname === 'localhost') ? '/api' : environment.apiUrl;
-    this.http.post<{ token: string }>(`${baseUrl}/auth/login`, body)
+    this.http.post<any>(`${environment.apiUrl}/auth/login`, body)
       .subscribe({
         next: (res) => {
-          this.auth.setToken(res.token);
+          const token: string | undefined = (res && (res.token || res.Token)) as string | undefined;
+          if (!token) {
+            // Backend succeeded but no token field as expected
+            this.error.set('Login response missing token');
+            this.submitting.set(false);
+            return;
+          }
+          this.auth.setToken(token);
           this.navigateByRole();
+          this.submitting.set(false);
         },
         error: (err) => {
-          this.error.set(err?.error?.message || 'Login failed');
+          const backend = err?.error;
+          let message = 'Login failed';
+          if (typeof backend === 'string') {
+            message = backend;
+          } else if (backend?.message) {
+            message = backend.message;
+          } else if (err?.statusText) {
+            message = err.statusText;
+          }
+          this.error.set(message);
           this.submitting.set(false);
         }
       });
   }
 
-  loginDemo(role: 'admin' | 'staff' | 'resident'): void {
-    const token = this.createUnsignedJwt({
-      id: 'demo', name: 'Demo User', email: 'demo@example.com', role, exp: Math.floor(Date.now()/1000) + 60 * 60 * 4,
-      iss: 'ApartaAPI', aud: 'ApartaAPI'
-    });
-    this.auth.setToken(token);
-    this.navigateByRole();
-  }
-
-  // private navigateByRole(): void {
-  //   const payload = this.auth.user();
-  //   const role = String(payload?.role || '').trim().toLowerCase();
-  //   if (role === 'admin') {
-  //     this.router.navigateByUrl('/admin/dashboard');
-  //   } else if (role === 'staff') {
-  //     this.router.navigateByUrl('/manager');
-  //   } else {
-  //     this.router.navigateByUrl('/home');
-  //   }
-  // }
   private navigateByRole(): void {
-    const payload = this.auth.user();
-    const role = String(payload?.role || '').trim().toLowerCase();
-
-    switch (role) {
-      case 'admin':
-        this.router.navigateByUrl('/admin/dashboard');
-        break;
-      
-      case 'manager':
-      case 'finance_staff':
-      case 'maintenance_staff':
-      case 'operation_staff':
-        this.router.navigateByUrl('/manager');
-        break;
-      
-      case 'resident':
-        this.router.navigateByUrl('/home');
-        break;
-
-      default:
-        this.router.navigateByUrl('/home');
-        break;
+    if (this.auth.hasRole('custom')) {
+      this.router.navigateByUrl('/manager');
+      return;
     }
-  }
-
-  private createUnsignedJwt(payload: Record<string, unknown>): string {
-    const header = { alg: 'HS256', typ: 'JWT' };
-    const base64url = (obj: unknown) => {
-      const json = JSON.stringify(obj);
-      const b = btoa(unescape(encodeURIComponent(json)));
-      return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    };
-    return `${base64url(header)}.${base64url(payload)}.demo-signature`;
+    if (this.auth.hasRole('admin')) {
+      this.router.navigateByUrl('/admin');
+      return;
+    }
+    if (this.auth.hasRole('resident')) {
+      this.router.navigateByUrl('/home');
+      return;
+    }
+    if (this.auth.hasRole('staff')) {
+      this.router.navigateByUrl('/manager');
+      return;
+    }
+    // Missing/unknown role
+    this.router.navigateByUrl('/not-found');
   }
 }
-
-
- 

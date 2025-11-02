@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
-
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -37,11 +37,11 @@ export class AdminLayout {
   private isSmallScreenQuery = '(max-width: 959.98px)';
   isSmallScreen$: Observable<boolean>;
 
-  auth = inject(AuthService);
-  private router = inject(Router);
-  private breakpointObserver = inject(BreakpointObserver);
-
-  constructor() {
+  constructor(
+    private breakpointObserver: BreakpointObserver,
+    private router: Router,
+    private auth: AuthService
+  ) {
     this.isSmallScreen$ = this.breakpointObserver.observe(this.isSmallScreenQuery)
       .pipe(
         map(result => result.matches),
@@ -55,7 +55,7 @@ export class AdminLayout {
     }
   }
 
-  onLogout(): void {
+  logout(): void {
     this.auth.logout();
     this.router.navigateByUrl('/login');
   }

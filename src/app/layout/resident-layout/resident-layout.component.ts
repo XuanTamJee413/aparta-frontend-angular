@@ -11,8 +11,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule, MatMenu } from '@angular/material/menu';
-
-import { AuthService } from '../../services/auth.service'; 
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-resident-layout',
@@ -38,11 +38,11 @@ export class ResidentLayoutComponent {
   private isSmallScreenQuery = '(max-width: 959.98px)';
   isSmallScreen$: Observable<boolean>;
 
-  auth = inject(AuthService);
-  private router = inject(Router);
-  private breakpointObserver = inject(BreakpointObserver);
-
-  constructor() {
+  constructor(
+    private breakpointObserver: BreakpointObserver,
+    private router: Router,
+    private auth: AuthService
+  ) {
     this.isSmallScreen$ = this.breakpointObserver.observe(this.isSmallScreenQuery)
       .pipe(
         map(result => result.matches),
@@ -56,8 +56,8 @@ export class ResidentLayoutComponent {
     }
   }
 
-  onLogout(): void {
-    this.auth.logout(); 
+  logout(): void {
+    this.auth.logout();
     this.router.navigateByUrl('/login');
   }
 }

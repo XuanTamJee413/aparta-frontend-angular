@@ -81,11 +81,10 @@
       </button>
       <mat-menu #userMenuRef>
         <button mat-menu-item routerLink="editprofile">
-              <mat-icon>settings_outline</mat-icon>
-              <span>Cài đặt</span>
-            </button>
-        <button mat-menu-item (click)="onLogout()">
-          <mat-icon>exit_to_app</mat-icon>
+          <mat-icon>settings_outline</mat-icon>
+          <span>Cài đặt</span>
+        </button>
+        <button mat-menu-item (click)="logout()"> <mat-icon>exit_to_app</mat-icon>
           <span>Đăng xuất</span>
         </button>
       </mat-menu>
@@ -96,7 +95,7 @@
     </main>
 
     <footer class="layout-footer">
-      <span>© 2025 Condominium Management. All rights reserved.</span>
+      <span>© 2025 Aparta Co., Ltd. All rights reserved.</span>
     </footer>
 
   </mat-sidenav-content>

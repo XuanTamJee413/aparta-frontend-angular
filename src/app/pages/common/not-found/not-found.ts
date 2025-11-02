@@ -38,8 +38,8 @@ import { MatIconModule } from '@angular/material/icon';
         Có vẻ như đường dẫn đã bị sai hoặc trang đã được di chuyển.
       </p>
       
-      <button mat-flat-button color="primary" routerLink="/">
-        <mat-icon>home</mat-icon>
+      <button mat-flat-button color="primary" routerLink="/login">
+        <mat-icon>login</mat-icon>
         Quay về trang chủ
       </button>
 

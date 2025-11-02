@@ -9,8 +9,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    // TEMPORARILY DISABLED - Don't use auth interceptor
-    provideHttpClient(withInterceptors([]))
-    // provideHttpClient(withInterceptors([authInterceptor]))
+    provideHttpClient(withInterceptors([authInterceptor]))
   ]
 };
