@@ -35,7 +35,7 @@
         <td class="cell-service">{{ booking.serviceName }}</td>
         <td class="cell-date">{{ booking.bookingDate | date:'dd/MM/yyyy HH:mm' }}</td>
         <td class="cell-status">
-          <span class="status-badge status-{{ booking.status?.toLowerCase() }}">
+          <span class="status-badge status-{{ booking.status.toLowerCase() }}">
            {{ booking.status }}
           </span>
         </td>
