@@ -40,17 +40,7 @@ export const routes: Routes = [
     loadChildren: () => import('./pages/building/building.routes')
       .then(m => m.MANAGER_ROUTES)
   },
-  {
-    path: 'login',
-    component: LoginComponent,
-    pathMatch: 'full'
-  },
-  {
-    path: '',
-    component: LoginComponent,
-    pathMatch: 'full'
-  },
-
+  
   {
     path: '', 
     component: ResidentLayoutComponent, 
