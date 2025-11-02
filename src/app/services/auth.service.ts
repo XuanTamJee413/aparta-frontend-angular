@@ -62,36 +62,6 @@ export class AuthService {
     return expectedSet.includes(normalized as UserRole);
   }
 
-  // Map permission format from backend policy to token format
-  private mapPermissionToTokenFormat(policyName: string): string[] {
-    const mappings: { [key: string]: string[] } = {
-      'CanReadNews': ['news.read', 'CanReadNews'],
-      'CanCreateNews': ['news.create', 'CanCreateNews'],
-      'CanUpdateNews': ['news.update', 'CanUpdateNews'],
-      'CanDeleteNews': ['news.delete', 'CanDeleteNews'],
-      'CanReadApartment': ['apartment.read', 'CanReadApartment'],
-      'CanCreateApartment': ['apartment.create', 'CanCreateApartment'],
-      'CanUpdateApartment': ['apartment.update', 'CanUpdateApartment'],
-      'CanDeleteApartment': ['apartment.delete', 'CanDeleteApartment'],
-      'CanReadMeterReadingSheet': ['meter.reading.sheet', 'CanReadMeterReadingSheet'],
-      'CanCreateMeterReading': ['meter.reading.create', 'CanCreateMeterReading'],
-      'CanReadMeterReadingProgress': ['meter.reading.progress', 'CanReadMeterReadingProgress'],
-      'CanReadMeterReadingRecord': ['meter.reading.record', 'CanReadMeterReadingRecord'],
-      'CanReadMeterReadingHistory': ['meter.reading.history', 'CanReadMeterReadingHistory'],
-      'CanReadInvoiceResident': ['invoice.resident.read', 'CanReadInvoiceResident'],
-      'CanReadInvoiceStaff': ['invoice.staff.read', 'CanReadInvoiceStaff'],
-      'CanCreateInvoicePayment': ['invoice.payment.create', 'CanCreateInvoicePayment']
-    };
-
-    // If exact match exists, return mapped values
-    if (mappings[policyName]) {
-      return mappings[policyName];
-    }
-
-    // Return original policy name as well
-    return [policyName];
-  }
-
   // Check if current user has a specific permission (from JWT payload)
   hasPermission(requiredPermission: string): boolean {
     const payload = this.user();
@@ -104,38 +74,19 @@ export class AuthService {
       return true;
     }
 
-    // Try multiple field names for permissions (permission, permissions, Permission, Permissions)
-    let permissions: string | string[] | undefined = payload.permission;
-    if (!permissions && (payload as any).permissions) {
-      permissions = (payload as any).permissions;
-    }
-    if (!permissions && (payload as any).Permission) {
-      permissions = (payload as any).Permission;
-    }
-    if (!permissions && (payload as any).Permissions) {
-      permissions = (payload as any).Permissions;
-    }
-
-    if (!permissions) {
+    if (!payload.permission) {
       return false;
     }
 
-    // Normalize permission comparison (case-insensitive)
-    const normalizedRequired = requiredPermission.trim();
-    const permissionsArray: string[] = Array.isArray(permissions) 
-      ? permissions.map(p => String(p).trim())
-      : [String(permissions).trim()];
+    if (Array.isArray(payload.permission)) {
+      return payload.permission.includes(requiredPermission);
+    }
 
-    // Map policy name to possible token permission formats
-    const allowedPermissions = this.mapPermissionToTokenFormat(normalizedRequired);
-    
-    // Check if any of the mapped permissions exist in user's permissions
-    return allowedPermissions.some(allowed => 
-      permissionsArray.some(userPerm => 
-        userPerm === allowed || 
-        userPerm.toLowerCase() === allowed.toLowerCase()
-      )
-    );
+    if (typeof payload.permission === 'string') {
+      return payload.permission === requiredPermission;
+    }
+
+    return false;
   }
 
   logout(): void {
@@ -177,5 +128,4 @@ export class AuthService {
     }
   }
 }
-
 
