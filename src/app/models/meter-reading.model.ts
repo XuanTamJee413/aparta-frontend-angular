@@ -107,6 +107,7 @@ export interface RecordingProgressDto {
   progressByMeterType: {
     [key: string]: number;
   };
+  lastUpdated?: string;
 }
 
 export interface MeterReadingProgressResponse {

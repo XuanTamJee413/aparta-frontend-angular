@@ -224,7 +224,8 @@ export class MeterReadingListComponent implements OnInit {
     return new Date(dateString).toLocaleDateString('vi-VN');
   }
 
-  formatDateTime(dateString: string): string {
+  formatDateTime(dateString?: string): string {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleString('vi-VN', {
       hour: '2-digit',
