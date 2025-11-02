@@ -147,12 +147,17 @@ export class PriceQuotationService {
       { value: ECalculationMethod.PER_AREA, name: "Tính theo diện tích (m2)", description: "Đơn giá * Diện tích căn hộ." },
       { value: ECalculationMethod.FIXED_RATE, name: "Tính đồng giá (Điện/Nước)", description: "ví dụ: nước nóng, gas,..  được cung cấp bởi tòa nhà, vẫn tính theo số như số điện nhưng không lũy tiến." },
       { value: ECalculationMethod.FIXED_PER_MONTH, name: "Cố định theo tháng", description: "Thu cố định mỗi căn hộ hàng tháng." },
-      { value: ECalculationMethod.TIERED, name: "Tính lũy tiến (Bậc thang)", description: "Tính theo bậc, dùng cho Điện/Nước." },
+      //{ value: ECalculationMethod.TIERED, name: "Tính lũy tiến (Bậc thang)", description: "Tính theo bậc, dùng cho Điện/Nước." },
       { value: ECalculationMethod.FIXED_PER_VEHICLE, name: "Cố định theo phương tiện", description: "Thu phí theo từng phương tiện." },
       { value: ECalculationMethod.PER_PERSON_PER_MONTH, name: "Tính theo người/tháng", description: "Đơn giá * Số người trong căn hộ." },
       { value: ECalculationMethod.PER_USE, name: "Tính theo lượt sử dụng", description: "Thu phí mỗi khi đăng ký." },
       { value: ECalculationMethod.PER_SLOT, name: "Tính theo gói (ví dụ: BBQ)", description: "Thu phí theo khung giờ đăng ký." },
       { value: ECalculationMethod.PERCENT_PER_DAY_ON_DEBT, name: "Phạt % quá hạn", description: "Đơn giá là % (ví dụ: 0.05 = 5%)." },
+      
+      { value: ECalculationMethod.PER_HOUR, name: "Tính theo giờ", description: "Đơn giá * số giờ sử dụng." },
+      { value: ECalculationMethod.FIXED_ONE_TIME, name: "Cố định một lần", description: "Thu phí một lần duy nhất khi phát sinh." },
+      { value: ECalculationMethod.FIXED_PER_PET_PER_MONTH, name: "Cố định theo thú cưng/tháng", description: "Đơn giá * số lượng thú cưng." },
+      { value: ECalculationMethod.PER_KG, name: "Tính theo KG", description: "Đơn giá * số KG (ví dụ: giặt là)." }
     ];
   }
 }
