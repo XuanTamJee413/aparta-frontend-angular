@@ -32,12 +32,13 @@
           [ngClass]="{
             'status-active': currentNews.status === 'active',
             'status-draft': currentNews.status === 'draft',
-            'status-delete': currentNews.status === 'delete'
+            'status-delete': currentNews.status === 'delete',
+            'status-null': !currentNews.status || currentNews.status === null
           }">
           <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
             <circle cx="4" cy="4" r="3" />
           </svg>
-          {{ currentNews.status === 'active' ? 'Active' : currentNews.status === 'draft' ? 'Draft' : 'Deleted' }}
+          {{ currentNews.status === 'active' ? 'Active' : currentNews.status === 'draft' ? 'Draft' : currentNews.status === 'delete' ? 'Deleted' : 'None' }}
         </span>
       </div>
       <div class="info-item">

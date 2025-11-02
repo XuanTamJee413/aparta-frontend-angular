@@ -2,88 +2,52 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  InvoiceDto,
-  PagedList,
-  InvoiceQueryParameters,
-  InvoiceResponse
-} from '../../models/invoice.model';
+import { InvoiceDto } from '../../models/invoice.model';
+
+export interface ApiResponse<T> {
+  data: T;
+  succeeded: boolean;
+  message: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class InvoiceService {
-  private apiUrl = `${environment.apiUrl}/Invoice`; // Try uppercase first
-  
-  // Fallback URL in case API uses lowercase
-  private getApiUrl(): string {
-    return this.apiUrl;
-  }
+  private apiUrl = `${environment.apiUrl}/Invoice`;
 
   constructor(private http: HttpClient) { }
 
   /**
-   * Get all invoices with query parameters
+   * Get user's own invoices (for residents)
+   * GET /api/Invoice/my-invoices
    */
-  getInvoices(params: InvoiceQueryParameters): Observable<InvoiceResponse> {
-    let httpParams = new HttpParams();
-
-    if (params.status) {
-      httpParams = httpParams.set('status', params.status);
-    }
-    if (params.searchTerm) {
-      httpParams = httpParams.set('searchTerm', params.searchTerm);
-    }
-    if (params.month) {
-      httpParams = httpParams.set('month', params.month);
-    }
-    if (params.sortBy) {
-      httpParams = httpParams.set('sortBy', params.sortBy);
-    }
-    if (params.sortOrder) {
-      httpParams = httpParams.set('sortOrder', params.sortOrder);
-    }
-    if (params.pageNumber) {
-      httpParams = httpParams.set('pageNumber', params.pageNumber.toString());
-    }
-    if (params.pageSize) {
-      httpParams = httpParams.set('pageSize', params.pageSize.toString());
-    }
-
-    const url = `${this.apiUrl}`;
-    console.log('Invoice API URL:', url);
-    console.log('Invoice API Params:', httpParams.toString());
-    console.log('Full URL:', `${url}?${httpParams.toString()}`);
-
-    return this.http.get<InvoiceResponse>(url, { params: httpParams });
+  getMyInvoices(): Observable<ApiResponse<InvoiceDto[]>> {
+    return this.http.get<ApiResponse<InvoiceDto[]>>(`${this.apiUrl}/my-invoices`);
   }
 
   /**
-   * Get pending invoices (convenience endpoint)
+   * Get all invoices with query parameters (for staff)
+   * GET /api/Invoice?status=xxx&apartmentCode=xxx
    */
-  getPendingInvoices(params: Omit<InvoiceQueryParameters, 'status'>): Observable<InvoiceResponse> {
+  getInvoices(status?: string, apartmentCode?: string): Observable<ApiResponse<InvoiceDto[]>> {
     let httpParams = new HttpParams();
 
-    if (params.searchTerm) {
-      httpParams = httpParams.set('searchTerm', params.searchTerm);
+    if (status) {
+      httpParams = httpParams.set('status', status);
     }
-    if (params.month) {
-      httpParams = httpParams.set('month', params.month);
-    }
-    if (params.sortBy) {
-      httpParams = httpParams.set('sortBy', params.sortBy);
-    }
-    if (params.sortOrder) {
-      httpParams = httpParams.set('sortOrder', params.sortOrder);
-    }
-    if (params.pageNumber) {
-      httpParams = httpParams.set('pageNumber', params.pageNumber.toString());
-    }
-    if (params.pageSize) {
-      httpParams = httpParams.set('pageSize', params.pageSize.toString());
+    if (apartmentCode) {
+      httpParams = httpParams.set('apartmentCode', apartmentCode);
     }
 
-    return this.http.get<InvoiceResponse>(`${this.apiUrl}/pending`, { params: httpParams });
+    return this.http.get<ApiResponse<InvoiceDto[]>>(`${this.apiUrl}`, { params: httpParams });
+  }
+
+  /**
+   * Create payment link for an invoice
+   * POST /api/Invoice/{invoiceId}/pay
+   */
+  createPayment(invoiceId: string): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.apiUrl}/${invoiceId}/pay`, {});
   }
 }
-

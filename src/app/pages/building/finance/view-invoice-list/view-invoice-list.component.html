@@ -6,41 +6,30 @@
     <div class="filter-row">
       <div class="filter-group">
         <label for="status">Trạng thái:</label>
-        <select id="status" [(ngModel)]="status" (change)="onFilterChange()" class="filter-input">
+        <select id="status" [(ngModel)]="status" (change)="onStatusChange()" class="filter-input">
           <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
         </select>
       </div>
 
       <div class="filter-group">
-        <label for="month">Tháng:</label>
-        <input type="month" id="month" [(ngModel)]="month" (change)="onFilterChange()" 
-               class="filter-input" [value]="month || getCurrentMonth()" />
+        <label for="apartmentCode">Mã căn hộ:</label>
+        <div class="input-with-clear">
+          <input type="text" id="apartmentCode" [(ngModel)]="apartmentCode" 
+                 (input)="onApartmentCodeInput()" 
+                 placeholder="Nhập mã căn hộ..."
+                 class="filter-input" />
+          <button *ngIf="apartmentCode" type="button" (click)="onClearApartmentCode()" class="clear-btn" title="Xóa">×</button>
+        </div>
       </div>
 
       <div class="filter-group">
-        <label for="sortBy">Sắp xếp theo:</label>
-        <select id="sortBy" [(ngModel)]="sortBy" (change)="onFilterChange()" class="filter-input">
-          <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="sortOrder">Thứ tự:</label>
-        <select id="sortOrder" [(ngModel)]="sortOrder" (change)="onFilterChange()" class="filter-input">
-          <option value="asc">Tăng dần</option>
-          <option value="desc">Giảm dần</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="filter-row">
-      <div class="filter-group search-group">
-        <label for="search">Tìm kiếm:</label>
-        <input type="text" id="search" [(ngModel)]="searchTerm" 
-               (keyup.enter)="onFilterChange()" 
-               placeholder="Mã hóa đơn, mã căn hộ, tên cư dân..."
-               class="filter-input search-input" />
-        <button type="button" (click)="onFilterChange()" class="btn-search">Tìm kiếm</button>
+        <label for="billingPeriod">Kỳ thanh toán:</label>
+        <div class="input-with-clear">
+          <input type="month" id="billingPeriod" [(ngModel)]="billingPeriod" 
+                 (change)="onBillingPeriodChange()" 
+                 class="filter-input month-picker" />
+          <button *ngIf="billingPeriod" type="button" (click)="onClearBillingPeriod()" class="clear-btn" title="Xóa">×</button>
+        </div>
       </div>
     </div>
   </div>
@@ -49,7 +38,10 @@
   <div *ngIf="error" class="alert-error">{{ error }}</div>
 
   <!-- Loading -->
-  <div *ngIf="loading" class="loading-message">Đang tải dữ liệu...</div>
+  <div *ngIf="loading" class="loading-message">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
 
   <!-- Invoice Table -->
   <div *ngIf="!loading && !error" class="table-container">
@@ -83,26 +75,11 @@
             </span>
           </td>
         </tr>
-        <tr *ngIf="invoices.length === 0">
+        <tr *ngIf="invoices.length === 0 && !loading">
           <td colspan="9" class="no-data">Không có dữ liệu</td>
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- Pagination -->
-  <div *ngIf="!loading && totalPages > 0" class="pagination-container">
-    <div class="pagination-info">
-      Hiển thị {{ (pageNumber - 1) * pageSize + 1 }} đến 
-      {{ Math.min(pageNumber * pageSize, totalCount) }} của {{ totalCount }} kết quả
-    </div>
-    <div class="pagination-controls">
-      <button class="pagination-btn" (click)="onPageChange(pageNumber - 1)" 
-              [disabled]="!hasPreviousPage">&lt; Trước</button>
-      <span class="page-info">Trang {{ pageNumber }} / {{ totalPages }}</span>
-      <button class="pagination-btn" (click)="onPageChange(pageNumber + 1)" 
-              [disabled]="!hasNextPage">Sau &gt;</button>
-    </div>
   </div>
 </div>
 

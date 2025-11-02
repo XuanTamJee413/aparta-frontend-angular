@@ -1,14 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
 import { MeterReadingService } from '../../../../services/operation/meter-reading.service';
+import { AuthService } from '../../../../services/auth.service';
 import { 
-  MeterReading, 
-  MeterReadingResponse, 
-  MeterReadingProgress,
-  MeterReadingQueryParams
+  MeterReadingDto,
+  MeterReadingQueryParams,
+  RecordingProgressDto
 } from '../../../../models/meter-reading.model';
+
+interface GroupedReading {
+  apartmentCode: string;
+  waterReading?: MeterReadingDto;
+  electricReading?: MeterReadingDto;
+}
 
 @Component({
   selector: 'app-meter-reading-list',
@@ -18,28 +25,16 @@ import {
   styleUrls: ['./meter-reading-list.component.css']
 })
 export class MeterReadingListComponent implements OnInit {
-  // Make Math available in the template
   Math = Math;
-  meterReadings: MeterReading[] = [];
-  filteredReadings: MeterReading[] = [];
-  groupedReadings: Array<{
-    apartmentCode: string;
-    waterReading?: MeterReading;
-    electricReading?: MeterReading;
-  }> = [];
+  meterReadings: MeterReadingDto[] = [];
+  filteredReadings: MeterReadingDto[] = [];
+  groupedReadings: GroupedReading[] = [];
   buildings: BuildingDto[] = [];
   loading = false;
   error = '';
   successMessage = '';
   generatingInvoices = false;
-  progressData: {
-    buildingId: string;
-    billingPeriod: string;
-    totalApartments: number;
-    recordedByMeterType: { [key: string]: number };
-    progressByMeterType: { [key: string]: number };
-    lastUpdated: string;
-  } | null = null;
+  progressData: RecordingProgressDto | null = null;
   
   // Filter properties
   selectedBuilding: string = '';
@@ -49,15 +44,17 @@ export class MeterReadingListComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   totalItems = 0;
+  totalPages = 0;
 
   constructor(
     private buildingService: BuildingService,
-    private meterReadingService: MeterReadingService
+    private meterReadingService: MeterReadingService,
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadBuildings();
-    this.loadMeterReadings();
   }
 
   loadBuildings(): void {
@@ -78,7 +75,13 @@ export class MeterReadingListComponent implements OnInit {
 
   loadProgressData(): void {
     if (!this.selectedBuilding || !this.selectedPeriod) return;
-    
+
+    // Check token before making request
+    const token = this.authService.getToken();
+    if (!token || !this.authService.isAuthenticated()) {
+      return;
+    }
+
     this.meterReadingService.getReadingProgress(this.selectedBuilding, this.selectedPeriod)
       .subscribe({
         next: (response) => {
@@ -87,18 +90,23 @@ export class MeterReadingListComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error loading progress data:', error);
-          // Don't show error to user as it's a secondary feature
+          // Silent fail - progress is secondary feature
+          if (error.status === 401 || error.status === 403) {
+            // Token expired or no permission, but don't show error for secondary feature
+            this.progressData = null;
+          }
         }
       });
   }
 
   onBuildingChange(): void {
+    this.currentPage = 1;
     this.loadMeterReadings();
     this.loadProgressData();
   }
 
   onPeriodChange(): void {
+    this.currentPage = 1;
     this.loadMeterReadings();
     this.loadProgressData();
   }
@@ -108,7 +116,18 @@ export class MeterReadingListComponent implements OnInit {
       return;
     }
 
+    // Check token before making request
+    const token = this.authService.getToken();
+    if (!token || !this.authService.isAuthenticated()) {
+      this.error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      this.authService.logout();
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.loading = true;
+    this.error = '';
+    
     const params: MeterReadingQueryParams = {
       buildingCode: this.selectedBuilding,
       billingPeriod: this.selectedPeriod,
@@ -118,26 +137,41 @@ export class MeterReadingListComponent implements OnInit {
     
     this.meterReadingService.getRecordedReadings(params).subscribe({
       next: (response) => {
-        this.meterReadings = response.data;
-        this.totalItems = response.totalCount || 0;
-        this.filteredReadings = [...this.meterReadings];
-        this.groupReadingsByApartment();
+        if (response.succeeded && Array.isArray(response.data)) {
+          this.meterReadings = response.data;
+          this.totalItems = response.data.length;
+          this.filteredReadings = [...this.meterReadings];
+          this.groupReadingsByApartment();
+        } else {
+          this.error = response.message || 'Không thể tải danh sách chỉ số.';
+          this.meterReadings = [];
+          this.filteredReadings = [];
+          this.groupedReadings = [];
+          this.totalItems = 0;
+        }
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading meter readings:', error);
-        this.error = 'Có lỗi xảy ra khi tải dữ liệu';
         this.loading = false;
+        
+        if (error.status === 403) {
+          this.error = 'Bạn không có quyền xem danh sách chỉ số. Vui lòng liên hệ quản trị viên.';
+        } else if (error.status === 401) {
+          this.error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          this.authService.logout();
+          this.router.navigate(['/login']);
+          return;
+        } else {
+          this.error = error.error?.message || error.message || 'Đã xảy ra lỗi khi tải danh sách chỉ số';
+        }
+        
+        this.meterReadings = [];
+        this.filteredReadings = [];
+        this.groupedReadings = [];
+        this.totalItems = 0;
       }
     });
   }
-
-  filterReadings(): void {
-    this.filteredReadings = [...this.meterReadings];
-    this.groupReadingsByApartment();
-    this.currentPage = 1;
-  }
-
 
   getCurrentMonthPeriod(): string {
     const now = new Date();
@@ -145,11 +179,7 @@ export class MeterReadingListComponent implements OnInit {
   }
 
   groupReadingsByApartment(): void {
-    const grouped = new Map<string, {
-      apartmentCode: string;
-      waterReading?: MeterReading;
-      electricReading?: MeterReading;
-    }>();
+    const grouped = new Map<string, GroupedReading>();
 
     this.filteredReadings.forEach(reading => {
       if (!grouped.has(reading.apartmentCode)) {
@@ -168,25 +198,22 @@ export class MeterReadingListComponent implements OnInit {
 
     this.groupedReadings = Array.from(grouped.values());
     this.totalItems = this.groupedReadings.length;
+    this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
   }
 
-  get paginatedGroups(): Array<{
-    apartmentCode: string;
-    waterReading?: MeterReading;
-    electricReading?: MeterReading;
-  }> {
+  get paginatedGroups(): GroupedReading[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return this.groupedReadings.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   onPageChange(page: number): void {
-    if (page >= 1 && page <= this.getTotalPages().length) {
+    if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
   }
 
   getTotalPages(): number[] {
-    return Array(Math.ceil(this.totalItems / this.itemsPerPage)).fill(0).map((x, i) => i + 1);
+    return Array(this.totalPages).fill(0).map((x, i) => i + 1);
   }
 
   getMeterTypeDisplay(type: string): string {
@@ -214,6 +241,15 @@ export class MeterReadingListComponent implements OnInit {
       return;
     }
 
+    // Check token before making request
+    const token = this.authService.getToken();
+    if (!token || !this.authService.isAuthenticated()) {
+      this.error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      this.authService.logout();
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.generatingInvoices = true;
     this.error = '';
     this.successMessage = '';
@@ -222,7 +258,7 @@ export class MeterReadingListComponent implements OnInit {
       next: (response) => {
         this.generatingInvoices = false;
         if (response.succeeded) {
-          this.successMessage = response.message || 'Tạo hóa đơn thành công!';
+          this.successMessage = response.message || `Đã tạo ${response.data || 0} hóa đơn thành công!`;
           // Reload data after generating invoices
           this.loadMeterReadings();
           this.loadProgressData();
@@ -236,8 +272,17 @@ export class MeterReadingListComponent implements OnInit {
       },
       error: (error) => {
         this.generatingInvoices = false;
-        console.error('Error generating invoices:', error);
-        this.error = error.error?.message || 'Có lỗi xảy ra khi tạo hóa đơn';
+        
+        if (error.status === 403) {
+          this.error = 'Bạn không có quyền tạo hóa đơn. Vui lòng liên hệ quản trị viên.';
+        } else if (error.status === 401) {
+          this.error = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          this.authService.logout();
+          this.router.navigate(['/login']);
+          return;
+        } else {
+          this.error = error.error?.message || error.message || 'Có lỗi xảy ra khi tạo hóa đơn';
+        }
       }
     });
   }

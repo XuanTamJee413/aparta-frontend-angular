@@ -22,9 +22,20 @@ export interface Apartment {
   status?: string;
 }
 
-export interface MeterReading {
-  id: string;
+export interface ApartmentMeterInfo {
+  apartmentId: string;
   apartmentCode: string;
+  buildingId: string;
+  meters: Meter[];
+  status?: string;
+}
+
+export interface MeterReading {
+  id?: string;
+  meterReadingId?: string;
+  apartmentId: string;
+  apartmentCode: string;
+  meterId: string;
   meterType: 'ELECTRIC' | 'WATER';
   previousReading: number;
   currentReading: number;
@@ -35,14 +46,40 @@ export interface MeterReading {
   buildingId: string;
   buildingName: string;
   billingPeriod: string;
+  readingDate?: string;
+  estimatedCost?: number;
+}
+
+export interface MeterReadingDto {
+  meterReadingId?: string;
+  id?: string;
+  apartmentId: string;
+  apartmentCode: string;
+  meterId: string;
+  meterType: 'ELECTRIC' | 'WATER';
+  previousReading: number;
+  currentReading: number;
+  consumption: number;
+  recordedAt: string;
+  recordedById: string;
+  recordedByName: string;
+  buildingId: string;
+  buildingName: string;
+  billingPeriod: string;
+  readingDate?: string;
+  estimatedCost?: number;
+}
+
+export interface RecordMeterReadingRequest {
+  apartmentId: string;
+  meterId: string;
+  currentReading: number;
 }
 
 export interface MeterReadingResponse {
   data: MeterReading[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
+  succeeded: boolean;
+  message: string;
 }
 
 export interface MeterReadingProgress {
@@ -51,16 +88,29 @@ export interface MeterReadingProgress {
   billingPeriod: string;
   totalApartments: number;
   recordedByMeterType: {
-    [key: string]: number; // key: 'WATER' | 'ELECTRIC', value: count
+    [key: string]: number;
   };
   progressByMeterType: {
-    [key: string]: number; // key: 'WATER' | 'ELECTRIC', value: percentage
+    [key: string]: number;
   };
   lastUpdated: string;
 }
 
+export interface RecordingProgressDto {
+  buildingId: string;
+  buildingName: string;
+  billingPeriod: string;
+  totalApartments: number;
+  recordedByMeterType: {
+    [key: string]: number;
+  };
+  progressByMeterType: {
+    [key: string]: number;
+  };
+}
+
 export interface MeterReadingProgressResponse {
-  data: MeterReadingProgress;
+  data: RecordingProgressDto;
   succeeded: boolean;
   message: string;
 }
