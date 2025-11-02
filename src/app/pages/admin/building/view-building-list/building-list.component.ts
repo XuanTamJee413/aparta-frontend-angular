@@ -20,6 +20,31 @@ export class BuildingListComponent implements OnInit {
   errorMessage = '';
   isDeleting = false;
   
+  // Sorting
+  sortActiveFirst = true; // true: Active trước, false: Active sau
+
+  // Client-side sorted view
+  sortedBuildings(): BuildingDto[] {
+    const list = [...this.buildings];
+    return list.sort((a, b) => {
+      if (a.isActive === b.isActive) {
+        // Secondary by name for stable UX
+        const an = (a.name || '').toLowerCase();
+        const bn = (b.name || '').toLowerCase();
+        if (an < bn) return -1;
+        if (an > bn) return 1;
+        return 0;
+      }
+      return this.sortActiveFirst
+        ? (a.isActive ? -1 : 1)
+        : (a.isActive ? 1 : -1);
+    });
+  }
+
+  setActiveSort(first: boolean): void {
+    this.sortActiveFirst = first;
+  }
+
   // Search and pagination
   searchTerm = '';
   currentPage = 1;

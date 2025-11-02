@@ -93,7 +93,7 @@
       <button mat-icon-button>
         <mat-icon>notifications_none</mat-icon>
       </button>
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button [matMenuTriggerFor]="userMenuRef">
         <mat-icon>account_circle</mat-icon>
       </button>
       <mat-menu #userMenuRef>
@@ -101,7 +101,7 @@
           <mat-icon>person_outline</mat-icon>
           <span>Hồ sơ</span>
         </button>
-        <button mat-menu-item>
+        <button mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
           <span>Đăng xuất</span>
         </button>
@@ -113,7 +113,7 @@
     </main>
 
     <footer class="layout-footer">
-      <span>© 2025 Condominium Management. All rights reserved.</span>
+      <span>© 2025 Aparta Co., Ltd. All rights reserved.</span>
     </footer>
 
   </mat-sidenav-content>

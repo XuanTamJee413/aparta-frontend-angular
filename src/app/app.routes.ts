@@ -4,11 +4,31 @@ import { ManagerLayout } from './layout/manager-layout/manager-layout';
 import { ResidentLayoutComponent } from './layout/resident-layout/resident-layout.component';
 import { NotFound } from './pages/common/not-found/not-found';
 import { LoginComponent } from './pages/auth/login.component';
+import { authCanMatch, authCanActivate } from './guards/auth.guard';
+import { roleCanMatch, roleCanActivate } from './guards/role.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'login'
+  },
+  
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [authCanActivate],
+  },
+  
+  {
+    path: 'forbidden',
+    loadComponent: () => import('./pages/common/forbidden/forbidden').then(m => m.Forbidden)
+  },
+  
+  {
     path: 'admin',
     component: AdminLayout, 
+    canActivate: [authCanActivate, roleCanActivate(['admin','custom'])],
     loadChildren: () => import('./pages/admin/admin.routes')
       .then(m => m.ADMIN_ROUTES)
   },
@@ -16,6 +36,7 @@ export const routes: Routes = [
   {
     path: 'manager',
     component: ManagerLayout, 
+    canActivate: [authCanActivate, roleCanActivate(['staff','admin','custom'])],
     loadChildren: () => import('./pages/building/building.routes')
       .then(m => m.MANAGER_ROUTES)
   },
@@ -23,13 +44,14 @@ export const routes: Routes = [
   {
     path: '', 
     component: ResidentLayoutComponent, 
+    canActivate: [authCanActivate, roleCanActivate(['resident','admin','custom'])],
     loadChildren: () => import('./pages/resident/resident.routes')
       .then(m => m.RESIDENT_ROUTES)
   },
   
   {
     path: '**', 
-    component: LoginComponent,
+    component: NotFound,
     pathMatch: 'full'
   }
 ];

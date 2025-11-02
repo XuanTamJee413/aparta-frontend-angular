@@ -4,9 +4,14 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h3 class="card-title mb-0">Quản lý tòa nhà</h3>
-          <a routerLink="/admin/building/create" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Thêm tòa nhà mới
-          </a>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" (click)="refreshBuildings()" title="Làm mới">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+            <a routerLink="/admin/building/create" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Thêm tòa nhà mới
+            </a>
+          </div>
         </div>
         
         <div class="card-body">
@@ -30,16 +35,21 @@
               </div>
             </div>
             <div class="col-md-6">
-              <div class="d-flex justify-content-end">
+              <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
                 <select class="form-select me-2" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
                   <option value="5">5 mỗi trang</option>
                   <option value="10">10 mỗi trang</option>
                   <option value="20">20 mỗi trang</option>
                   <option value="50">50 mỗi trang</option>
                 </select>
-                <button class="btn btn-outline-primary" (click)="refreshBuildings()">
-                  <i class="fas fa-sync-alt"></i> Làm mới
-                </button>
+                <div class="btn-group" role="group" aria-label="Sắp xếp trạng thái">
+                  <button class="btn btn-outline-secondary" [class.active]="sortActiveFirst" (click)="setActiveSort(true)" title="Hoạt động trước">
+                    <i class="fas fa-toggle-on text-success"></i> Active trước
+                  </button>
+                  <button class="btn btn-outline-secondary" [class.active]="!sortActiveFirst" (click)="setActiveSort(false)" title="Không hoạt động trước">
+                    <i class="fas fa-toggle-off text-danger"></i> Inactive trước
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -75,7 +85,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let building of buildings" [class.table-warning]="!building.isActive">
+                <tr *ngFor="let building of sortedBuildings()" [class.table-warning]="!building.isActive">
                   <td>
                     <code>{{ building.buildingCode }}</code>
                   </td>

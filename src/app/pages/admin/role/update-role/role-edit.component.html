@@ -1,0 +1,19 @@
+<div *ngIf="role() as r">
+  <h2>Quyền cho: {{ r.roleName }}</h2>
+  <div class="groups">
+    <div class="group" *ngFor="let g of groups()">
+      <h3>{{ g.groupName }}</h3>
+      <div class="perm" *ngFor="let p of g.permissions">
+        <label>
+          <input type="checkbox"
+                 [checked]="selected().has(p.permissionId)"
+                 (change)="toggle(p.permissionId, $event.target.checked)"
+                 [disabled]="r.isSystemDefined"
+          />
+          <span>{{ p.name }}</span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <button mat-button color="primary" (click)="save()" [disabled]="r.isSystemDefined || saving()">Lưu</button>
+</div>

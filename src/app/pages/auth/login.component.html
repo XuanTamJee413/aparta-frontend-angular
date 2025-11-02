@@ -9,9 +9,17 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
       <label for="phone">Phone</label>
       <input type="tel" id="phone" formControlName="phone" placeholder="e.g. 0912345678" />
+      <div class="error" *ngIf="form.get('phone')?.touched && form.get('phone')?.errors">
+        <div *ngIf="form.get('phone')?.errors?.['required']">Vui lòng nhập số điện thoại.</div>
+        <div *ngIf="form.get('phone')?.errors?.['pattern']">Số điện thoại phải gồm 9-11 chữ số.</div>
+      </div>
 
       <label for="password">Password</label>
       <input type="password" id="password" formControlName="password" placeholder="Enter your password" />
+      <div class="error" *ngIf="form.get('password')?.touched && form.get('password')?.errors">
+        <div *ngIf="form.get('password')?.errors?.['required']">Vui lòng nhập mật khẩu.</div>
+        <div *ngIf="form.get('password')?.errors?.['minlength']">Mật khẩu tối thiểu 6 ký tự.</div>
+      </div>
 
       <div class="aux">
         <a class="link" href="#">Forgot Password?</a>

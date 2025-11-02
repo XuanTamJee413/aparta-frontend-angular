@@ -1,0 +1,31 @@
+<h2 mat-dialog-title>Phân quyền: {{ (role() || {}).roleName }}</h2>
+<div mat-dialog-content>
+  <div *ngIf="loading(); else contentTpl">Đang tải...</div>
+  <ng-template #contentTpl>
+    <div class="groups">
+      <div class="group" *ngFor="let g of groups()">
+        <h3>{{ g.groupName }}</h3>
+        <div class="perm" *ngFor="let p of g.permissions">
+          <label>
+            <!-- <input type="checkbox"
+                   [checked]="selected().has(p.permissionId)"
+                   (change)="toggle(p.permissionId, $event.target.checked)"
+                   [disabled]="role()?.isSystemDefined"
+            /> -->
+            <input type="checkbox"
+                   [checked]="selected().has(p.permissionId)"
+                   (change)="toggle(p.permissionId, $event.target.checked)"
+            />
+            <span>{{ p.name }}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Đóng</button>
+  <!-- <button mat-button color="primary" [disabled]="role()?.isSystemDefined || saving()" (click)="save()">Lưu</button> -->
+  <button mat-button color="primary" [disabled]="saving()" (click)="save()">Lưu</button>
+</div>
+<!-- Tạm thời tắt -->
