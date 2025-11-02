@@ -3,7 +3,8 @@ import { HomepageComponent } from './homepage/homepage.component';
 import { VisitorComponent } from './visitor/visitor.component';
 import { InvoiceComponent } from './invoice/invoice.component';
 import { ChatComponent } from './chat/chat.component';
-import { ServiceComponent } from './service/service.component';
+import { BookServiceComponent } from './service/book-service.component/book-service.component'; 
+import { MyBookingsComponent } from './service/my-bookings.component/my-bookings.component';
 import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
@@ -20,8 +21,12 @@ export const RESIDENT_ROUTES: Routes = [
     component: InvoiceComponent
   },
   {
-    path: 'service',
-    component: ServiceComponent
+    path: 'booking-service',
+    component: BookServiceComponent
+  },
+  {
+    path: 'my-booking-service',
+    component: MyBookingsComponent
   },
   {
     path: 'news',

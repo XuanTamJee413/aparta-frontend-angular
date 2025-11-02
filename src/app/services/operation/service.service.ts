@@ -1,9 +1,10 @@
+//src/app/services/operation/service.sevice.ts
+
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http'; // 1. Import HttpParams
+import { HttpClient, HttpParams } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-// 2. Import các model mới
 import { 
   ServiceDto, 
   ServiceCreateDto, 
@@ -21,7 +22,6 @@ export class ServiceService {
 
   constructor(private http: HttpClient) { }
 
-  // 3. THAY ĐỔI HOÀN TOÀN: getServices
   getServices(params: ServiceQueryParameters): Observable<PagedList<ServiceDto>> {
     
     // Xây dựng các tham số query
@@ -39,8 +39,6 @@ export class ServiceService {
     // Gửi request với các tham số
     return this.http.get<PagedList<ServiceDto>>(this.apiUrl, { params: httpParams });
   }
-
-  // --- CÁC PHƯƠNG THỨC KHÁC GIỮ NGUYÊN ---
 
   // GET: api/Service/{id}
   getServiceById(id: string): Observable<ServiceDto> {

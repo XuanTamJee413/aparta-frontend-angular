@@ -21,11 +21,11 @@ export class UtilityListComponent implements OnInit {
 
   @ViewChild('utilityDialog') dialog!: ElementRef<HTMLDialogElement>;
 
-  utilities: UtilityDto[] = []; // Đổi tên biến
+  utilities: UtilityDto[] = [];
   
   isEditMode: boolean = false;
-  currentUtilityId: string | null = null; // Đổi tên biến
-  utilityForm: FormGroup; // Đổi tên biến
+  currentUtilityId: string | null = null; 
+  utilityForm: FormGroup; 
 
   statusOptions = [
     { label: 'Actice', value: 'Active' },
@@ -33,34 +33,32 @@ export class UtilityListComponent implements OnInit {
   ];
 
   constructor(
-    private utilityService: UtilityService, // Dùng UtilityService
+    private utilityService: UtilityService, 
     private fb: FormBuilder
   ) {
-    // Cập nhật Form Group
     this.utilityForm = this.fb.group({
       name: ['', Validators.required],
-      location: ['', Validators.required], // Thêm location
-      periodTime: [null, Validators.min(0)], // Thêm periodTime (có thể null)
+      location: ['', Validators.required], 
+      periodTime: [null, Validators.min(0)], 
       status: ['Available', Validators.required]
     });
   }
 
   ngOnInit(): void {
-    this.loadUtilities(); // Đổi tên hàm
+    this.loadUtilities(); 
   }
 
-  loadUtilities(): void { // Đổi tên hàm
-    this.utilityService.getUtilities().subscribe({ // Dùng utilityService
+  loadUtilities(): void { 
+    this.utilityService.getUtilities().subscribe({ 
       next: (data) => { this.utilities = data; },
       error: (err) => { console.error('Lỗi khi tải tiện ích:', err); }
     });
   }
 
-  // Mở dialog Thêm mới
   openCreateModal(): void {
     this.isEditMode = false;
     this.currentUtilityId = null;
-    this.utilityForm.reset({ // Reset các trường mới
+    this.utilityForm.reset({ 
       name: '',
       location: '',
       periodTime: null,
@@ -69,11 +67,11 @@ export class UtilityListComponent implements OnInit {
     this.dialog.nativeElement.showModal();
   }
 
-  // Mở dialog Sửa
-  openEditModal(utility: UtilityDto): void { // Sửa tham số
+
+  openEditModal(utility: UtilityDto): void { 
     this.isEditMode = true;
     this.currentUtilityId = utility.utilityId;
-    this.utilityForm.patchValue({ // Patch các trường mới
+    this.utilityForm.patchValue({ 
       name: utility.name,
       location: utility.location,
       periodTime: utility.periodTime,
@@ -82,18 +80,16 @@ export class UtilityListComponent implements OnInit {
     this.dialog.nativeElement.showModal();
   }
 
-  // Đóng dialog
   hideDialog(): void {
     this.dialog.nativeElement.close();
   }
 
-  // Reset form khi đóng
   onDialogClose(): void {
     this.utilityForm.reset();
   }
 
-  // Lưu (Thêm mới hoặc Cập nhật)
-  saveUtility(): void { // Đổi tên hàm
+
+  saveUtility(): void {
     if (this.utilityForm.invalid) {
       this.utilityForm.markAllAsTouched();
       return;
@@ -102,11 +98,10 @@ export class UtilityListComponent implements OnInit {
     const formValue = this.utilityForm.value;
 
     if (this.isEditMode && this.currentUtilityId) {
-      // --- CHẾ ĐỘ SỬA ---
       const updateDto: UtilityUpdateDto = {
         name: formValue.name,
-        location: formValue.location, // Thêm trường
-        periodTime: formValue.periodTime, // Thêm trường
+        location: formValue.location,
+        periodTime: formValue.periodTime,
         status: formValue.status
       };
       this.utilityService.updateUtility(this.currentUtilityId, updateDto).subscribe({
@@ -117,11 +112,10 @@ export class UtilityListComponent implements OnInit {
         error: (err) => console.error('Lỗi khi cập nhật:', err)
       });
     } else {
-      // --- CHẾ ĐỘ THÊM MỚI ---
       const createDto: UtilityCreateDto = {
         name: formValue.name,
-        location: formValue.location, // Thêm trường
-        periodTime: formValue.periodTime, // Thêm trường
+        location: formValue.location,
+        periodTime: formValue.periodTime, 
         status: formValue.status
       };
       this.utilityService.addUtility(createDto).subscribe({
@@ -134,8 +128,7 @@ export class UtilityListComponent implements OnInit {
     }
   }
 
-  // Xóa
-  deleteUtility(id: string): void { // Đổi tên hàm
+  deleteUtility(id: string): void { 
     if (confirm('Bạn có chắc muốn xóa tiện ích này?')) {
       this.utilityService.deleteUtility(id).subscribe({
         next: () => {
