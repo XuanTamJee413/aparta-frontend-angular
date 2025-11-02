@@ -11,7 +11,7 @@ import { environment } from '../../../environments/environment';
 })
 export class UtilityService {
 
-  private apiUrl = `${environment.apiUrl}/Utility`; // URL trỏ đến Utility API
+  private apiUrl = `${environment.apiUrl}/Utility`; 
 
   constructor(private http: HttpClient) { }
 

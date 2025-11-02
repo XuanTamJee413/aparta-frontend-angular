@@ -1,0 +1,54 @@
+<h2 class="section-title">Lịch sử đặt dịch vụ</h2>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="loading-state">
+  <div class="spinner"></div>
+  <p>Đang tải lịch sử...</p>
+</div>
+
+<!-- Error -->
+<div *ngIf="errorMessage" class="alert error">
+  {{ errorMessage }}
+</div>
+
+<!-- Empty -->
+<div *ngIf="!isLoading && myBookings.length === 0" class="empty-state">
+  <div class="empty-icon">Empty Icon</div>
+  <p>Bạn chưa có lịch sử đặt dịch vụ nào.</p>
+</div>
+
+<!-- Table -->
+<div *ngIf="myBookings.length > 0" class="table-wrapper">
+  <table class="booking-table">
+    <thead>
+      <tr>
+        <th>Dịch vụ</th>
+        <th>Ngày đặt</th>
+        <th>Trạng thái</th>
+        <th>Ghi chú của tôi</th>
+        <th>Ghi chú nhân viên</th>
+        <th>Số tiền</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let booking of myBookings" class="booking-row">
+        <td class="cell-service">{{ booking.serviceName }}</td>
+        <td class="cell-date">{{ booking.bookingDate | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td class="cell-status">
+          <span class="status-badge status-{{ booking.status?.toLowerCase() }}">
+           {{ booking.status }}
+          </span>
+        </td>
+        <td class="cell-note">
+          {{ booking.residentNote || '—' }}
+        </td>
+        <td class="cell-note">
+          {{ booking.staffNote || '—' }}
+        </td>
+        <td class="cell-amount">
+          {{ booking.paymentAmount | currency:'VND':'symbol':'1.0-0' }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

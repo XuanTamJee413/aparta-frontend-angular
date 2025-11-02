@@ -1,0 +1,85 @@
+<h2 class="section-title">Danh sách dịch vụ</h2>
+
+<div *ngIf="isLoading && availableServices.length === 0" class="loading">
+  <div class="spinner"></div>
+  <p>Đang tải dịch vụ...</p>
+</div>
+
+<div *ngIf="!isLoading && availableServices.length === 0" class="empty-state">
+  <p>Không có dịch vụ nào khả dụng.</p>
+</div>
+
+<div class="service-grid">
+  <div
+    *ngFor="let service of availableServices"
+    class="service-card"
+    (click)="openBookingModal(service)"
+    role="button"
+    tabindex="0"
+  >
+    <div class="icon">🔧</div>
+    <h3 class="service-name">{{ service.name }}</h3>
+    <div class="service-price">{{ service.price | currency:'VND':'symbol':'1.0-0' }}</div>
+    <button class="btn-book">Đặt ngay</button>
+  </div>
+</div>
+
+<!-- Booking Dialog -->
+<dialog #bookingDialog class="booking-dialog" (close)="selectedService = null">
+  <div *ngIf="selectedService" class="dialog-content">
+    <header class="dialog-header">
+      <h3>Đặt dịch vụ: {{ selectedService.name }}</h3>
+      <button class="close-btn" (click)="closeDialog()" aria-label="Đóng">&times;</button>
+    </header>
+
+    <div class="service-summary">
+      <strong>Giá:</strong> {{ selectedService.price | currency:'VND':'symbol':'1.0-0' }}
+    </div>
+
+    <form [formGroup]="bookingForm" (ngSubmit)="onSubmitBooking()" class="booking-form">
+      <div class="form-group">
+        <label for="bookingDate">Chọn ngày & giờ</label>
+        <input
+          id="bookingDate"
+          type="datetime-local"
+          formControlName="bookingDate"
+          class="form-input"
+        />
+        <div
+          *ngIf="bookingForm.get('bookingDate')?.invalid && bookingForm.get('bookingDate')?.touched"
+          class="error-text"
+        >
+          Vui lòng chọn ngày giờ.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="residentNote">Ghi chú (tùy chọn)</label>
+        <textarea
+          id="residentNote"
+          formControlName="residentNote"
+          placeholder="Ví dụ: Máy lạnh bị rò rỉ nước..."
+          class="form-textarea"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert error">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>
+
+      <div class="dialog-actions">
+        <button type="button" (click)="closeDialog()" class="btn-secondary" [disabled]="isLoading">
+          Hủy
+        </button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="bookingForm.invalid || isLoading"
+        >
+          <span *ngIf="isLoading" class="spinner-small"></span>
+          {{ isLoading ? 'Đang đặt...' : 'Xác nhận đặt' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
