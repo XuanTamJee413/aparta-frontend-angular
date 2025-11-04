@@ -1,0 +1,153 @@
+<div class="page-container">
+  @if (isLoading) {
+    <div class="card" style="text-align: center; padding: 2rem;">
+      <p>Đang tải thông tin cư dân...</p>
+    </div>
+  } @else if (error) {
+    <div class="card alert alert-danger" style="padding: 1.5rem;">
+      <strong>Lỗi!</strong> {{ error }}
+    </div>
+  } @else if (member) {
+    <header class="profile-header">
+      <div class="profile-summary">
+        @if (member.faceImageUrl) {
+          <img [src]="member.faceImageUrl" alt="Avatar" class="avatar-img">
+        } @else {
+          <div class="avatar">{{ getInitials(member.name) }}</div>
+        }
+
+        <div class="info">
+          <h1>{{ member.name }}</h1>
+          <div class="contact-details">
+            <span>Căn hộ: {{ member.apartmentId }}</span>
+            <span>SĐT: {{ member.phoneNumber || 'N/A' }}</span>
+            <span>
+              <span class="status-badge" [ngClass]="member.status === 'Active' ? 'status-active' : 'status-inactive'">
+                {{ member.status }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="info-grid">
+      <section class="card">
+        <h3 class="card-title">Thông tin cá nhân</h3>
+        <p class="card-subtitle">Chi tiết định danh và liên lạc</p>
+        <ul class="details-list">
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Họ và tên</span>
+              <span class="detail-value">{{ member.name }}</span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Số điện thoại</span>
+              <span class="detail-value">{{ member.phoneNumber || 'Chưa cập nhật' }}</span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">CCCD/CMND</span>
+              <span class="detail-value">{{ member.idNumber || 'Chưa cập nhật' }}</span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Ngày sinh</span>
+              <span class="detail-value">
+                {{ member.dateOfBirth ? (member.dateOfBirth | date:'dd/MM/yyyy') : 'Chưa cập nhật' }}
+              </span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Giới tính</span>
+              <span class="detail-value">{{ member.gender || 'Chưa cập nhật' }}</span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Quốc tịch</span>
+              <span class="detail-value">{{ member.nationality || 'Chưa cập nhật' }}</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h3 class="card-title">Thông tin Cư trú</h3>
+        <p class="card-subtitle">Chi tiết vai trò và căn hộ</p>
+        <ul class="details-list">
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Mã căn hộ</span>
+              <span class="detail-value">{{ member.apartmentId }}</span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Vai trò</span>
+              <span class="detail-value">
+                @if (member.isOwner) {
+                  <span class="status-owner-detail">Chủ Hộ</span>
+                } @else {
+                  <span class="status-member-detail">Thành viên ({{ member.familyRole || 'N/A' }})</span>
+                }
+              </span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Trạng thái</span>
+              <span class="detail-value">{{ member.status }}</span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Ngày tạo hồ sơ</span>
+              <span class="detail-value">
+                {{ member.createdAt ? (member.createdAt | date: 'dd/MM/yyyy HH:mm') : 'N/A' }}
+              </span>
+            </div>
+          </li>
+          <li>
+            <div class="detail-icon"></div>
+            <div>
+              <span class="detail-label">Cập nhật lần cuối</span>
+              <span class="detail-value">
+                {{ member.updatedAt ? (member.updatedAt | date: 'dd/MM/yyyy HH:mm') : 'N/A' }}
+              </span>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    @if (member.info) {
+      <section class="card">
+        <h3 class="card-title">Thông tin thêm</h3>
+        <p class="card-subtitle">Ghi chú bổ sung về cư dân</p>
+        <div class="info-text">
+          {{ member.info }}
+        </div>
+      </section>
+    }
+  } @else {
+    <div class="card" style="text-align: center; padding: 2rem;">
+      <p>Không tìm thấy thông tin cư dân.</p>
+    </div>
+  }
+</div>

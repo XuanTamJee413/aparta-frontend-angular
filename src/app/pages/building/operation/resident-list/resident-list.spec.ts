@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ResidentList } from './resident-list.component';
 
-import { ResidentList } from './resident-list';
+
 
 describe('ResidentList', () => {
   let component: ResidentList;

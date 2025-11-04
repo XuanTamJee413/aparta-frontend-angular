@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 import { ApartmentList } from './management/apartment-management/apartment-list/apartment-list.component';
-import { ResidentList } from './operation/resident-list/resident-list';
+import { ResidentList } from './operation/resident-list/resident-list.component';
 import { NewsListComponent } from './management/news/news-list/news-list';
 import { NewsCreateComponent } from './management/news/news-create/news-create';
 import { NewsEditComponent } from './management/news/news-edit/news-edit';
 import { AssetList } from './management/asset-management/asset-list/asset-list.component';
-import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail';
+import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail.component';
 import { CreateAsset } from './management/asset-management/create-asset/create-asset';
 import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle-list';
 import { PriceQuotationFormComponent } from './management/price-quotation/pricequotation-form/pricequotation-form';
@@ -35,7 +35,7 @@ export const MANAGER_ROUTES: Routes = [
   // --- END FINANCE  ---
 
   // --- OPERATION  ---
-  { path: 'resident-list', loadComponent: () => import('./operation/resident-list/resident-list').then(m => m.ResidentList) }, // Giữ bản tối giản từ Son
+  { path: 'resident-list', loadComponent: () => import('./operation/resident-list/resident-list.component').then(m => m.ResidentList) }, // Giữ bản tối giản từ Son
   { path: 'resident-list/detail/:id', component: ResidentDetail },
   { path: 'visitor-list', loadComponent: () => import('./operation/visitor/visitor-list/visitor-list').then(m => m.VisitorList) },
   { path: 'vehicle-list', component: VehicleList }, // Giữ từ HEAD
