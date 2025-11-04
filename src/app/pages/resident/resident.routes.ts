@@ -9,7 +9,7 @@ import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { ProfileComponent } from '../common/profile/profile.component';
-import { RegisterHousehold } from './household/register-household/register-household';
+import { RegisterHousehold } from './household/register-household/register-household.component';
 import { RegisterVehicle } from './vehicle/register-vehicle/register-vehicle.component';
 
 export const RESIDENT_ROUTES: Routes = [

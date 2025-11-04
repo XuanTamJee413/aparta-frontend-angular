@@ -5,7 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ApartmentMember, ApartmentMemberQueryParameters, ResidentManagementService,ApiResponse } from '../../../../services/management/resident-management.service';
+import { ApartmentMember, ApartmentMemberQueryParameters, ResidentManagementService,ApiResponse } from '../../../../../services/management/resident-management.service';
 
 
 
