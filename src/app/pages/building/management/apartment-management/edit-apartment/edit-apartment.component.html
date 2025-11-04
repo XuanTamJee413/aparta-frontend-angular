@@ -1,0 +1,47 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Cập nhật Căn hộ: {{ apartmentCode() }}</h1>
+      <p>Chỉnh sửa thông tin bên dưới và bấm Lưu.</p>
+    </header>
+
+    @if (isLoading()) {
+      <div class="text-center" style="padding: 2rem;">
+        <p>Đang tải dữ liệu...</p>
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+
+        <div class="form-group">
+          <label for="code" class="form-label">Mã Căn hộ (Code)</label>
+          <input id="code" type="text" class="form-control" formControlName="code" />
+          @if (form.controls.code.invalid && (form.controls.code.dirty || form.controls.code.touched)) {
+            <div class="form-error">Mã căn hộ là bắt buộc.</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="area" class="form-label">Diện tích (m²)</label>
+          <input id="area" type="number" class="form-control" formControlName="area" />
+          @if (form.controls.area.invalid && (form.controls.area.dirty || form.controls.area.touched)) {
+            <div class="form-error">Diện tích phải là một số dương.</div>
+          }
+        </div>
+
+        @if (success()) {
+          <div class="alert-success">{{ success() }}</div>
+        }
+        @if (error()) {
+          <div class="alert-danger">{{ error() }}</div>
+        }
+
+        <div class="form-actions">
+          <a routerLink="/manager/manage-apartment" class="btn-secondary">Hủy</a>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting()">
+            @if (submitting()) { <span>Đang lưu...</span> } @else { <span>Lưu thay đổi</span> }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

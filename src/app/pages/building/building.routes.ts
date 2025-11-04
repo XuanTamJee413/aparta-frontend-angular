@@ -6,11 +6,11 @@ import { NewsCreateComponent } from './management/news/news-create/news-create';
 import { NewsEditComponent } from './management/news/news-edit/news-edit';
 import { AssetList } from './management/asset-management/asset-list/asset-list.component';
 import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail.component';
-import { CreateAsset } from './management/asset-management/create-asset/create-asset';
-import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle-list';
+import { CreateAsset } from './management/asset-management/create-asset/create-asset.component';
+import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle-list.component';
 import { PriceQuotationFormComponent } from './management/price-quotation/pricequotation-form/pricequotation-form';
 import { PriceQuotationListComponent } from './management/price-quotation/pricequotation-list/pricequotation-list';
-import { EditApartment } from './management/apartment-management/edit-apartment/edit-apartment';
+import { EditApartment } from './management/apartment-management/edit-apartment/edit-apartment.component';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
