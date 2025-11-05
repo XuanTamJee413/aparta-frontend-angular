@@ -1,124 +1,58 @@
-export interface Meter {
-  meterId: string;
-  meterType: 'ELECTRIC' | 'WATER';
-  lastReading: number;
-  currentReading: number | null;
-  isRecorded: boolean;
-  readingDate?: string;
-  recordedByName?: string;
-  inputError?: boolean;
-  saving?: boolean;
-  saveError?: string;
-  saveSuccess?: boolean;
-  consumption?: number;
-  estimatedCost?: number;
+// src/app/models/meter-reading.model.ts
+
+export interface ApartmentDto {
+  apartmentId: string;
+  buildingId: string;
+  code: string;
+  type: string;
+  status: string;
+  area: number;
+  createdAt: string;
 }
 
-export interface Apartment {
-  apartmentId: string;
-  apartmentCode: string;
-  buildingId: string;
-  meters: Meter[];
-  status?: string;
+export type MeterReadingServiceDto = string[];
+
+export interface MeterReadingCreateDto {
+  feeType: string;
+  readingValue: number;
+  readingDate: string;
 }
 
-export interface ApartmentMeterInfo {
-  apartmentId: string;
-  apartmentCode: string;
-  buildingId: string;
-  meters: Meter[];
-  status?: string;
+export interface MeterReadingUpdateDto {
+  readingValue: number;
 }
 
-export interface MeterReading {
-  id?: string;
-  meterReadingId?: string;
-  apartmentId: string;
-  apartmentCode: string;
-  meterId: string;
-  meterType: 'ELECTRIC' | 'WATER';
-  previousReading: number;
-  currentReading: number;
-  consumption: number;
-  recordedAt: string;
-  recordedById: string;
-  recordedByName: string;
+export interface BillingRequestDto {
   buildingId: string;
-  buildingName: string;
   billingPeriod: string;
-  readingDate?: string;
-  estimatedCost?: number;
+  issueDate: string;
+  dueDate: string;
 }
 
+// Additional interfaces for meter reading history
 export interface MeterReadingDto {
+  readingId: string;
   meterReadingId?: string;
-  id?: string;
   apartmentId: string;
-  apartmentCode: string;
-  meterId: string;
-  meterType: 'ELECTRIC' | 'WATER';
-  previousReading: number;
-  currentReading: number;
-  consumption: number;
-  recordedAt: string;
-  recordedById: string;
-  recordedByName: string;
-  buildingId: string;
-  buildingName: string;
-  billingPeriod: string;
-  readingDate?: string;
-  estimatedCost?: number;
+  apartmentName?: string;
+  feeType: string;
+  readingValue: number;
+  readingDate: string;
+  billingPeriod?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  invoiceItemId?: string | null;
 }
 
-export interface RecordMeterReadingRequest {
-  apartmentId: string;
-  meterId: string;
-  currentReading: number;
+export interface MeterReadingCheckResponse {
+  exists: boolean;
+  meterReading: MeterReadingDto | null;
+  latestReading: MeterReadingDto | null;
 }
 
-export interface MeterReadingResponse {
-  data: MeterReading[];
+export interface ApiResponse<T> {
   succeeded: boolean;
   message: string;
+  data?: T;
 }
 
-export interface MeterReadingProgress {
-  buildingId: string;
-  buildingName: string;
-  billingPeriod: string;
-  totalApartments: number;
-  recordedByMeterType: {
-    [key: string]: number;
-  };
-  progressByMeterType: {
-    [key: string]: number;
-  };
-  lastUpdated: string;
-}
-
-export interface RecordingProgressDto {
-  buildingId: string;
-  buildingName: string;
-  billingPeriod: string;
-  totalApartments: number;
-  recordedByMeterType: {
-    [key: string]: number;
-  };
-  progressByMeterType: {
-    [key: string]: number;
-  };
-  lastUpdated?: string;
-}
-
-export interface MeterReadingProgressResponse {
-  data: RecordingProgressDto;
-  succeeded: boolean;
-  message: string;
-}
-
-export interface MeterReadingQueryParams {
-  buildingCode: string;
-  billingPeriod: string;
-  pageNumber?: number;
-  pageSize?: number;
-}

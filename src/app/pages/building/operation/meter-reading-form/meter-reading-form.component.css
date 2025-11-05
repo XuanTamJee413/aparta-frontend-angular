@@ -1,0 +1,442 @@
+.meter-reading-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.main-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.main-card mat-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  margin: -16px -16px 0 -16px;
+  border-radius: 4px 4px 0 0;
+}
+
+.main-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.main-card mat-card-title mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.main-card mat-card-content {
+  padding: 24px;
+}
+
+/* Section Styles */
+.form-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.section-title mat-icon {
+  color: #667eea;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Apartment List */
+.apartment-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.apartment-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.apartment-card:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.apartment-card.selected {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.apartment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.apartment-icon {
+  color: #667eea;
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.apartment-code {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.apartment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.status-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* Selected Apartment Section */
+.selected-apartment-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e8f0ff 100%);
+  border: 2px solid #667eea;
+}
+
+.selected-apartment-info {
+  margin-bottom: 24px;
+}
+
+.apartment-info-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.info-item mat-icon {
+  color: #667eea;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Reading Form */
+.reading-form {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.date-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 2px dashed #e0e0e0;
+}
+
+/* Mode Indicator */
+.mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+}
+
+.mode-indicator mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.mode-indicator .update-mode {
+  color: #ff9800;
+}
+
+.mode-indicator .create-mode {
+  color: #4caf50;
+}
+
+.mode-indicator .update-mode-text {
+  color: #ff9800;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.mode-indicator .create-mode-text {
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.checking-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #f0f4ff;
+  color: #667eea;
+  font-size: 14px;
+}
+
+.readings-grid-section {
+  margin-bottom: 24px;
+}
+
+.grid-title {
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.readings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.reading-card {
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.reading-card:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.reading-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.reading-card-header mat-icon {
+  color: #667eea;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.fee-type-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.submit-btn {
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submit-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* History Section */
+.history-section {
+  background: white;
+}
+
+.history-table {
+  width: 100%;
+  margin-top: 16px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.history-table th {
+  background: #667eea;
+  color: white;
+  font-weight: 600;
+  padding: 16px;
+}
+
+.history-table td {
+  padding: 16px;
+}
+
+.history-table tr:hover {
+  background: #f8f9fa;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* Loading States */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+}
+
+.loading-state p {
+  color: #666;
+  margin: 0;
+}
+
+/* Pagination - Ẩn range label */
+::ng-deep .mat-mdc-paginator-range-label {
+  display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .meter-reading-container {
+    padding: 10px;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .apartment-list {
+    grid-template-columns: 1fr;
+  }
+
+  .readings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-card mat-card-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-card mat-card-content {
+    padding: 16px;
+  }
+
+  .reading-card {
+    padding: 16px;
+  }
+}

@@ -41,11 +41,8 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'profile', loadComponent: () => import('../common/profile/profile.component').then(m => m.ProfileComponent), title: 'Profile' },
   { path: 'manage-service', loadComponent: () => import('./operation/service-list.component/service-list.component').then(m => m.ServiceListComponent), title: 'Quản lý Dịch vụ' },
   { path: 'manage-utility', loadComponent: () => import('./operation/utility-list.component/utility-list.component').then(m => m.UtilityListComponent), title: 'Quản lý Tiện ích' },
+  { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
   
-  // Routes mới từ nhánh Son
-  { path: 'meter-record', canActivate: [permissionGuard('meterreading.sheet.read')], loadComponent: () => import('./management/meter-recording-sheet/meter-recording-sheet.component').then(m => m.MeterRecordingSheetComponent), title: 'Nhập chỉ số điện nước' },
-  { path: 'meter-reading-list', canActivate: [permissionGuard(['meterreading.record.read', 'meterreading.progress.read'])], loadComponent: () => import('./operation/meter-reading-list/meter-reading-list.component').then(m => m.MeterReadingListComponent), title: 'Danh sách chỉ số điện nước' },
-  
-  // --- END OPERATION  ---
+  // --- END OPERATION  ---
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
 ];
