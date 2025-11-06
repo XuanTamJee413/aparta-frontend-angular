@@ -20,6 +20,9 @@ import { MatTableModule } from '@angular/material/table';
 import { MeterReadingService } from '../../../../services/operation/meter-reading.service';
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
 import { MeterReadingStatusDto } from '../../../../models/meter-reading.model';
+import { BillingService } from '../../../../services/billing.service';
+import { AuthService } from '../../../../services/auth.service';
+import { finalize } from 'rxjs/operators';
 
 // Custom date formats for month/year picker
 export const MONTH_YEAR_FORMATS = {
@@ -100,6 +103,7 @@ export class MeterReadingStatusComponent implements OnInit {
   
   // Search
   apartmentSearchText: string = '';
+  statusFilter: string = ''; // Filter theo trạng thái
   
   // Pagination
   pageSize = 20;
@@ -109,10 +113,13 @@ export class MeterReadingStatusComponent implements OnInit {
   loadingBuildings = false;
   loadingStatus = false;
   hasData = false;
+  isGenerating = false;
 
   constructor(
+    public authService: AuthService,
     private meterReadingService: MeterReadingService,
     private buildingService: BuildingService,
+    private billingService: BillingService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -231,19 +238,35 @@ export class MeterReadingStatusComponent implements OnInit {
     return this.apartmentIds;
   }
 
-  // Lọc apartments theo search text
+  // Lọc apartments theo search text và status
   filterApartments(): void {
-    if (!this.apartmentSearchText.trim()) {
-      this.filteredApartmentIds = [...this.apartmentIds];
-    } else {
+    let filtered = [...this.apartmentIds];
+    
+    // Filter theo apartment code
+    if (this.apartmentSearchText.trim()) {
       const searchLower = this.apartmentSearchText.toLowerCase().trim();
-      this.filteredApartmentIds = this.apartmentIds.filter(apartmentId => {
+      filtered = filtered.filter(apartmentId => {
         const apartmentCode = this.getApartmentCode(apartmentId);
         return apartmentCode.toLowerCase().includes(searchLower);
       });
     }
+    
+    // Filter theo status
+    if (this.statusFilter) {
+      filtered = filtered.filter(apartmentId => {
+        const readings = this.groupedReadings.get(apartmentId) || [];
+        return readings.some(reading => reading.status === this.statusFilter);
+      });
+    }
+    
+    this.filteredApartmentIds = filtered;
     this.totalApartments = this.filteredApartmentIds.length;
     this.pageIndex = 0;
+  }
+  
+  // Xử lý khi thay đổi status filter
+  onStatusFilterChange(): void {
+    this.filterApartments();
   }
 
   // Xử lý khi thay đổi search text
@@ -264,14 +287,23 @@ export class MeterReadingStatusComponent implements OnInit {
     this.pageSize = event.pageSize;
   }
 
-  // Lấy danh sách readings dạng flat list (cho table) - group theo apartment
+  // Lấy danh sách readings dạng flat list (cho table) - group theo apartment và filter theo status
   getFlatReadingsList(): MeterReadingStatusDto[] {
     const flatList: MeterReadingStatusDto[] = [];
     this.getPaginatedApartmentIds().forEach(apartmentId => {
-      const readings = this.groupedReadings.get(apartmentId) || [];
+      let readings = this.groupedReadings.get(apartmentId) || [];
+      // Filter theo status nếu có
+      if (this.statusFilter) {
+        readings = readings.filter(reading => reading.status === this.statusFilter);
+      }
       flatList.push(...readings);
     });
     return flatList;
+  }
+  
+  // Lấy danh sách các status options
+  getStatusOptions(): string[] {
+    return ['Chưa ghi', 'Đã ghi - Đã khóa', 'Đã ghi - Mở'];
   }
 
   // Kiểm tra xem đây có phải là apartment đầu tiên trong group không
@@ -319,6 +351,7 @@ export class MeterReadingStatusComponent implements OnInit {
           if (this.hasData) {
             this.groupReadingsByApartment();
             this.apartmentIds = Array.from(this.groupedReadings.keys()).sort();
+            this.statusFilter = ''; // Reset status filter khi load dữ liệu mới
             this.filterApartments();
           }
         } else {
@@ -374,6 +407,43 @@ export class MeterReadingStatusComponent implements OnInit {
       horizontalPosition: 'end',
       verticalPosition: 'top'
     });
+  }
+
+  // Chạy billing job để chốt sổ và tạo hóa đơn
+  runBillingJob(): void {
+    if (!this.selectedBuildingId) {
+      this.showError('Vui lòng chọn Tòa nhà');
+      return;
+    }
+
+    this.isGenerating = true;
+    const requestBody = {
+      buildingId: this.selectedBuildingId,
+      billingPeriod: this.billingPeriod || undefined
+    };
+
+    this.billingService.generateInvoices(requestBody)
+      .pipe(
+        finalize(() => {
+          this.isGenerating = false;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          if (response.succeeded) {
+            const message = response.message || 'Đã xử lý thành công';
+            this.showSuccess(message);
+            // Refresh dữ liệu để cập nhật trạng thái "Đã khóa"
+            this.loadStatus();
+          } else {
+            this.showError(response.message || 'Không thể tạo hóa đơn');
+          }
+        },
+        error: (error) => {
+          const errorMessage = error.error?.message || error.error?.Message || 'Không thể tạo hóa đơn';
+          this.showError(errorMessage);
+        }
+      });
   }
 }
 

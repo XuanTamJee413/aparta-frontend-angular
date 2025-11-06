@@ -1,19 +1,23 @@
 .meter-reading-container {
-  padding: 20px;
+  padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
+  background: #f5f7fa;
+  min-height: 100vh;
 }
 
 .main-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .main-card mat-card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px;
-  margin: -16px -16px 0 -16px;
-  border-radius: 4px 4px 0 0;
+  background: #ffffff;
+  color: #333;
+  padding: 24px;
+  margin: 0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .main-card mat-card-title {
@@ -23,12 +27,14 @@
   font-size: 24px;
   font-weight: 600;
   margin: 0;
+  color: #333;
 }
 
 .main-card mat-card-title mat-icon {
   font-size: 28px;
   width: 28px;
   height: 28px;
+  color: #666;
 }
 
 .main-card mat-card-content {
@@ -39,9 +45,10 @@
 .form-section {
   margin-bottom: 32px;
   padding: 24px;
-  background: #f8f9fa;
+  background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
@@ -56,7 +63,7 @@
 }
 
 .section-title mat-icon {
-  color: #667eea;
+  color: #666;
   font-size: 24px;
   width: 24px;
   height: 24px;
@@ -85,16 +92,16 @@
 }
 
 .apartment-card:hover {
-  border-color: #667eea;
-  background: #f0f4ff;
+  border-color: #999;
+  background: #f8f9fa;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .apartment-card.selected {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  border-color: #666;
+  background: #f5f5f5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .apartment-header {
@@ -107,7 +114,7 @@
 }
 
 .apartment-icon {
-  color: #667eea;
+  color: #666;
   font-size: 32px;
   width: 32px;
   height: 32px;
@@ -153,8 +160,8 @@
 
 /* Selected Apartment Section */
 .selected-apartment-section {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e8f0ff 100%);
-  border: 2px solid #667eea;
+  background: #f8f9fa;
+  border: 2px solid #999;
 }
 
 .selected-apartment-info {
@@ -184,7 +191,7 @@
 }
 
 .info-item mat-icon {
-  color: #667eea;
+  color: #666;
   font-size: 20px;
   width: 20px;
   height: 20px;
@@ -249,8 +256,8 @@
   margin-top: 16px;
   padding: 12px 16px;
   border-radius: 8px;
-  background: #f0f4ff;
-  color: #667eea;
+  background: #f5f5f5;
+  color: #666;
   font-size: 14px;
 }
 
@@ -280,9 +287,9 @@
 }
 
 .reading-card:hover {
-  border-color: #667eea;
-  background: #f0f4ff;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  border-color: #999;
+  background: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .reading-card-header {
@@ -295,7 +302,7 @@
 }
 
 .reading-card-header mat-icon {
-  color: #667eea;
+  color: #666;
   font-size: 24px;
   width: 24px;
   height: 24px;
@@ -386,10 +393,11 @@
 }
 
 .history-table th {
-  background: #667eea;
-  color: white;
+  background: #f5f5f5;
+  color: #333;
   font-weight: 600;
   padding: 16px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .history-table td {
