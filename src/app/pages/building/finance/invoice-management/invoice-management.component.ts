@@ -25,7 +25,11 @@ export class InvoiceManagementComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
   
-  statusOptions: string[] = ['Tất cả', 'PENDING', 'PAID'];
+  statusOptions: { value: string; label: string }[] = [
+    { value: 'Tất cả', label: 'Tất cả' },
+    { value: 'PENDING', label: 'Chờ thanh toán' },
+    { value: 'PAID', label: 'Đã thanh toán' }
+  ];
   
   constructor(
     private invoiceService: InvoiceManagementService,

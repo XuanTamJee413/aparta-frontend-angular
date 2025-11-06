@@ -31,8 +31,8 @@
             [(ngModel)]="selectedStatus" 
             (change)="onStatusChange()"
             [disabled]="isLoading">
-            <option *ngFor="let status of statusOptions" [value]="status">
-              {{ status }}
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
             </option>
           </select>
         </div>
