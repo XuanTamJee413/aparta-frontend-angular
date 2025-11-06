@@ -13,6 +13,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 })
 export class ResidentDetail implements OnInit {
   member: ApartmentMember | null = null;
+  apartmentCode: string | null = null;
   isLoading = true;
   error: string | null = null;
 
@@ -40,6 +41,18 @@ export class ResidentDetail implements OnInit {
     this.residentService.getMemberById(id).subscribe({
       next: (memberData: ApartmentMember) => {
         this.member = memberData;
+
+        const aptId = memberData.apartmentId;
+        if (aptId) {
+          this.residentService.getApartmentById(aptId).subscribe({
+            next: (apt) => this.apartmentCode = apt?.code ?? null,
+            error: (e) => {
+              console.error('Lỗi lấy Apartment Code:', e);
+              this.apartmentCode = null;
+            }
+          });
+        }
+
         this.isLoading = false;
       },
       error: (err: HttpErrorResponse) => {

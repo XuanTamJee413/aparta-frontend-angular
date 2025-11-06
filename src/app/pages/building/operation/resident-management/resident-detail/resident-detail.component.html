@@ -19,8 +19,7 @@
         <div class="info">
           <h1>{{ member.name }}</h1>
           <div class="contact-details">
-            <span>Căn hộ: {{ member.apartmentId }}</span>
-            <span>SĐT: {{ member.phoneNumber || 'N/A' }}</span>
+
             <span>
               <span class="status-badge" [ngClass]="member.status === 'Active' ? 'status-active' : 'status-inactive'">
                 {{ member.status }}
@@ -91,7 +90,7 @@
             <div class="detail-icon"></div>
             <div>
               <span class="detail-label">Mã căn hộ</span>
-              <span class="detail-value">{{ member.apartmentId }}</span>
+              <span class="detail-value">{{ apartmentCode || member.apartmentId }}</span>
             </div>
           </li>
           <li>

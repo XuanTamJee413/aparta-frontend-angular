@@ -20,6 +20,8 @@ export class ResidentList implements OnInit {
   private allMembers: ApartmentMember[] = [];
   members: ApartmentMember[] = [];
 
+  apartmentCodeMap: Record<string, string> = {};
+
   isLoading = true;
   error: string | null = null;
 
@@ -41,10 +43,26 @@ export class ResidentList implements OnInit {
   constructor(private residentService: ResidentManagementService) {}
 
   ngOnInit(): void {
+    this.loadApartments();
     this.loadMembers();
     this.searchDebouncer
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => this.loadMembers());
+  }
+   loadApartments(): void {
+    this.residentService.getApartments().subscribe({
+      next: (res) => {
+        if (res?.succeeded && Array.isArray(res.data)) {
+          this.apartmentCodeMap = res.data.reduce((acc, a) => {
+            if (a?.apartmentId && a?.code) acc[a.apartmentId] = a.code;
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi tải danh sách căn hộ:', err);
+      }
+    });
   }
 
   loadMembers(): void {

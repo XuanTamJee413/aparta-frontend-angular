@@ -43,7 +43,7 @@ export interface Apartment {
 })
 export class ResidentManagementService {
   private apiUrl = 'http://localhost:5175/api/ApartmentMembers';
-  private apartmentApiUrl = 'http;//localhost:5175/api/Apartments';
+  private apartmentApiUrl = 'http://localhost:5175/api/Apartments';
 
   constructor(private http: HttpClient) {}
 
@@ -74,5 +74,8 @@ export class ResidentManagementService {
 
       return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
     }
+   getApartmentById(id: string): Observable<Apartment> {
+    return this.http.get<Apartment>(`${this.apartmentApiUrl}/${id}`);
+  }
 
 }
