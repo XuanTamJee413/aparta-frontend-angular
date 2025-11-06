@@ -42,6 +42,7 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-service', loadComponent: () => import('./operation/service-list.component/service-list.component').then(m => m.ServiceListComponent), title: 'Quản lý Dịch vụ' },
   { path: 'manage-utility', loadComponent: () => import('./operation/utility-list.component/utility-list.component').then(m => m.UtilityListComponent), title: 'Quản lý Tiện ích' },
   { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
+  { path: 'meter-reading-status', canActivate: [permissionGuard(['meterreading.read'])], loadComponent: () => import('./operation/meter-reading-status/meter-reading-status.component').then(m => m.MeterReadingStatusComponent), title: 'Báo cáo Tình trạng Ghi chỉ số' },
   
   // --- END OPERATION  ---
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }

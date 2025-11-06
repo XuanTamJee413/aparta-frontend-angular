@@ -1,0 +1,510 @@
+.meter-reading-status-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 24px;
+}
+
+/* Header Section */
+.header-section {
+  margin-bottom: 24px;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.title-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #757575;
+  border-radius: 16px;
+}
+
+.title-icon-wrapper mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  color: white;
+}
+
+.title-text h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.title-text .subtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #666;
+  font-weight: 400;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Filter Card */
+.filter-card {
+  margin-bottom: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.filter-card mat-card-header {
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 16px 24px;
+  margin: 0;
+}
+
+.filter-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.filter-card mat-card-title mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: #757575;
+}
+
+.filter-card mat-card-content {
+  padding: 24px;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.filter-field {
+  width: 100%;
+}
+
+.field-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: #757575;
+}
+
+.prefix-icon {
+  color: #999;
+  margin-right: 8px;
+}
+
+.select-value {
+  font-weight: 500;
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #757575;
+}
+
+.option-placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.search-input-container {
+  position: relative;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #757575;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #757575;
+  box-shadow: 0 0 0 3px rgba(117, 117, 117, 0.1);
+}
+
+.hint-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  gap: 24px;
+}
+
+.loading-state p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Report Section */
+.report-section {
+  margin-top: 24px;
+}
+
+.report-header {
+  margin-bottom: 24px;
+}
+
+/* Search Card */
+.search-card {
+  margin-bottom: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.search-card mat-card-content {
+  padding: 20px 24px;
+}
+
+.apartment-search-field {
+  width: 100%;
+}
+
+.report-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.report-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #757575;
+}
+
+.report-title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.report-count {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #666;
+  font-weight: 400;
+}
+
+/* Report Table Card */
+.report-table-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.report-table {
+  width: 100%;
+  background: white;
+}
+
+.report-table th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #333;
+  padding: 16px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.report-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Cell Styles */
+.cell-apartment,
+.cell-fee-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.apartment-icon,
+.fee-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #757575;
+}
+
+.apartment-code-bold {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.reading-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.reading-value.na {
+  color: #999;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.na {
+  color: #999;
+  font-style: italic;
+}
+
+/* Status Chip */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+.chip-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.status-not-recorded {
+  background: #ffebee !important;
+  color: #c62828 !important;
+}
+
+.status-locked {
+  background: #eceff1 !important;
+  color: #546e7a !important;
+}
+
+.status-open {
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
+
+/* Row Styles - Group by Apartment */
+.report-table tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.report-table tr:first-child {
+  border-top: 2px solid #757575;
+}
+
+/* Group separator - dòng đầu tiên của mỗi apartment */
+.report-table tr[ng-reflect-row-def="[object Object]"]:not(:first-child) {
+  border-top: 2px solid #e0e0e0;
+}
+
+.row-not-recorded {
+  background-color: #fff5f5;
+}
+
+.row-not-recorded:hover {
+  background-color: #ffe0e0 !important;
+}
+
+.row-locked {
+  background-color: #fafafa;
+  opacity: 0.95;
+}
+
+.row-locked:hover {
+  background-color: #f0f0f0 !important;
+}
+
+.row-open {
+  background-color: #f1f8f4;
+}
+
+.row-open:hover {
+  background-color: #e0f2e8 !important;
+}
+
+/* Apartment group header style */
+.cell-apartment {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Empty cell for grouped apartments */
+.report-table td:empty {
+  border-left: none;
+}
+
+/* Pagination */
+.report-paginator {
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Pagination - Ẩn range label */
+::ng-deep .report-paginator .mat-mdc-paginator-range-label {
+  display: none !important;
+}
+
+/* Empty States */
+.empty-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state,
+.initial-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 20px;
+  text-align: center;
+}
+
+.empty-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #757575;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.empty-icon-wrapper mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: white;
+}
+
+.empty-state h3,
+.initial-state h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.empty-state p,
+.initial-state p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .meter-reading-status-container {
+    padding: 16px;
+  }
+
+  .header-title {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .table-container {
+    overflow-x: scroll;
+  }
+}
+
+/* Datepicker styling */
+::ng-deep .month-year-picker {
+  .mat-calendar-period-button {
+    pointer-events: auto;
+  }
+
+  .mat-calendar-arrow {
+    display: none;
+  }
+}
+
+::ng-deep .mat-datepicker-content .mat-calendar {
+  width: 300px;
+}

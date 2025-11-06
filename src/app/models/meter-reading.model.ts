@@ -56,3 +56,16 @@ export interface ApiResponse<T> {
   data?: T;
 }
 
+// DTO cho báo cáo tình trạng ghi chỉ số
+export interface MeterReadingStatusDto {
+  apartmentId: string;
+  apartmentCode: string;
+  feeType: string;
+  readingValue: number | null;
+  readingId: string | null;
+  readingDate: string | null;
+  recordedByName: string | null;
+  invoiceItemId: string | null;
+  status: string; // "Chưa ghi" | "Đã ghi - Đã khóa" | "Đã ghi - Mở"
+}
+

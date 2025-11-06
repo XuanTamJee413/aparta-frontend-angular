@@ -1,0 +1,240 @@
+<div class="meter-reading-status-container">
+  <div class="header-section">
+    <div class="header-content">
+      <div class="header-title">
+        <div class="title-icon-wrapper">
+          <mat-icon>assessment</mat-icon>
+        </div>
+        <div class="title-text">
+          <h1>Báo cáo Tình trạng Ghi chỉ số</h1>
+          <p class="subtitle">Theo Tòa nhà</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Filter Section -->
+    <mat-card class="filter-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>filter_list</mat-icon>
+          <span>Bộ lọc</span>
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="filter-row">
+          <!-- Building Selection with Live Search -->
+          <mat-form-field appearance="outline" class="filter-field building-field">
+            <mat-label>
+              <mat-icon class="field-icon">business</mat-icon>
+              Tòa nhà
+            </mat-label>
+            <mat-select [(ngModel)]="selectedBuildingId" (selectionChange)="onBuildingChange()" [disabled]="loadingBuildings">
+              <mat-select-trigger>
+                <span class="select-value">{{ getSelectedBuildingName() }}</span>
+              </mat-select-trigger>
+              
+              <!-- Search Input -->
+              <div class="search-input-container">
+                <mat-icon class="search-icon">search</mat-icon>
+                <input 
+                  matInput 
+                  [(ngModel)]="buildingSearchText" 
+                  (ngModelChange)="onBuildingSearchChange()"
+                  (click)="$event.stopPropagation()"
+                  placeholder="Tìm kiếm tòa nhà..."
+                  class="search-input">
+              </div>
+              
+              <mat-option value="">
+                <span class="option-placeholder">-- Chọn tòa nhà --</span>
+              </mat-option>
+              <mat-option *ngFor="let building of filteredBuildings" [value]="building.buildingId">
+                <div class="option-content">
+                  <mat-icon class="option-icon">apartment</mat-icon>
+                  <span>{{ building.name || building.buildingCode }}</span>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-spinner *ngIf="loadingBuildings" matPrefix diameter="20"></mat-spinner>
+            <mat-icon matPrefix class="prefix-icon">business</mat-icon>
+          </mat-form-field>
+
+          <!-- Billing Period with Month/Year Picker -->
+          <mat-form-field appearance="outline" class="filter-field period-field">
+            <mat-label>
+              <mat-icon class="field-icon">calendar_today</mat-icon>
+              Kỳ thanh toán
+            </mat-label>
+            <input 
+              matInput 
+              [matDatepicker]="picker" 
+              [value]="billingPeriodDate"
+              readonly
+              placeholder="Chọn tháng/năm">
+            <mat-datepicker-toggle matSuffix [for]="picker">
+              <mat-icon matDatepickerToggleIcon>event</mat-icon>
+            </mat-datepicker-toggle>
+            <mat-datepicker 
+              #picker 
+              startView="year"
+              (monthSelected)="onMonthSelected($event, picker)"
+              [panelClass]="'month-year-picker'">
+            </mat-datepicker>
+            <mat-icon matPrefix class="prefix-icon">calendar_today</mat-icon>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Loading State -->
+    <div *ngIf="loadingStatus" class="loading-state">
+      <mat-spinner diameter="60" color="primary"></mat-spinner>
+      <p>Đang tải báo cáo...</p>
+    </div>
+
+    <!-- Report Section -->
+    <div *ngIf="!loadingStatus && hasData" class="report-section">
+      <div class="report-header">
+        <div class="report-title">
+          <mat-icon class="report-icon">table_chart</mat-icon>
+          <div>
+            <h2>Kết quả báo cáo</h2>
+            <p class="report-count">{{ statusList.length }} bản ghi</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Search Apartment -->
+      <mat-card class="search-card">
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="apartment-search-field">
+            <mat-label>
+              <mat-icon class="field-icon">search</mat-icon>
+              Tìm kiếm theo tên căn hộ
+            </mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="apartmentSearchText" 
+              (ngModelChange)="onApartmentSearchChange()"
+              placeholder="Nhập tên căn hộ...">
+            <mat-icon matPrefix class="prefix-icon">search</mat-icon>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+      
+      <!-- Table Layout -->
+      <mat-card class="report-table-card">
+        <div class="table-container">
+          <table mat-table [dataSource]="getFlatReadingsList()" class="report-table">
+            <!-- Apartment Code Column -->
+            <ng-container matColumnDef="apartmentCode">
+              <th mat-header-cell *matHeaderCellDef>Căn hộ</th>
+              <td mat-cell *matCellDef="let reading; let i = index">
+                <div class="cell-apartment" *ngIf="isFirstReadingInApartment(reading, i)">
+                  <mat-icon class="apartment-icon">home</mat-icon>
+                  <span class="apartment-code-bold">{{ reading.apartmentCode }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Fee Type Column -->
+            <ng-container matColumnDef="feeType">
+              <th mat-header-cell *matHeaderCellDef>Loại phí</th>
+              <td mat-cell *matCellDef="let reading">
+                <div class="cell-fee-type">
+                  <span>{{ reading.feeType }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Reading Value Column -->
+            <ng-container matColumnDef="readingValue">
+              <th mat-header-cell *matHeaderCellDef>Chỉ số</th>
+              <td mat-cell *matCellDef="let reading">
+                <span *ngIf="reading.readingValue !== null && reading.readingValue !== undefined" class="reading-value">
+                  {{ reading.readingValue | number:'1.2-2' }}
+                </span>
+                <span *ngIf="reading.readingValue === null || reading.readingValue === undefined" class="reading-value na">
+                  N/A
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Trạng thái</th>
+              <td mat-cell *matCellDef="let reading">
+                <mat-chip [class]="getStatusClass(reading.status)" class="status-chip">
+                  <mat-icon class="chip-icon">{{ reading.status === 'Chưa ghi' ? 'warning' : reading.status === 'Đã ghi - Đã khóa' ? 'lock' : 'check_circle' }}</mat-icon>
+                  <span>{{ reading.status }}</span>
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Reading Date Column -->
+            <ng-container matColumnDef="readingDate">
+              <th mat-header-cell *matHeaderCellDef>Ngày ghi</th>
+              <td mat-cell *matCellDef="let reading">
+                <span *ngIf="reading.readingDate">{{ formatDate(reading.readingDate) }}</span>
+                <span *ngIf="!reading.readingDate" class="na">N/A</span>
+              </td>
+            </ng-container>
+
+            <!-- Recorded By Column -->
+            <ng-container matColumnDef="recordedByName">
+              <th mat-header-cell *matHeaderCellDef>Người ghi</th>
+              <td mat-cell *matCellDef="let reading">
+                <span *ngIf="reading.recordedByName">{{ reading.recordedByName }}</span>
+                <span *ngIf="!reading.recordedByName" class="na">N/A</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                [class.row-not-recorded]="row.status === 'Chưa ghi'"
+                [class.row-locked]="row.status === 'Đã ghi - Đã khóa'"
+                [class.row-open]="row.status === 'Đã ghi - Mở'"></tr>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <mat-paginator
+          *ngIf="totalApartments > 0"
+          [length]="totalApartments"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="[20]"
+          [hidePageSize]="true"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          class="report-paginator">
+        </mat-paginator>
+      </mat-card>
+    </div>
+
+    <!-- Empty State -->
+    <mat-card *ngIf="!loadingStatus && !hasData && selectedBuildingId && billingPeriod" class="empty-card">
+      <div class="empty-state">
+        <div class="empty-icon-wrapper">
+          <mat-icon>inbox</mat-icon>
+        </div>
+        <h3>Không có dữ liệu</h3>
+        <p>Không có dữ liệu cho kỳ thanh toán này</p>
+      </div>
+    </mat-card>
+
+    <!-- Initial State -->
+    <mat-card *ngIf="!loadingStatus && !hasData && (!selectedBuildingId || !billingPeriod)" class="empty-card">
+      <div class="initial-state">
+        <div class="empty-icon-wrapper">
+          <mat-icon>search</mat-icon>
+        </div>
+        <h3>Chọn bộ lọc</h3>
+        <p>Vui lòng chọn tòa nhà và kỳ thanh toán để xem báo cáo</p>
+      </div>
+    </mat-card>
+  </div>
+</div>

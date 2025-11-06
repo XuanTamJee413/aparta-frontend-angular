@@ -1,7 +1,7 @@
 // src/app/services/operation/meter-reading.service.ts
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
@@ -11,7 +11,8 @@ import {
   MeterReadingUpdateDto,
   ApiResponse,
   MeterReadingDto,
-  MeterReadingCheckResponse
+  MeterReadingCheckResponse,
+  MeterReadingStatusDto
 } from '../../models/meter-reading.model';
 
 @Injectable({
@@ -78,6 +79,21 @@ export class MeterReadingService {
     return this.http.put<ApiResponse<MeterReadingDto>>(
       `${this.apiUrl}/MeterReadings/${readingId}`,
       dto
+    );
+  }
+
+  /**
+   * GET /api/MeterReadings/by-building/{buildingId}?billingPeriod={billingPeriod}
+   * Lấy báo cáo tình trạng ghi chỉ số theo tòa nhà
+   */
+  getMeterReadingStatusByBuilding(
+    buildingId: string,
+    billingPeriod: string
+  ): Observable<ApiResponse<MeterReadingStatusDto[]>> {
+    const params = new HttpParams().set('billingPeriod', billingPeriod);
+    return this.http.get<ApiResponse<MeterReadingStatusDto[]>>(
+      `${this.apiUrl}/MeterReadings/by-building/${buildingId}`,
+      { params }
     );
   }
 
