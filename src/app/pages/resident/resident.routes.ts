@@ -11,6 +11,9 @@ import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { ProfileComponent } from '../common/profile/profile.component';
 import { RegisterHousehold } from './household/register-household/register-household.component';
 import { RegisterVehicle } from './vehicle/register-vehicle/register-vehicle.component';
+import { MyInvoiceDetailComponent } from './invoice/my-invoice-detail/my-invoice-detail.component';
+import { permissionGuard } from '../../guards/permission.guard';
+import { authCanActivate } from '../../guards/auth.guard';
 
 export const RESIDENT_ROUTES: Routes = [
     {
@@ -19,7 +22,13 @@ export const RESIDENT_ROUTES: Routes = [
   },
   {
     path: 'invoice',
+    canActivate: [permissionGuard('invoice.resident.read')],
     component: InvoiceComponent
+  },
+  {
+    path: 'my-invoice-detail/:id',
+    canActivate: [authCanActivate],
+    component: MyInvoiceDetailComponent
   },
   {
     path: 'booking-service',

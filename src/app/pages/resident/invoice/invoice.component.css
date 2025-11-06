@@ -205,6 +205,30 @@
   gap: 0.5rem;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-link {
+  background-color: transparent;
+  color: #0d6efd;
+  text-decoration: none;
+  border: 1px solid #0d6efd;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+  background-color: #0d6efd;
+  color: #fff;
+  text-decoration: none;
+}
+
 .no-data {
   text-align: center;
   color: #6c757d;
