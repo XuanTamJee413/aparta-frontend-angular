@@ -35,10 +35,11 @@ export const MANAGER_ROUTES: Routes = [
 
   // --- END MANAGEMENT ---
 
-  // --- FINANCE  ---
+  // --- FINANCE  ---
   { path: 'payment-receipt', loadComponent: () => import('./finance/view-payment-receipt/view-payment-receipt').then(m => m.ViewPaymentReceipt) },
-  { path: 'invoice-list', loadComponent: () => import('./finance/view-invoice-list/view-invoice-list.component').then(m => m.ViewInvoiceListComponent), title: 'Danh sách hóa đơn' },
-  // --- END FINANCE  ---
+  { path: 'invoice-management', loadComponent: () => import('./finance/invoice-management/invoice-management.component').then(m => m.InvoiceManagementComponent), title: 'Quản lý Hóa đơn' },
+  { path: 'invoice-detail/:invoiceId', loadComponent: () => import('./finance/invoice-detail/invoice-detail.component').then(m => m.InvoiceDetailComponent), title: 'Chi tiết Hóa đơn' },
+  // --- END FINANCE  ---
 
   // --- OPERATION  ---
   { path: 'resident-list', loadComponent: () => import('./operation/resident-management/resident-list/resident-list.component').then(m => m.ResidentList) }, // Giữ bản tối giản từ Son
