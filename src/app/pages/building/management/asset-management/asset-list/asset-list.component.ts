@@ -1,10 +1,11 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
+
 import {
   AssetManagementService,
   BuildingDto,
@@ -39,6 +40,43 @@ export class AssetList implements OnInit {
   searchTerm: string = '';
   private searchDebouncer = new Subject<string>();
   deletingAssetId = signal<string | null>(null);
+
+  sortField = signal<'quantity' | 'createdAt'>('createdAt');
+  sortOrder = signal<'asc' | 'desc'>('desc');
+
+  pageIndex = signal(1);
+  pageSize  = signal(10);
+
+  totalItems = computed(() => this.assets().length);
+  totalPages = computed(() => Math.max(1, Math.ceil(this.totalItems() / this.pageSize())));
+  startIndex = computed(() => (this.pageIndex() - 1) * this.pageSize());
+  endIndex   = computed(() => Math.min(this.startIndex() + this.pageSize(), this.totalItems()));
+
+  private sortedAssets = computed(() => {
+    const data = [...(this.assets() ?? [])];
+    const field = this.sortField();
+    const order = this.sortOrder();
+
+    const getValue = (a: AssetView) => {
+      if (field === 'quantity') return a.quantity ?? 0;
+      return a.createdAt ? new Date(a.createdAt).getTime() : Number.NEGATIVE_INFINITY;
+    };
+
+    data.sort((a, b) => {
+      const va = getValue(a);
+      const vb = getValue(b);
+      const cmp = va === vb ? 0 : (va < vb ? -1 : 1);
+      return order === 'asc' ? cmp : -cmp;
+    });
+
+    return data;
+  });
+
+  pagedAssets = computed(() => {
+    const start = this.startIndex();
+    const end   = this.endIndex();
+    return this.sortedAssets().slice(start, end);
+  });
 
   constructor(
     private assetService: AssetManagementService,
@@ -85,6 +123,8 @@ export class AssetList implements OnInit {
           this.error.set(resp.message || 'Không tải được danh sách tài sản.');
           this.assets.set([]);
         }
+
+        this.clampPageIndex();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -92,16 +132,6 @@ export class AssetList implements OnInit {
         this.isLoading.set(false);
         console.error('Lỗi forkJoin:', err);
       }
-    });
-  }
-
-  setupSearchDebouncer(): void {
-    this.searchDebouncer.pipe(
-      debounceTime(350),
-      distinctUntilChanged()
-    ).subscribe(searchTerm => {
-      this.query.searchTerm = searchTerm || null;
-      this.loadAssets();
     });
   }
 
@@ -121,6 +151,7 @@ export class AssetList implements OnInit {
           this.error.set(resp.message || 'Không tải được danh sách tài sản.');
           this.assets.set([]);
         }
+        this.clampPageIndex();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -129,6 +160,12 @@ export class AssetList implements OnInit {
         console.error('Lỗi tải Tài sản:', err);
       }
     });
+  }
+
+  private clampPageIndex(): void {
+    const max = this.totalPages();
+    if (this.pageIndex() > max) this.pageIndex.set(max);
+    if (this.pageIndex() < 1)   this.pageIndex.set(1);
   }
 
   private mapAssetsToView(assets: AssetDto[], buildings: BuildingDto[]): AssetView[] {
@@ -145,12 +182,24 @@ export class AssetList implements OnInit {
     }));
   }
 
+  setupSearchDebouncer(): void {
+    this.searchDebouncer.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.query.searchTerm = (searchTerm || '').trim() || null;
+      this.pageIndex.set(1);
+      this.loadAssets();
+    });
+  }
+
   onSearchInput(): void {
     this.searchDebouncer.next((this.searchTerm || '').trim());
   }
 
   onFilterChange(): void {
     this.query.buildingId = this.filterBuildingId === 'all' ? null : this.filterBuildingId;
+    this.pageIndex.set(1);
     this.loadAssets();
   }
 
@@ -189,4 +238,24 @@ export class AssetList implements OnInit {
   onView(asset: AssetView): void {
     this.router.navigate(['manager/manage-asset/detail', asset.assetId]).catch(err => console.error('Lỗi điều hướng:', err));
   }
+
+  onSort(field: 'quantity' | 'createdAt'): void {
+    if (this.sortField() === field) {
+      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortField.set(field);
+      this.sortOrder.set('desc');
+    }
+    this.pageIndex.set(1);
+  }
+
+  getSortIcon(field: 'quantity' | 'createdAt'): string {
+    if (this.sortField() !== field) return '↕';
+    return this.sortOrder() === 'asc' ? '▲' : '▼';
+  }
+
+  prevPage(): void { if (this.pageIndex() > 1) this.pageIndex.update(p => p - 1); }
+  nextPage(): void { if (this.pageIndex() < this.totalPages()) this.pageIndex.update(p => p + 1); }
+  firstPage(): void { this.pageIndex.set(1); }
+  lastPage(): void { this.pageIndex.set(this.totalPages()); }
 }

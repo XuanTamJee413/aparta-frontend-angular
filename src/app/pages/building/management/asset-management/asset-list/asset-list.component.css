@@ -128,6 +128,19 @@
   background: #fbfdff;
 }
 
+/* ===== Sort header ===== */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-indicator {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: .7;
+}
+/* ======================= */
+
 .cell-info { font-weight: 600; color: #111827; }
 .cell-building { color: #374151; }
 .cell-quantity { font-variant-numeric: tabular-nums; }

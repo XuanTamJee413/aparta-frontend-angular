@@ -11,6 +11,7 @@ import { VehicleList } from './operation/vehicle-management/vehicle-list/vehicle
 import { PriceQuotationFormComponent } from './management/price-quotation/pricequotation-form/pricequotation-form';
 import { PriceQuotationListComponent } from './management/price-quotation/pricequotation-list/pricequotation-list';
 import { EditApartment } from './management/apartment-management/edit-apartment/edit-apartment.component';
+import { EditAsset } from './management/asset-management/edit-asset/edit-asset';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
@@ -20,6 +21,7 @@ export const MANAGER_ROUTES: Routes = [
 
   { path: 'manage-asset', component: AssetList },
   { path: 'manage-asset/create', component: CreateAsset },
+  { path: 'manage-asset/edit/:id', component: EditAsset },
   { path: 'news/list', component: NewsListComponent, title: 'News List' },
   { path: 'news/create', component: NewsCreateComponent, title: 'Create News' },
   { path: 'news/edit/:id', component: NewsEditComponent, title: 'Edit News' },
