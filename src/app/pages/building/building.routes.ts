@@ -53,12 +53,6 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
   { path: 'meter-reading-status', canActivate: [permissionGuard(['meterreading.read'])], loadComponent: () => import('./operation/meter-reading-status/meter-reading-status.component').then(m => m.MeterReadingStatusComponent), title: 'Báo cáo Tình trạng Ghi chỉ số' },
 
-
-
-  // Routes mới từ nhánh Son
-  // { path: 'meter-record', loadComponent: () => import('./management/meter-recording-sheet/meter-recording-sheet.component').then(m => m.MeterRecordingSheetComponent), title: 'Nhập chỉ số điện nước' },
-  // { path: 'meter-reading-list', loadComponent: () => import('./operation/meter-reading-list/meter-reading-list.component').then(m => m.MeterReadingListComponent), title: 'Danh sách chỉ số điện nước' },
-
   // --- END OPERATION  ---
 
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
