@@ -1,0 +1,145 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Quản lý Tài sản</h1>
+    <p>Danh sách tài sản với các thông tin:</p>
+  </header>
+
+  <div class="filter-controls">
+    <div class="search-wrapper">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Tìm theo mã, tên tài sản..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchInput()"
+      />
+    </div>
+
+    <select class="filter-select" [(ngModel)]="filterBuildingId" (change)="onFilterChange()">
+      <option value="all">Tất cả tòa nhà</option>
+      @for (building of buildings(); track building.buildingId) {
+        <option [value]="building.buildingId">
+          @if (building.name) {
+            {{ building.name }}
+          } @else if (building.buildingCode) {
+            (Mã: {{ building.buildingCode }})
+          } @else {
+            (Không có tên)
+          }
+        </option>
+      }
+    </select>
+
+    <button class="btn btn-primary btn-add" (click)="onAddAsset()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      Thêm mới
+    </button>
+  </div>
+
+  <div class="table-container">
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <div class="spinner"></div>
+        <span>Đang tải dữ liệu...</span>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="alert alert-danger">
+        <strong>Lỗi!</strong> {{ error() }}
+      </div>
+    }
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Tên Tài Sản</th>
+          <th>Tòa Nhà</th>
+
+          <!-- SORT theo Số lượng -->
+          <th class="sortable" (click)="onSort('quantity')">
+            Số Lượng
+            <span class="sort-indicator">{{ getSortIcon('quantity') }}</span>
+          </th>
+
+          <!-- SORT theo Ngày tạo -->
+          <th class="sortable" (click)="onSort('createdAt')">
+            Ngày tạo
+            <span class="sort-indicator">{{ getSortIcon('createdAt') }}</span>
+          </th>
+
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (asset of pagedAssets(); track asset.assetId) {
+          <tr [class.deleting]="deletingAssetId() === asset.assetId">
+            <td class="cell-info">{{ asset.info }}</td>
+            <td class="cell-building">{{ asset.buildingName }}</td>
+            <td class="cell-quantity">{{ asset.quantity }}</td>
+            <td class="cell-date">
+              @if (asset.createdAt) { {{ asset.createdAt | date: 'dd/MM/yyyy' }} } @else { - }
+            </td>
+            <td class="cell-actions">
+              @if (deletingAssetId() === asset.assetId) {
+                <div class="confirm-delete">
+                  <span>Bạn chắc chứ?</span>
+                  <button class="btn-confirm-delete" (click)="onConfirmDelete(asset.assetId)">Xóa</button>
+                  <button class="btn-cancel-delete" (click)="onCancelDelete()">Hủy</button>
+                </div>
+              } @else {
+                <button class="btn-action btn-edit" (click)="onEdit(asset)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                       viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                  </svg>
+                  Sửa
+                </button>
+
+                <!-- <button class="btn-action btn-delete" (click)="onAskDelete(asset)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                       viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12.577 0c-.27-.041-.54-.081-.811-.118m15.06 0A51.34 51.34 0 0 1 12 5.25c-2.662 0-5.227.29-7.69.835m15.06 0c.27.041.54.081.811.118m0 0v1.171a1.71 1.71 0 0 1-1.64 1.71H4.772a1.71 1.71 0 0 1-1.64-1.71V5.79" />
+                  </svg>
+                  Xóa
+                </button> -->
+              }
+            </td>
+          </tr>
+        } @empty {
+          @if (!isLoading()) {
+            <tr>
+              <td colspan="5" class="no-results">Không tìm thấy tài sản nào phù hợp.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!isLoading() && totalItems() > 0">
+    <div class="page-info">
+      Hiển thị {{ startIndex() + 1 }}–{{ endIndex() }} trên {{ totalItems() }} mục
+      (Trang {{ pageIndex() }}/{{ totalPages() }})
+    </div>
+
+    <div class="pagination-buttons">
+      <button class="pagination-btn" (click)="firstPage()" [disabled]="pageIndex() === 1">« Đầu</button>
+      <button class="pagination-btn" (click)="prevPage()"  [disabled]="pageIndex() === 1">‹ Trước</button>
+      <button class="pagination-btn" (click)="nextPage()"  [disabled]="pageIndex() === totalPages()">Sau ›</button>
+      <button class="pagination-btn" (click)="lastPage()"  [disabled]="pageIndex() === totalPages()">Cuối »</button>
+    </div>
+  </div>
+</div>

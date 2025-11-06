@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ResidentList } from './resident-list';
+import { EditAsset } from './edit-asset';
 
-describe('ResidentList', () => {
-  let component: ResidentList;
-  let fixture: ComponentFixture<ResidentList>;
+describe('EditAsset', () => {
+  let component: EditAsset;
+  let fixture: ComponentFixture<EditAsset>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ResidentList]
+      imports: [EditAsset]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ResidentList);
+    fixture = TestBed.createComponent(EditAsset);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

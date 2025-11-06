@@ -1,0 +1,128 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Quản lý Phương tiện</h1>
+      <p>Danh sách phương tiện đã đăng ký trong hệ thống:</p>
+    </header>
+
+    <div class="filter-container">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm theo biển số, căn hộ, loại xe..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+      </div>
+
+      <div class="filter-wrapper">
+        <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+          <option [ngValue]="null">Tất cả trạng thái</option>
+          <option value="Chờ duyệt">Chờ duyệt</option>
+          <option value="Đã duyệt">Đã duyệt</option>
+          <option value="Bị từ chối">Bị từ chối</option>
+        </select>
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="text-center" style="padding: 2rem;">
+        <p>Đang tải dữ liệu...</p>
+      </div>
+    } @else if (error) {
+      <div class="alert alert-danger" style="margin-top: 1.5rem;">
+        {{ error }}
+      </div>
+    } @else {
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Căn hộ</th>
+                <th>Loại xe</th>
+                <th class="sortable-header" (click)="toggleSort('vehicleNumber')">
+                  <div class="sort-header-content">
+                    <span>Biển số</span>
+                    <span class="sort-icon">
+                      @if (query.sortBy === 'vehicleNumber') {
+                        @if (query.sortOrder === 'asc') {
+                          <svg class="sort-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
+                        } @else {
+                          <svg class="sort-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        }
+                      } @else {
+                        <svg class="sort-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /></svg>
+                      }
+                    </span>
+                  </div>
+                </th>
+                <th>Ngày đăng ký</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (vehicle of vehicles; track vehicle.vehicleId) {
+                <tr>
+                  <td>{{ vehicle.apartmentCode }}</td>
+                  <td>{{ vehicle.info }}</td>
+                  <td class="font-medium">{{ vehicle.vehicleNumber }}</td>
+                  <td>{{ vehicle.createdAt | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    @if (editingVehicleId === vehicle.vehicleId) {
+                      <select [(ngModel)]="tempStatus" class="form-select-sm">
+                        @for (status of statuses; track status) {
+                          <option [value]="status">{{ status }}</option>
+                        }
+                      </select>
+                    } @else {
+                      @if (vehicle.status === 'Đã duyệt') {
+                        <span class="status-approved">Đã duyệt</span>
+                      } @else if (vehicle.status === 'Chờ duyệt') {
+                        <span class="status-pending">Chờ duyệt</span>
+                      } @else {
+                        <span class="status-rejected">Bị từ chối</span>
+                      }
+                    }
+                  </td>
+                  <td class="actions">
+                    @if (editingVehicleId === vehicle.vehicleId) {
+                      <button class="action-save-btn" (click)="onSave(vehicle)">Lưu</button>
+                      <button class="action-cancel-btn" (click)="onCancel()">Hủy</button>
+                    } @else {
+                      <button class="action-edit-btn" (click)="onEdit(vehicle)">
+                        <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" /></svg>
+                        Sửa
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="no-results">Không tìm thấy phương tiện nào phù hợp.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination" *ngIf="totalPages > 1">
+        <span class="page-info">
+          Trang <span class="font-medium">{{ currentPage }}</span> / <span class="font-medium">{{ totalPages }}</span>
+        </span>
+        <div class="pagination-buttons">
+          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">Trước</button>
+          <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">Tiếp</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

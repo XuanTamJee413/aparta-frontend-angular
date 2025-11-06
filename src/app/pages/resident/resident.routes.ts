@@ -3,14 +3,14 @@ import { HomepageComponent } from './homepage/homepage.component';
 import { VisitorComponent } from './visitor/visitor.component';
 import { InvoiceComponent } from './invoice/invoice.component';
 import { ChatComponent } from './chat/chat.component';
-import { BookServiceComponent } from './service/book-service.component/book-service.component'; 
+import { BookServiceComponent } from './service/book-service.component/book-service.component';
 import { MyBookingsComponent } from './service/my-bookings.component/my-bookings.component';
 import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { ProfileComponent } from '../common/profile/profile.component';
-import { RegisterHousehold } from './household/register-household/register-household';
-import { RegisterVehicle } from './vehicle/register-vehicle/register-vehicle';
+import { RegisterHousehold } from './household/register-household/register-household.component';
+import { RegisterVehicle } from './vehicle/register-vehicle/register-vehicle.component';
 
 export const RESIDENT_ROUTES: Routes = [
     {
