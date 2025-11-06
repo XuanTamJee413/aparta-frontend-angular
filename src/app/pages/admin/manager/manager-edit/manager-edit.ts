@@ -32,10 +32,6 @@ export class ManagerEditComponent implements OnInit {
   loading = false;
   submitting = false;
   errorMessage = '';
-  showConfirmationModal = false;
-  confirmationEmail = '';
-  emailMismatch = false;
-  emailInvalidFormat = false;
 
   constructor(
     private managerService: ManagerService,
@@ -88,53 +84,6 @@ export class ManagerEditComponent implements OnInit {
         console.error('Error loading manager:', error);
       }
     });
-  }
-
-  openConfirmationModal(): void {
-    this.showConfirmationModal = true;
-    this.confirmationEmail = '';
-    this.emailMismatch = false;
-    this.emailInvalidFormat = false;
-  }
-
-  closeConfirmationModal(): void {
-    this.showConfirmationModal = false;
-    this.confirmationEmail = '';
-    this.emailMismatch = false;
-    this.emailInvalidFormat = false;
-  }
-
-  validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  confirmAndSubmit(): void {
-    // Reset lỗi
-    this.emailMismatch = false;
-    this.emailInvalidFormat = false;
-
-    // Kiểm tra email có rỗng không
-    if (!this.confirmationEmail || !this.confirmationEmail.trim()) {
-      this.emailInvalidFormat = true;
-      return;
-    }
-
-    // Kiểm tra định dạng email
-    if (!this.validateEmail(this.confirmationEmail.trim())) {
-      this.emailInvalidFormat = true;
-      return;
-    }
-
-    // Kiểm tra email có khớp không
-    if (this.confirmationEmail.trim().toLowerCase() !== this.manager.email.trim().toLowerCase()) {
-      this.emailMismatch = true;
-      return;
-    }
-
-    // Email hợp lệ và khớp, tiến hành update
-    this.closeConfirmationModal();
-    this.onSubmit();
   }
 
   onSubmit(): void {

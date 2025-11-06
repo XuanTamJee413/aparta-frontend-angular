@@ -21,6 +21,7 @@ interface JwtPayload {
 export class AuthService {
   private readonly storageKey = 'auth_token';
   private readonly tokenSig = signal<string | null>(this.readToken());
+  private userPermissions: string[] = [];
 
   readonly token = computed(() => this.tokenSig());
   readonly user = computed<JwtPayload | null>(() => this.decodeToken(this.tokenSig()));
@@ -30,9 +31,23 @@ export class AuthService {
     if (token) {
       localStorage.setItem(this.storageKey, token);
       this.tokenSig.set(token);
+      // Decode token và lưu permissions
+      const payload = this.decodeToken(token);
+      if (payload && payload.permission) {
+        if (Array.isArray(payload.permission)) {
+          this.userPermissions = [...payload.permission];
+        } else if (typeof payload.permission === 'string') {
+          this.userPermissions = [payload.permission];
+        } else {
+          this.userPermissions = [];
+        }
+      } else {
+        this.userPermissions = [];
+      }
     } else {
       localStorage.removeItem(this.storageKey);
       this.tokenSig.set(null);
+      this.userPermissions = [];
     }
   }
 
@@ -64,6 +79,12 @@ export class AuthService {
 
   // Check if current user has a specific permission (from JWT payload)
   hasPermission(requiredPermission: string): boolean {
+    // Kiểm tra từ userPermissions array (đã lưu khi setToken)
+    if (this.userPermissions.length > 0) {
+      return this.userPermissions.includes(requiredPermission);
+    }
+
+    // Fallback: decode token mỗi lần (tương thích với code cũ)
     const payload = this.user();
     if (!payload) {
       return false;
@@ -91,11 +112,28 @@ export class AuthService {
 
   logout(): void {
     this.setToken(null);
+    this.userPermissions = [];
   }
 
   private readToken(): string | null {
     try {
-      return localStorage.getItem(this.storageKey);
+      const token = localStorage.getItem(this.storageKey);
+      // Khi đọc token từ storage, cũng decode và lưu permissions
+      if (token) {
+        const payload = this.decodeToken(token);
+        if (payload && payload.permission) {
+          if (Array.isArray(payload.permission)) {
+            this.userPermissions = [...payload.permission];
+          } else if (typeof payload.permission === 'string') {
+            this.userPermissions = [payload.permission];
+          } else {
+            this.userPermissions = [];
+          }
+        } else {
+          this.userPermissions = [];
+        }
+      }
+      return token;
     } catch {
       return null;
     }

@@ -64,6 +64,10 @@ export class MeterReadingFormComponent implements OnInit {
   hasAnyExistingReadings = false;
   meterReadingForm: FormGroup;
 
+  // Message hiển thị ngay dưới nút Lưu
+  submitMessage: string = '';
+  submitMessageType: 'success' | 'error' | '' = '';
+
   // Pagination
   pageSize = 20;
   pageIndex = 0;
@@ -350,29 +354,37 @@ export class MeterReadingFormComponent implements OnInit {
       this.meterReadingService.createMeterReadings(this.selectedApartmentId, readings).subscribe({
         next: (response) => {
           if (response.succeeded) {
-            this.showSuccess('Lưu chỉ số thành công');
+            this.submitMessage = 'Lưu chỉ số thành công';
+            this.submitMessageType = 'success';
             setTimeout(() => {
               this.checkExistingReadings();
+              // Clear message sau 3 giây
+              setTimeout(() => {
+                this.submitMessage = '';
+                this.submitMessageType = '';
+              }, 3000);
             }, 1000);
           } else {
             const message = response.message || '';
             if (message.includes('tồn tại') || message.includes('exists') || message.includes('SM34')) {
-              this.showError('Đã có chỉ số trong tháng này. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.');
+              this.submitMessage = 'Đã có chỉ số trong tháng này. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.';
             } else {
-              this.showError(response.message || 'Lưu chỉ số thất bại');
+              this.submitMessage = response.message || 'Lưu chỉ số thất bại';
             }
+            this.submitMessageType = 'error';
           }
           this.saving = false;
         },
         error: (error) => {
           const errorMessage = error.error?.message || error.error?.Message || '';
           if (errorMessage.includes('tồn tại') || errorMessage.includes('exists') || errorMessage.includes('SM34')) {
-            this.showError('Đã có chỉ số trong tháng này. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.');
+            this.submitMessage = 'Đã có chỉ số trong tháng này. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.';
           } else if (errorMessage.includes('too low') || errorMessage.includes('SM35')) {
-            this.showError('Giá trị chỉ số phải lớn hơn hoặc bằng chỉ số trước đó. ' + errorMessage);
+            this.submitMessage = 'Giá trị chỉ số phải lớn hơn hoặc bằng chỉ số trước đó. ' + errorMessage;
           } else {
-            this.showError(errorMessage || 'Lưu chỉ số thất bại');
+            this.submitMessage = errorMessage || 'Lưu chỉ số thất bại';
           }
+          this.submitMessageType = 'error';
           this.saving = false;
         }
       });
@@ -473,21 +485,29 @@ export class MeterReadingFormComponent implements OnInit {
       }
     });
 
-    Promise.all(updatePromises).then(() => {
-      if (errorCount === 0) {
-        this.showSuccess(`Cập nhật thành công ${successCount} chỉ số`);
-        setTimeout(() => {
-          this.checkExistingReadings();
-        }, 1000);
-      } else {
-        this.showError(`Cập nhật ${successCount} thành công, ${errorCount} thất bại. ${lastError}`);
-        this.checkExistingReadings();
-      }
-      this.saving = false;
-    }).catch(() => {
-      this.showError('Lỗi cập nhật chỉ số');
-      this.saving = false;
-    });
+        Promise.all(updatePromises).then(() => {
+          if (errorCount === 0) {
+            this.submitMessage = `Cập nhật thành công ${successCount} chỉ số`;
+            this.submitMessageType = 'success';
+            setTimeout(() => {
+              this.checkExistingReadings();
+              // Clear message sau 3 giây
+              setTimeout(() => {
+                this.submitMessage = '';
+                this.submitMessageType = '';
+              }, 3000);
+            }, 1000);
+          } else {
+            this.submitMessage = `Cập nhật ${successCount} thành công, ${errorCount} thất bại. ${lastError}`;
+            this.submitMessageType = 'error';
+            this.checkExistingReadings();
+          }
+          this.saving = false;
+        }).catch(() => {
+          this.submitMessage = 'Lỗi cập nhật chỉ số';
+          this.submitMessageType = 'error';
+          this.saving = false;
+        });
   }
 
 

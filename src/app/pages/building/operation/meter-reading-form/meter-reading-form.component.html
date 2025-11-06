@@ -161,6 +161,13 @@
               <mat-icon *ngIf="!saving">save</mat-icon>
               {{ saving ? 'Đang lưu...' : 'Lưu chỉ số' }}
             </button>
+            
+            <!-- Message ngay dưới nút Lưu -->
+            <div *ngIf="submitMessage" class="submit-message" [class.message-success]="submitMessageType === 'success'" [class.message-error]="submitMessageType === 'error'">
+              <mat-icon *ngIf="submitMessageType === 'success'" class="message-icon">check_circle</mat-icon>
+              <mat-icon *ngIf="submitMessageType === 'error'" class="message-icon">error</mat-icon>
+              <span>{{ submitMessage }}</span>
+            </div>
           </div>
         </form>
       </div>
