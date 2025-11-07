@@ -1,11 +1,24 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+  AsyncValidatorFn
+} from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { take } from 'rxjs/operators';
-import { AssetDto, AssetManagementService, AssetUpdateDto, AssetView,BuildingDto } from '../../../../../services/management/asset-management/asset-management.service';
-
+import { forkJoin, of } from 'rxjs';
+import { take, map, catchError } from 'rxjs/operators';
+import {
+  AssetDto,
+  AssetManagementService,
+  AssetUpdateDto,
+  AssetView,
+  BuildingDto
+} from '../../../../../services/management/asset-management/asset-management.service';
 
 function positiveIntegerValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -20,7 +33,7 @@ function positiveIntegerValidator(): ValidatorFn {
 @Component({
   selector: 'app-edit-asset',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-asset.html',
   styleUrls: ['./edit-asset.css']
 })
@@ -30,7 +43,7 @@ export class EditAsset implements OnInit {
   private fb = inject(FormBuilder);
   private assetService = inject(AssetManagementService);
 
-   private readonly BACK_URL = '/manager/manage-asset';
+  private readonly BACK_URL = '/manager/manage-asset';
 
   isLoading = signal(true);
   isSaving = signal(false);
@@ -43,7 +56,7 @@ export class EditAsset implements OnInit {
   form = this.fb.group({
     buildingName: [{ value: '', disabled: true }, [Validators.required]],
     info: ['', [Validators.required, Validators.maxLength(200)]],
-    quantity: [null as number | null, [Validators.required, positiveIntegerValidator()]]
+    quantity: [null as number | null, [Validators.required, positiveIntegerValidator(), Validators.max(9999)]]
   });
 
   ngOnInit(): void {
@@ -55,6 +68,32 @@ export class EditAsset implements OnInit {
       return;
     }
     this.loadData();
+  }
+
+  private normalize(s: string | null | undefined): string {
+    return (s ?? '').toString().trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  private uniqueInfoInBuildingValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      const infoRaw = (control.value ?? '') as string;
+
+      if (!infoRaw.trim()) return of(null);
+
+      const a = this.asset();
+      const buildingId = a?.buildingId ?? null;
+      if (!buildingId) return of(null);
+
+
+      if (this.normalize(infoRaw) === this.normalize(a?.info ?? '')) {
+        return of(null);
+      }
+
+      return this.assetService.checkAssetExists(buildingId, infoRaw, this.id).pipe(
+        map(exists => (exists ? ({ assetExists: true } as ValidationErrors) : null)),
+        catchError(() => of(null))
+      );
+    };
   }
 
   private loadData(): void {
@@ -75,18 +114,21 @@ export class EditAsset implements OnInit {
           this.asset.set(asset);
           this.buildings.set(buildings ?? []);
 
-          let buildingName =
+          const found = buildings.find(b => b.buildingId === asset.buildingId);
+          const buildingName =
             (asset as AssetView)?.buildingName ||
-            buildings.find(b => b.buildingId === asset.buildingId)?.name ||
-            (buildings.find(b => b.buildingId === asset.buildingId)?.buildingCode
-              ? `Mã: ${buildings.find(b => b.buildingId === asset.buildingId)?.buildingCode}`
-              : '(Không có tên)');
+            found?.name ||
+            (found?.buildingCode ? `Mã: ${found.buildingCode}` : '(Không có tên)');
 
           this.form.patchValue({
             buildingName: buildingName || '(Không có tên)',
             info: asset.info ?? '',
             quantity: asset.quantity ?? null
           });
+
+          const infoCtrl = this.form.get('info');
+          infoCtrl?.setAsyncValidators(this.uniqueInfoInBuildingValidator());
+          infoCtrl?.updateValueAndValidity({ emitEvent: false });
         },
         error: () => this.error.set('Lỗi tải dữ liệu tài sản.'),
         complete: () => this.isLoading.set(false)
