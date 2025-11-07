@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, of, map, catchError } from 'rxjs';
 
 export interface ApiResponse<T> { succeeded: boolean; message: string | null; data: T; }
 export interface ApartmentMemberDto {
@@ -46,7 +46,9 @@ export class HouseholdService {
       map((resp: any) => {
         const arr: ApartmentMemberDto[] =
           Array.isArray(resp) ? resp :
-          (resp && Array.isArray(resp.data) ? resp.data : []);
+          (resp && Array.isArray(resp.data) ? resp.data :
+          (resp && Array.isArray(resp?.Data) ? resp.Data :
+          (resp?.data?.items ?? resp?.Data?.Items ?? [])));
         return arr.filter(m => String(m.apartmentId ?? '') === String(apartmentId));
       })
     );
@@ -58,5 +60,23 @@ export class HouseholdService {
 
   deleteHouseholdMember(memberId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${memberId}`);
+  }
+
+  checkIdNumberExists(idNumber: string): Observable<boolean> {
+    const norm = (s: string) => (s ?? '').toString().trim();
+    const q = norm(idNumber);
+    const params = new HttpParams().set('searchTerm', q);
+
+    return this.http.get<unknown>(this.apiUrl, { params }).pipe(
+      map((resp: any) => {
+        const list: any[] =
+          Array.isArray(resp) ? resp :
+          (Array.isArray(resp?.data) ? resp.data :
+          (Array.isArray(resp?.Data) ? resp.Data :
+          (resp?.data?.items ?? resp?.Data?.Items ?? [])));
+        return list.some(x => norm(x?.idNumber ?? x?.IdNumber ?? '') === q);
+      }),
+      catchError(() => of(false))
+    );
   }
 }

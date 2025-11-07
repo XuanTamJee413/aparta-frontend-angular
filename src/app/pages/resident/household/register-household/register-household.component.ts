@@ -1,8 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AsyncValidatorFn,
+  ValidationErrors,
+  AbstractControl
+} from '@angular/forms';
 import { ApartmentMemberCreateDto, ApartmentMemberDto, HouseholdService } from '../../../../services/resident/household.service';
 import { AuthService } from '../../../../services/auth.service';
+import { of, map, catchError } from 'rxjs';
 
 @Component({
   selector: 'app-register-household',
@@ -38,12 +47,37 @@ export class RegisterHousehold implements OnInit {
       familyRole: [null, Validators.required],
       dateOfBirth: [''],
       gender: [null],
-      idNumber: ['', Validators.required],
-      phoneNumber: [''],
+      idNumber: [
+        '',
+        [Validators.required, Validators.pattern(/^\d+$/)],
+        [this.idNumberUniqueValidator()]
+      ],
+      phoneNumber: [
+        '',
+        [Validators.pattern(/^\d*$/)]
+      ],
       nationality: ['Việt Nam'],
     });
 
+    this.memberForm.get('familyRole')!.valueChanges.subscribe(role => {
+      const genderCtrl = this.memberForm.get('gender');
+      if (role === 'Vợ' || role === 'Mẹ') genderCtrl?.setValue('Nữ');
+      else if (role === 'Chồng' || role === 'Bố') genderCtrl?.setValue('Nam');
+    });
+
     this.loadMembers();
+  }
+
+  private idNumberUniqueValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      const value = (control.value ?? '').toString().trim();
+      if (!value) return of<ValidationErrors | null>(null);
+      if (!/^\d+$/.test(value)) return of<ValidationErrors | null>(null);
+      return this.householdService.checkIdNumberExists(value).pipe(
+        map(exists => (exists ? { idNumberExists: true } : null)),
+        catchError(() => of(null))
+      );
+    };
   }
 
   loadMembers(): void {
@@ -74,7 +108,7 @@ export class RegisterHousehold implements OnInit {
 
   onSubmit(): void {
     this.memberForm.markAllAsTouched();
-    if (this.memberForm.invalid) return;
+    if (this.memberForm.invalid || this.memberForm.pending) return;
 
     const apartmentId = this.getApartmentId();
     if (!apartmentId) {
