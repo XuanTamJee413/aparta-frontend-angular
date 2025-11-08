@@ -28,6 +28,7 @@ export interface Apartment {
 
 export interface ApartmentUpdateDto {
   code?: string;
+  type?: string;
   area?: number;
 }
 

@@ -115,7 +115,7 @@ export class ApartmentList implements OnInit {
     this.loadApartments();
   }
 
-  toggleSort(column: 'code' | 'area'): void {
+  toggleSort(column: 'code' | 'area' | 'type'): void {
     if (this.query.sortBy === column) {
       this.query.sortOrder = this.query.sortOrder === 'asc' ? 'desc' : 'asc';
     } else {

@@ -21,10 +21,46 @@
         </div>
 
         <div class="form-group">
+          <label for="type" class="form-label">Loại (Type)</label>
+          <select id="type" class="form-select" formControlName="type">
+            <option value="" disabled>-- Chọn loại --</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Big">Big</option>
+            <option value="Large">Large</option>
+          </select>
+          @if (form.controls.type.invalid && (form.controls.type.dirty || form.controls.type.touched)) {
+            <div class="form-error">Vui lòng chọn loại căn hộ.</div>
+          }
+          @if (currentRange) {
+            <div class="form-hint">Khoảng diện tích cho {{ form.value.type }}: {{ currentRange.min }} – {{ currentRange.max }} m²</div>
+          }
+        </div>
+
+        <div class="form-group">
           <label for="area" class="form-label">Diện tích (m²)</label>
-          <input id="area" type="number" class="form-control" formControlName="area" />
+          <input
+            id="area"
+            type="number"
+            class="form-control"
+            formControlName="area"
+            [attr.min]="currentRange?.min ?? null"
+            [attr.max]="currentRange?.max ?? null"
+          />
           @if (form.controls.area.invalid && (form.controls.area.dirty || form.controls.area.touched)) {
-            <div class="form-error">Diện tích phải là một số dương.</div>
+            @if (form.controls.area.errors?.['required']) {
+              <div class="form-error">Diện tích là bắt buộc.</div>
+            }
+            @if (form.controls.area.errors?.['min']) {
+              <div class="form-error">Diện tích phải là một số dương.</div>
+            }
+          }
+          @if (form.hasError('areaOutOfRange') && (form.controls.area.dirty || form.controls.area.touched)) {
+            <div class="form-error">
+              Diện tích không hợp lệ cho loại {{ form.value.type }}.
+              Vui lòng nhập trong khoảng
+              {{ form.getError('areaOutOfRange').min }} – {{ form.getError('areaOutOfRange').max }} m².
+            </div>
           }
         </div>
 
