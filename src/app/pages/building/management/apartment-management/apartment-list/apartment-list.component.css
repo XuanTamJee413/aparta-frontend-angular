@@ -166,3 +166,17 @@ header p { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
   .filters-right { justify-content: flex-start; }
   .filter-select { flex: 1 1 48%; width: auto; min-width: 160px; }
 }
+
+.actions-right {
+  display: flex;
+  gap: .5rem;
+  margin-left: auto;
+}
+.btn-create, .btn-outline {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .5rem .8rem; border-radius: .5rem; font-weight: 600; text-decoration: none;
+}
+.btn-create { background: #2563eb; color: white; }
+.btn-create:hover { filter: brightness(1.05); }
+.btn-outline { border: 1px solid #cbd5e1; color: #0f172a; background: white; }
+.btn-outline:hover { background: #f8fafc; }

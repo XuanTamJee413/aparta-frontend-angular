@@ -54,17 +54,41 @@
 
               <div class="mb-3">
                 <label for="idNumber" class="form-label">Số CCCD</label>
-                <input type="text" class="form-control" id="idNumber"
-                       formControlName="idNumber"
-                       [class.is-invalid]="isInvalid('idNumber')">
-                @if (isInvalid('idNumber')) {
+                <input
+                  type="text"
+                  class="form-control"
+                  id="idNumber"
+                  formControlName="idNumber"
+                  [class.is-invalid]="
+                    memberForm.get('idNumber')?.touched &&
+                    (memberForm.get('idNumber')?.hasError('required') ||
+                     memberForm.get('idNumber')?.hasError('pattern')  ||
+                     memberForm.get('idNumber')?.hasError('idNumberExists'))
+                  "
+                >
+                @if (memberForm.get('idNumber')?.touched && memberForm.get('idNumber')?.hasError('required')) {
                   <div class="invalid-feedback">Vui lòng nhập số CCCD.</div>
+                }
+                @if (memberForm.get('idNumber')?.touched && memberForm.get('idNumber')?.hasError('pattern')) {
+                  <div class="invalid-feedback">CCCD chỉ gồm chữ số 0–9.</div>
+                }
+                @if (memberForm.get('idNumber')?.touched && memberForm.get('idNumber')?.hasError('idNumberExists')) {
+                  <div class="invalid-feedback">CCCD này đã tồn tại. Vui lòng nhập lại!</div>
                 }
               </div>
 
               <div class="mb-3">
                 <label for="phoneNumber" class="form-label">Số điện thoại</label>
-                <input type="tel" class="form-control" id="phoneNumber" formControlName="phoneNumber">
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phoneNumber"
+                  formControlName="phoneNumber"
+                  [class.is-invalid]="memberForm.get('phoneNumber')?.touched && memberForm.get('phoneNumber')?.hasError('pattern')"
+                >
+                @if (memberForm.get('phoneNumber')?.touched && memberForm.get('phoneNumber')?.hasError('pattern')) {
+                  <div class="invalid-feedback">Số điện thoại chỉ gồm chữ số 0–9.</div>
+                }
               </div>
 
               <div class="mb-3">
@@ -73,7 +97,7 @@
               </div>
 
               <div class="d-grid">
-                <button type="submit" class="btn btn-success" [disabled]="memberForm.invalid || isSubmitting()">
+                <button type="submit" class="btn btn-success" [disabled]="memberForm.invalid || isSubmitting() || memberForm.pending">
                   @if (isSubmitting()) {
                     <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
                     Đang lưu...
