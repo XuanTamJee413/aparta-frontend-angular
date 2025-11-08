@@ -1,0 +1,20 @@
+.container { max-width: 980px; margin: 0 auto; padding: 1rem; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: .75rem; padding: 1.25rem; }
+header h1 { margin: 0 0 .25rem; font-size: 1.25rem; }
+.form-container { display: grid; gap: 1rem; margin-top: .5rem; }
+.form-group { display: grid; gap: .35rem; }
+.form-label { font-weight: 600; }
+.form-control, .form-select { padding: .55rem .7rem; border: 1px solid #cbd5e1; border-radius: .5rem; }
+.form-error { color: #b91c1c; font-size: .9rem; }
+.form-hint { color: #334155; font-size: .85rem; }
+.form-actions { display: flex; gap: .75rem; justify-content: flex-end; padding-top: .5rem; }
+
+.btn-primary, .btn-secondary {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .55rem 1rem; border-radius: .55rem; text-decoration: none; font-weight: 600;
+}
+.btn-primary { background: #2563eb; color: #fff; border: 0; }
+.btn-primary[disabled] { opacity: .6; cursor: not-allowed; }
+.btn-secondary { background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; }
+.alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: .6rem .8rem; border-radius: .5rem; }
+.alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: .6rem .8rem; border-radius: .5rem; }

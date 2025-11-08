@@ -15,12 +15,14 @@ import { permissionGuard } from '../../guards/permission.guard';
 
 import { EditApartment } from './management/apartment-management/edit-apartment/edit-apartment.component';
 import { EditAsset } from './management/asset-management/edit-asset/edit-asset';
+import { CreateApartment } from './management/apartment-management/create-apartment/create-apartment';
 
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
   { path: 'manage-resident', component: ResidentList },
   { path: 'manage-apartment', component: ApartmentList },
+  { path: 'manage-apartment/create', component: CreateApartment },
   { path: 'manage-apartment/edit/:id', component: EditApartment },
 
   { path: 'manage-asset', component: AssetList },

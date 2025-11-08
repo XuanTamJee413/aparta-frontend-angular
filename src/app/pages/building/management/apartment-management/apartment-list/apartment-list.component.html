@@ -25,7 +25,7 @@
         <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
           <option [ngValue]="null">Tất cả trạng thái</option>
           <option value="Đã thuê">Đã thuê</option>
-          <option value="Chưa thuê">Chưa thuê</option>
+          <option value="Chưa thuê">Chưa Thuê</option>
         </select>
 
         <select class="filter-select" [(ngModel)]="selectedBuildingId" (change)="onFilterChange()">
@@ -41,6 +41,11 @@
           }
         </select>
       </div>
+
+      <div class="actions-right">
+    <a [routerLink]="['create']" class="btn-create">+ Tạo Căn hộ</a>
+  </div>
+
     </div>
 
     @if (isLoading()) {

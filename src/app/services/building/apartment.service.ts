@@ -26,6 +26,14 @@ export interface Apartment {
   createdAt: string;
 }
 
+export interface ApartmentCreateDto {
+  buildingId: string;
+  code: string;
+  type: string;
+  area: number;
+  status: string;
+}
+
 export interface ApartmentUpdateDto {
   code?: string;
   type?: string;
@@ -65,7 +73,11 @@ export class ApartmentService {
     return this.http.get<Apartment>(`${this.apiUrl}/${id}`);
   }
 
-  updateApartment(id: string, dto: ApartmentUpdateDto): Observable<any> {
+  createApartment(dto: ApartmentCreateDto): Observable<any> {
+    return this.http.post(this.apiUrl, dto);
+  }
+
+  updateApartment(id: string, dto: Partial<ApartmentCreateDto>): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, dto);
   }
 

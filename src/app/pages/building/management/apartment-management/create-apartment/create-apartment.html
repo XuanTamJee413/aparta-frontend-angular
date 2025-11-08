@@ -1,0 +1,108 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Tạo Căn hộ</h1>
+      <p>Nhập thông tin bên dưới để thêm căn hộ mới.</p>
+    </header>
+
+    @if (isLoading()) {
+      <div class="text-center" style="padding: 2rem;">
+        <p>Đang tải…</p>
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+
+        <div class="form-group">
+          <label for="building" class="form-label">Tòa nhà</label>
+          <select id="building" class="form-select" formControlName="buildingId">
+            <option [ngValue]="null" disabled>-- Chọn tòa nhà --</option>
+            @if (buildingsLoading()) {
+              <option [ngValue]="null" disabled>Đang tải...</option>
+            } @else if (buildingsError()) {
+              <option [ngValue]="null" disabled>{{ buildingsError() }}</option>
+            } @else {
+              @for (b of buildings(); track b.buildingId) {
+                <option [value]="b.buildingId">{{ b.name }}</option>
+              }
+            }
+          </select>
+          @if (form.controls.buildingId.invalid && (form.controls.buildingId.dirty || form.controls.buildingId.touched)) {
+            <div class="form-error">Vui lòng chọn tòa nhà.</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="code" class="form-label">Mã Căn hộ (Code)</label>
+          <input id="code" type="text" class="form-control" formControlName="code" />
+          @if (form.controls.code.pending) {
+            <div class="form-hint">Đang kiểm tra trùng mã trong tòa nhà...</div>
+          }
+          @if (form.controls.code.invalid && (form.controls.code.dirty || form.controls.code.touched)) {
+            @if (form.controls.code.errors?.['required']) {
+              <div class="form-error">Mã căn hộ là bắt buộc.</div>
+            }
+            @if (form.controls.code.errors?.['codeTakenInBuilding']) {
+              <div class="form-error">Mã căn hộ đã tồn tại trong cùng tòa nhà. Vui lòng chọn mã khác.</div>
+            }
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="type" class="form-label">Loại (Type)</label>
+          <select id="type" class="form-select" formControlName="type">
+            <option value="" disabled>-- Chọn loại --</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Big">Big</option>
+            <option value="Large">Large</option>
+          </select>
+          @if (form.controls.type.invalid && (form.controls.type.dirty || form.controls.type.touched)) {
+            <div class="form-error">Vui lòng chọn loại căn hộ.</div>
+          }
+          @if (currentRange) {
+            <div class="form-hint">
+              Khoảng diện tích cho {{ form.value.type }}: {{ currentRange.min }} – {{ currentRange.max }} m²
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="area" class="form-label">Diện tích (m²)</label>
+          <input
+            id="area"
+            type="number"
+            class="form-control"
+            formControlName="area"
+            [attr.min]="currentRange?.min ?? null"
+            [attr.max]="currentRange?.max ?? null"
+          />
+          @if (form.controls.area.invalid && (form.controls.area.dirty || form.controls.area.touched)) {
+            @if (form.controls.area.errors?.['required']) {
+              <div class="form-error">Diện tích là bắt buộc.</div>
+            }
+            @if (form.controls.area.errors?.['min']) {
+              <div class="form-error">Diện tích phải là một số dương.</div>
+            }
+          }
+          @if (form.hasError('areaOutOfRange') && (form.controls.area.dirty || form.controls.area.touched)) {
+            <div class="form-error">
+              Diện tích không hợp lệ cho loại {{ form.value.type }}.
+              Vui lòng nhập trong khoảng
+              {{ form.getError('areaOutOfRange').min }} – {{ form.getError('areaOutOfRange').max }} m².
+            </div>
+          }
+        </div>
+
+        @if (success()) { <div class="alert-success">{{ success() }}</div> }
+        @if (error()) { <div class="alert-danger">{{ error() }}</div> }
+
+        <div class="form-actions">
+          <a routerLink="/manager/manage-apartment" class="btn-secondary">Hủy</a>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || form.pending || submitting()">
+            @if (submitting()) { <span>Đang lưu...</span> } @else { <span>Tạo căn hộ</span> }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
