@@ -75,4 +75,32 @@ export class ApartmentService {
       .get<ApiResponse<PaginatedResult<BuildingOption>>>(this.buildingApiUrl, { params })
       .pipe(map(res => res.data.items));
   }
+
+  isCodeUniqueInBuilding(
+    buildingId: string,
+    code: string,
+    excludeApartmentId?: string
+  ): Observable<boolean> {
+    const trimmed = code.trim();
+    const params = {
+      searchTerm: trimmed,
+      sortBy: null,
+      sortOrder: null,
+      status: null,
+      buildingId: buildingId
+    } as ApartmentQueryParameters;
+
+    return this.getApartments(params).pipe(
+      map(res => {
+        const list = res.data || [];
+        const lower = trimmed.toLowerCase();
+        const exists = list.some(a =>
+          a.buildingId === buildingId &&
+          a.code?.trim().toLowerCase() === lower &&
+          a.apartmentId !== (excludeApartmentId ?? '')
+        );
+        return !exists;
+      })
+    );
+  }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
+  AsyncValidatorFn,
   FormBuilder,
   ReactiveFormsModule,
   ValidationErrors,
@@ -11,7 +12,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApartmentService, ApartmentUpdateDto } from '../../../../../services/building/apartment.service';
 import { map, switchMap, finalize, catchError } from 'rxjs/operators';
-import { EMPTY } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 
 type AptType = 'Small' | 'Medium' | 'Big' | 'Large';
 
@@ -58,10 +59,27 @@ export class EditApartment implements OnInit {
   apartmentCode = signal<string>('');
 
   private apartmentId: string | null = null;
+  private buildingId: string | null = null;
+
+  private codeUniqueValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      const value: string = (control.value ?? '').toString().trim();
+      if (!value) return of(null);
+      if (!this.buildingId) return of(null);
+      return this.apartmentService
+        .isCodeUniqueInBuilding(this.buildingId, value, this.apartmentId ?? undefined)
+        .pipe(map(isUnique => (isUnique ? null : { codeTakenInBuilding: true })));
+    };
+  }
 
   form = this.fb.group(
     {
-      code: this.fb.control<string>('', { validators: [Validators.required], nonNullable: true }),
+      code: this.fb.control<string>('', {
+        validators: [Validators.required],
+        asyncValidators: [this.codeUniqueValidator()],
+        updateOn: 'blur',
+        nonNullable: true
+      }),
       type: this.fb.control<AptType | ''>('', { validators: [Validators.required], nonNullable: true }),
       area: this.fb.control<number>(0, { validators: [Validators.required, Validators.min(1)], nonNullable: true }),
     },
@@ -96,6 +114,8 @@ export class EditApartment implements OnInit {
       .subscribe(apartment => {
         if (!apartment) return;
 
+        this.buildingId = apartment.buildingId;
+
         this.form.patchValue({
           code: apartment.code,
           type: (['Small','Medium','Big','Large'].includes(apartment.type) ? apartment.type as AptType : ''),
@@ -106,6 +126,8 @@ export class EditApartment implements OnInit {
         this.form.get('type')?.valueChanges.subscribe(() => {
           this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
         });
+
+        this.form.controls.code.updateValueAndValidity();
       });
   }
 

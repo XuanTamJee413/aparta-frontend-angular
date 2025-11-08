@@ -15,8 +15,16 @@
         <div class="form-group">
           <label for="code" class="form-label">Mã Căn hộ (Code)</label>
           <input id="code" type="text" class="form-control" formControlName="code" />
+          @if (form.controls.code.pending) {
+            <div class="form-hint"></div>
+          }
           @if (form.controls.code.invalid && (form.controls.code.dirty || form.controls.code.touched)) {
-            <div class="form-error">Mã căn hộ là bắt buộc.</div>
+            @if (form.controls.code.errors?.['required']) {
+              <div class="form-error">Mã căn hộ là bắt buộc.</div>
+            }
+            @if (form.controls.code.errors?.['codeTakenInBuilding']) {
+              <div class="form-error">Mã căn hộ đã tồn tại trong cùng tòa nhà. Vui lòng chọn mã khác.</div>
+            }
           }
         </div>
 
@@ -73,7 +81,7 @@
 
         <div class="form-actions">
           <a routerLink="/manager/manage-apartment" class="btn-secondary">Hủy</a>
-          <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting()">
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting() || form.pending">
             @if (submitting()) { <span>Đang lưu...</span> } @else { <span>Lưu thay đổi</span> }
           </button>
         </div>
