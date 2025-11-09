@@ -1,305 +1,217 @@
 import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
+
 import {
   AssetManagementService,
   BuildingDto,
-  Asset,
-  AssetUpdateDto
+  AssetDto,
+  AssetView,
+  AssetQueryParameters,
+  ApiResponse
 } from '../../../../../services/management/asset-management/asset-management.service';
-
-
-export interface AssetView extends Asset {
-  buildingName: string;
-}
 
 @Component({
   selector: 'app-asset-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HttpClientModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <main class="content">
-      <div class="container-fluid p-0">
-        <div class="mb-3">
-          <h1 class="h3 d-inline align-middle">Quản lý Tài sản</h1>
-        </div>
-        <div class="row">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title mb-0">Danh sách tài sản</h5>
-              </div>
-              <div class="card-body">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2 mb-3">
-                  <div class="input-group search-group">
-                    <span class="input-group-text">Tìm kiếm</span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Theo Tên Tòa nhà, Tên tài sản..."
-                      [value]="searchTerm()"
-                      (input)="onSearch(($any($event.target)).value)"
-                      aria-label="Tìm kiếm tài sản"
-                      />
-                  </div>
-                  <button class="btn btn-success fw-medium" (click)="onAddAsset()">
-                    + Thêm Tài Sản
-                  </button>
-                </div>
-
-                @if (isLoading()) {
-                  <div class="text-center">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Đang tải...</span>
-                    </div>
-                    <p class="mt-2">Đang tải dữ liệu...</p>
-                  </div>
-                }
-                @if (error()) {
-                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Lỗi:</strong> {{ error() }}
-                    <button type = "button" class="btn-close" (click)="error.set(null)" aria-label="Close"></button>
-                  </div>
-                }
-
-                @if (!isLoading()) {
-                  <table class="table table-striped" style="width:100%">
-                    <thead>
-                      <tr>
-                        <th>Tên Tòa Nhà</th>
-                        <th>Tên Tài Sản</th>
-                        <th>Số Lượng</th>
-                        <th class="text-end">Hành động</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (asset of filteredAssets(); track asset.assetId) {
-                        <tr>
-                          <td>{{ asset.buildingName }}</td>
-
-                          <td>
-                            @if (editingAssetId() === asset.assetId) {
-                              <input
-                                type="text"
-                                class="form-control form-control-sm"
-                                [value]="editedInfo()"
-                                (input)="editedInfo.set(($any($event.target)).value)"
-                                (keydown.enter)="onSave(asset)"
-                                (keydown.escape)="onCancelEdit()"
-                                />
-                            } @else {
-                              {{ asset.info }}
-                            }
-                          </td>
-
-                          <td>
-                            @if (editingAssetId() === asset.assetId) {
-                              <input
-                                type="number"
-                                class="form-control form-control-sm"
-                                style="width: 100px;"
-                                [value]="editedQuantity()"
-                                (input)="editedQuantity.set(($any($event.target)).valueAsNumber)"
-                                (keydown.enter)="onSave(asset)"
-                                (keydown.escape)="onCancelEdit()"
-                                />
-                            } @else {
-                              {{ asset.quantity }}
-                            }
-                          </td>
-
-                          <td class="text-end">
-                            @if (editingAssetId() === asset.assetId) {
-                              <button
-                                class="btn btn-success btn-sm me-1"
-                                (click)="onSave(asset)">
-                                Lưu
-                              </button>
-                              <button
-                                class="btn btn-secondary btn-sm"
-                                (click)="onCancelEdit()">
-                                Hủy
-                              </button>
-                            }
-                            @else if (deletingAssetId() === asset.assetId) {
-                              <button
-                                class="btn btn-danger btn-sm me-1"
-                                (click)="onConfirmDelete(asset)">
-                                Xác nhận
-                              </button>
-                              <button
-                                class="btn btn-secondary btn-sm"
-                                (click)="onCancelDelete()">
-                                Hủy
-                              </button>
-                            }
-                            @else {
-                              <button
-                                class="btn btn-primary btn-sm me-1"
-                                (click)="onEdit(asset)">
-                                Sửa
-                              </button>
-                              <button
-                                class="btn btn-danger btn-sm"
-                                (click)="onAskDelete(asset)">
-                                Xóa
-                              </button>
-                            }
-                          </td>
-                        </tr>
-                      }
-                      @empty {
-                        <tr>
-                          <td colspan="4" class="text-center">
-                            Không có tài sản nào khớp với tìm kiếm.
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  `,
-  styles: [`
-    .search-group { width: 100%; max-width: 560px; }
-    @media (max-width: 576px) {
-      .search-group { max-width: 100%; }
-    }
-  `]
+  templateUrl: './asset-list.component.html',
+  styleUrls: ['./asset-list.component.css']
 })
-
 export class AssetList implements OnInit {
-
   assets = signal<AssetView[]>([]);
+  buildings = signal<BuildingDto[]>([]);
   isLoading = signal(true);
   error = signal<string | null>(null);
-  searchTerm = signal('');
 
-  editingAssetId = signal<string | null>(null);
-  editedQuantity = signal<number>(0);
-  editedInfo = signal<string>('');
+  query: AssetQueryParameters = {
+    buildingId: null,
+    searchTerm: null,
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  };
 
+  filterBuildingId: string = 'all';
+  searchTerm: string = '';
+  private searchDebouncer = new Subject<string>();
   deletingAssetId = signal<string | null>(null);
 
-  filteredAssets = computed(() => {
-    const t = this.searchTerm().toLowerCase();
-    if (!t) return this.assets();
-    return this.assets().filter(a =>
-      (a.buildingName ?? '').toLowerCase().includes(t) ||
-      (a.info ?? '').toLowerCase().includes(t) ||
-      String(a.quantity ?? '').toLowerCase().includes(t)
-    );
+  sortField = signal<'quantity' | 'createdAt'>('createdAt');
+  sortOrder = signal<'asc' | 'desc'>('desc');
+
+  pageIndex = signal(1);
+  pageSize  = signal(10);
+
+  totalItems = computed(() => this.assets().length);
+  totalPages = computed(() => Math.max(1, Math.ceil(this.totalItems() / this.pageSize())));
+  startIndex = computed(() => (this.pageIndex() - 1) * this.pageSize());
+  endIndex   = computed(() => Math.min(this.startIndex() + this.pageSize(), this.totalItems()));
+
+  private sortedAssets = computed(() => {
+    const data = [...(this.assets() ?? [])];
+    const field = this.sortField();
+    const order = this.sortOrder();
+
+    const getValue = (a: AssetView) => {
+      if (field === 'quantity') return a.quantity ?? 0;
+      return a.createdAt ? new Date(a.createdAt).getTime() : Number.NEGATIVE_INFINITY;
+    };
+
+    data.sort((a, b) => {
+      const va = getValue(a);
+      const vb = getValue(b);
+      const cmp = va === vb ? 0 : (va < vb ? -1 : 1);
+      return order === 'asc' ? cmp : -cmp;
+    });
+
+    return data;
+  });
+
+  pagedAssets = computed(() => {
+    const start = this.startIndex();
+    const end   = this.endIndex();
+    return this.sortedAssets().slice(start, end);
   });
 
   constructor(
     private assetService: AssetManagementService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.loadData();
+    this.loadInitialData();
+    this.setupSearchDebouncer();
   }
 
-  loadData(): void {
+  loadInitialData(): void {
     this.isLoading.set(true);
     this.error.set(null);
 
-    const assets$ = this.assetService.getAssets(); // <-- Giờ trả về Observable<Asset[]>
-    const buildings$ = this.assetService.getBuildings();
+    const buildings$ = this.assetService.getBuildings()
+      .pipe(
+        catchError(err => {
+          console.error('Lỗi tải Tòa nhà:', err);
+          return of<BuildingDto[]>([]);
+        })
+      );
 
-    forkJoin({
-      assets: assets$,
-      buildings: buildings$
-    }).subscribe({
+    const assets$ = this.assetService.getAssets(this.query)
+      .pipe(
+        catchError(err => {
+          console.error('Lỗi tải Tài sản:', err);
+          return of<ApiResponse<AssetDto[]>>({ succeeded: false, message: 'API_ERROR', data: [] });
+        })
+      );
+
+    forkJoin({ buildings: buildings$, assetsResponse: assets$ }).subscribe({
       next: (result) => {
-        const assets: Asset[] = result.assets;
-        const buildings: BuildingDto[] = result.buildings;
+        this.buildings.set(result.buildings);
 
-        const buildingMap = new Map<string, string>();
-        buildings.forEach(b => {
-          buildingMap.set(b.buildingId, b.name);
-        });
+        const resp = result.assetsResponse;
+        const noData = (resp.message ?? '').toUpperCase().includes('SM01');
 
-        const assetViews: AssetView[] = assets.map(asset => ({
-          ...asset,
-          buildingName: buildingMap.get(asset.buildingId) || `(ID: ${asset.buildingId})`
-        }));
+        if (resp.succeeded) {
+          this.assets.set(this.mapAssetsToView(resp.data, result.buildings));
+        } else if (noData) {
+          this.assets.set([]);
+        } else {
+          this.error.set(resp.message || 'Không tải được danh sách tài sản.');
+          this.assets.set([]);
+        }
 
-        this.assets.set(assetViews);
+        this.clampPageIndex();
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.error.set('Không thể tải được dữ liệu (assets hoặc buildings). Vui lòng kiểm tra lại API và chính sách CORS.');
+        this.error.set('Đã xảy ra lỗi khi tải dữ liệu.');
         this.isLoading.set(false);
-        console.error('Lỗi khi gọi forkJoin (Assets/Buildings):', err);
+        console.error('Lỗi forkJoin:', err);
       }
     });
   }
 
+  loadAssets(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+    this.deletingAssetId.set(null);
 
-  onSearch(term: string): void {
-    this.searchTerm.set(term.trim());
+    this.assetService.getAssets(this.query).subscribe({
+      next: (resp) => {
+        const noData = (resp.message ?? '').toUpperCase().includes('SM01');
+        if (resp.succeeded) {
+          this.assets.set(this.mapAssetsToView(resp.data, this.buildings()));
+        } else if (noData) {
+          this.assets.set([]);
+        } else {
+          this.error.set(resp.message || 'Không tải được danh sách tài sản.');
+          this.assets.set([]);
+        }
+        this.clampPageIndex();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Không thể tải danh sách tài sản. Vui lòng thử lại.');
+        this.isLoading.set(false);
+        console.error('Lỗi tải Tài sản:', err);
+      }
+    });
+  }
+
+  private clampPageIndex(): void {
+    const max = this.totalPages();
+    if (this.pageIndex() > max) this.pageIndex.set(max);
+    if (this.pageIndex() < 1)   this.pageIndex.set(1);
+  }
+
+  private mapAssetsToView(assets: AssetDto[], buildings: BuildingDto[]): AssetView[] {
+    const buildingMap = new Map<string, string>();
+    buildings.forEach(b => {
+      const buildingName = b?.name ?? (b?.buildingCode ? `(Mã: ${b.buildingCode})` : '(Không có tên)');
+      buildingMap.set(b.buildingId, buildingName);
+    });
+
+    return (assets ?? []).map(asset => ({
+      ...asset,
+      createdAt: asset?.createdAt ?? null,
+      buildingName: buildingMap.get(asset.buildingId) || `(ID: ${asset.buildingId})`
+    }));
+  }
+
+  setupSearchDebouncer(): void {
+    this.searchDebouncer.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.query.searchTerm = (searchTerm || '').trim() || null;
+      this.pageIndex.set(1);
+      this.loadAssets();
+    });
+  }
+
+  onSearchInput(): void {
+    this.searchDebouncer.next((this.searchTerm || '').trim());
+  }
+
+  onFilterChange(): void {
+    this.query.buildingId = this.filterBuildingId === 'all' ? null : this.filterBuildingId;
+    this.pageIndex.set(1);
+    this.loadAssets();
+  }
+
+  onAddAsset(): void {
+    this.router.navigate(['manager/manage-asset/create']).catch(err => console.error('Lỗi điều hướng:', err));
   }
 
   onEdit(asset: AssetView): void {
-    this.deletingAssetId.set(null);
-    this.editingAssetId.set(asset.assetId);
-    this.editedQuantity.set(asset.quantity);
-    this.editedInfo.set(asset.info);
-  }
-
-  onCancelEdit(): void {
-    this.editingAssetId.set(null);
-  }
-
-  onSave(asset: AssetView): void {
-    const newQuantity = this.editedQuantity();
-    const newInfo = this.editedInfo().trim();
-    const assetId = this.editingAssetId();
-
-    if (newQuantity === null || newQuantity < 0 || assetId === null) {
-      console.error("Số lượng không hợp lệ hoặc không có ID."); return;
-    }
-    if (!newInfo) {
-      console.error("Tên tài sản (Info) không được để trống."); return;
-    }
-
-    const requestDto: AssetUpdateDto = {
-      info: newInfo,
-      quantity: newQuantity
-    };
-
-    const updatedAssetInUi: AssetView = {
-      ...asset,
-      info: newInfo,
-      quantity: newQuantity
-    };
-
-    this.assetService.updateAsset(assetId, requestDto).subscribe({
-      next: () => {
-        this.assets.update(currentAssets =>
-          currentAssets.map(a =>
-            a.assetId === assetId ? updatedAssetInUi : a
-          )
-        );
-        this.onCancelEdit();
-      },
-      error: (err) => {
-        console.error('Lỗi khi cập nhật tài sản:', err);
-        this.error.set('Cập nhật thất bại. ' + (err.error?.message || err.message));
-      }
-    });
+    this.router.navigate(['manager/manage-asset/edit', asset.assetId]).catch(err => console.error('Lỗi điều hướng:', err));
   }
 
   onAskDelete(asset: AssetView): void {
-    this.onCancelEdit();
     this.deletingAssetId.set(asset.assetId);
   }
 
@@ -307,31 +219,43 @@ export class AssetList implements OnInit {
     this.deletingAssetId.set(null);
   }
 
-  onConfirmDelete(asset: AssetView): void {
+  onConfirmDelete(assetId: string): void {
     this.isLoading.set(true);
-    this.error.set(null);
-    const assetId = asset.assetId;
-
     this.assetService.deleteAsset(assetId).subscribe({
       next: () => {
-        this.assets.update(currentAssets =>
-          currentAssets.filter(a => a.assetId !== assetId)
-        );
         this.deletingAssetId.set(null);
-        this.isLoading.set(false);
+        this.loadAssets();
       },
       error: (err) => {
-        console.error('Lỗi khi xóa tài sản:', err);
-        this.error.set('Xóa thất bại. ' + (err.error?.message || err.message));
+        console.error('Lỗi xóa tài sản:', err);
+        this.error.set('Xóa thất bại. ' + (err?.error?.message || err?.message || ''));
         this.deletingAssetId.set(null);
         this.isLoading.set(false);
       }
     });
   }
 
-  onAddAsset(): void {
-    this.router.navigate(['manager/manage-asset/create'])
-      .catch(err => console.error('Không điều hướng được tới trang tạo Tài Sản:', err));
+  onView(asset: AssetView): void {
+    this.router.navigate(['manager/manage-asset/detail', asset.assetId]).catch(err => console.error('Lỗi điều hướng:', err));
   }
-}
 
+  onSort(field: 'quantity' | 'createdAt'): void {
+    if (this.sortField() === field) {
+      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortField.set(field);
+      this.sortOrder.set('desc');
+    }
+    this.pageIndex.set(1);
+  }
+
+  getSortIcon(field: 'quantity' | 'createdAt'): string {
+    if (this.sortField() !== field) return '↕';
+    return this.sortOrder() === 'asc' ? '▲' : '▼';
+  }
+
+  prevPage(): void { if (this.pageIndex() > 1) this.pageIndex.update(p => p - 1); }
+  nextPage(): void { if (this.pageIndex() < this.totalPages()) this.pageIndex.update(p => p + 1); }
+  firstPage(): void { this.pageIndex.set(1); }
+  lastPage(): void { this.pageIndex.set(this.totalPages()); }
+}

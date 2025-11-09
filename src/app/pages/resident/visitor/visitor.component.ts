@@ -1,17 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, Injectable, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-// Import các module Angular Material CẦN DÙNG
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -23,6 +21,34 @@ import {
   VisitorQueryParams 
 } from '../../../services/resident/visitor.service';
 import { AuthService } from '../../../services/auth.service';
+
+@Injectable()
+export class AppDateAdapter extends NativeDateAdapter {
+  override format(date: Date, displayFormat: Object): string {
+    if (displayFormat === 'input') {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      return `${this._to2digit(day)}/${this._to2digit(month)}/${year}`;
+    } else {
+      return date.toDateString();
+    }
+  }
+  private _to2digit(n: number): string {
+    return ('00' + n).slice(-2);
+  }
+}
+export const APP_DATE_FORMATS = {
+  parse: {
+    dateInput: { month: 'short', year: 'numeric', day: 'numeric' },
+  },
+  display: {
+    dateInput: 'input',
+    monthYearLabel: { year: 'numeric', month: 'short' },
+    dateA11yLabel: { year: 'numeric', month: 'long', day: 'numeric' },
+    monthYearA11yLabel: { year: 'numeric', month: 'long' },
+  },
+};
 
 @Component({
   selector: 'app-visitor',
@@ -43,25 +69,32 @@ import { AuthService } from '../../../services/auth.service';
     MatProgressSpinnerModule
   ],
   templateUrl: './visitor.component.html',
-  styleUrls: ['./visitor.component.css']
+  styleUrls: ['./visitor.component.css'],
+  providers: [
+    { provide: DateAdapter, useClass: AppDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: APP_DATE_FORMATS }
+  ]
 })
 export class VisitorComponent implements OnInit {
 
   visitorForm!: FormGroup;
   timeSlots: string[] = []; 
+  minDate: Date; 
   
   private residentApartmentId: string = ''; 
   
   isLoadingHistory = false; 
   displayedColumns: string[] = ['visitorFullName', 'purpose', 'checkinTime', 'status', 'actions'];
-  history: VisitLogStaffViewDto[] = []; 
+  history: any[] = []; 
   
   constructor(
     private fb: FormBuilder,
     private visitorService: VisitorService,
     private snackBar: MatSnackBar,
     private auth: AuthService
-  ) {}
+  ) {
+    this.minDate = new Date();
+  }
 
   ngOnInit(): void {
     const userPayload = this.auth.user();
@@ -70,24 +103,53 @@ export class VisitorComponent implements OnInit {
     } else {
       console.error('Không tìm thấy apartment_id của cư dân.');
       this.snackBar.open('Lỗi: Không thể xác định căn hộ của bạn.', 'Đóng', { 
-        duration: 3000,
+        duration: 5000,
         panelClass: ['error-snackbar'] 
       });
       return; 
     }
 
     this.populateTimeSlots(); 
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     this.visitorForm = this.fb.group({
       fullName: ['', Validators.required],
-      phone: [''],
-      idNumber: [''],
+      phone: ['', [
+        Validators.maxLength(15),
+        Validators.pattern('^[0-9]*$')
+      ]],
+      idNumber: ['', [
+        Validators.required,
+        Validators.maxLength(20),
+        Validators.pattern('^[0-9]+$')
+      ]],
       purpose: [''],
-      checkinDate: [new Date(), Validators.required],
+      checkinDate: [tomorrow, [Validators.required, this.pastDateValidator]],
       checkinTime: ['12:00', Validators.required] 
     });
 
     this.loadHistory();
   }
+
+  pastDateValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null; 
+    }
+    
+    const selectedDate = new Date(control.value);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      return { 'pastDate': true };
+    }
+
+    return null; 
+  }
+
 
   onSubmit(): void {
     if (this.visitorForm.invalid) {
@@ -101,6 +163,15 @@ export class VisitorComponent implements OnInit {
     const combinedCheckinTime = new Date(
       date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes
     );
+
+    if (combinedCheckinTime <= new Date()) {
+        this.snackBar.open('Lỗi: Ngày hoặc giờ đến phải ở trong tương lai.', 'Đóng', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+        });
+        return;
+    }
+
     const pad = (num: number) => num.toString().padStart(2, '0');
     const localISOString = 
         `${combinedCheckinTime.getFullYear()}-` +
@@ -123,14 +194,24 @@ export class VisitorComponent implements OnInit {
     this.visitorService.createVisitor(dto).subscribe({
       next: (createdVisitor) => {
         this.snackBar.open(`Đã đăng ký khách: ${createdVisitor.fullName}`, 'Đóng', {
-          duration: 3000
+          duration: 3000,
+          panelClass: ['success-snackbar'] 
         });
         this.resetForm();
         this.loadHistory(); 
       },
       error: (err) => {
-        this.snackBar.open('Lỗi: Không thể đăng ký khách', 'Đóng', {
-          duration: 3000,
+        let errorMessage = 'Lỗi: Không thể đăng ký khách';
+        if (err.error && err.error.message) {
+            errorMessage = err.error.message;
+        } else if (err.error && err.error.errors) {
+            const beErrors = err.error.errors;
+            const firstErrorKey = Object.keys(beErrors)[0];
+            errorMessage = beErrors[firstErrorKey][0];
+        }
+        
+        this.snackBar.open(errorMessage, 'Đóng', {
+          duration: 5000,
           panelClass: ['error-snackbar']
         });
         console.error(err);
@@ -139,8 +220,15 @@ export class VisitorComponent implements OnInit {
   }
 
   resetForm(): void {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
     this.visitorForm.reset({
-      checkinDate: new Date(),
+      fullName: '',
+      phone: '',
+      idNumber: '',
+      purpose: '',
+      checkinDate: tomorrow,
       checkinTime: '12:00'
     });
   }
@@ -158,12 +246,25 @@ export class VisitorComponent implements OnInit {
 
     this.visitorService.getAllVisitors(params).subscribe({
       next: (pagedData) => {
-        this.history = pagedData.items;
+        
+        this.history = pagedData.items.map(log => {
+          let checkinTimeStr = (log as any).checkinTime;
+          
+          if (typeof checkinTimeStr === 'string' && !checkinTimeStr.endsWith('Z')) {
+            checkinTimeStr += 'Z';
+          }
+          
+          return {
+            ...log,
+            checkinTime: new Date(checkinTimeStr) 
+          };
+        });
+        
         this.isLoadingHistory = false;
       },
       error: (err) => {
         this.snackBar.open('Lỗi: Không thể tải lịch sử khách thăm', 'Đóng', {
-          duration: 3000,
+          duration: 5000,
           panelClass: ['error-snackbar']
         });
         this.isLoadingHistory = false;

@@ -1,0 +1,148 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Quản lý Căn hộ</h1>
+      <p>Danh sách căn hộ với các thông tin:</p>
+    </header>
+
+    <div class="toolbar">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm theo mã, tên căn hộ..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+        />
+      </div>
+
+      <div class="filters-right">
+        <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+          <option [ngValue]="null">Tất cả trạng thái</option>
+          <option value="Đã thuê">Đã thuê</option>
+          <option value="Chưa thuê">Chưa Thuê</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="selectedBuildingId" (change)="onFilterChange()">
+          <option [ngValue]="null">Tất cả tòa nhà</option>
+          @if (buildingsLoading()) {
+            <option [ngValue]="null" disabled>Đang tải...</option>
+          } @else if (buildingsError()) {
+            <option [ngValue]="null" disabled>{{ buildingsError() }}</option>
+          } @else {
+            @for (b of buildings(); track b.buildingId) {
+              <option [value]="b.buildingId">{{ b.name }}</option>
+            }
+          }
+        </select>
+      </div>
+
+      <div class="actions-right">
+    <a [routerLink]="['create']" class="btn-create">+ Tạo Căn hộ</a>
+  </div>
+
+    </div>
+
+    @if (isLoading()) {
+      <div class="text-center" style="padding: 2rem;">
+        <p>Đang tải dữ liệu...</p>
+      </div>
+    } @else if (error()) {
+      <div class="alert alert-danger" style="margin-top: 1.5rem;">
+        {{ error() }}
+      </div>
+    } @else {
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="sortable-header">
+                  <div class="sort-header-content">
+                    <span>Mã căn hộ</span>
+                  </div>
+                </th>
+
+                <th>
+                  <div class="sort-header-content">
+                    <span>Loại</span>
+                  </div>
+                </th>
+
+                <th class="sortable-header" (click)="toggleSort('area')">
+                  <div class="sort-header-content">
+                    <span>Diện tích</span>
+                    <span class="sort-icon">
+                      @if (query.sortBy === 'area') {
+                        @if (query.sortOrder === 'asc') { ▲ } @else { ▼ }
+                      } @else { ⇅ }
+                    </span>
+                  </div>
+                </th>
+
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (apartment of paginatedApartments(); track apartment.apartmentId) {
+                <tr>
+                  <td class="font-medium">{{ apartment.code }}</td>
+
+                  <td>{{ apartment.type || '—' }}</td>
+
+                  <td>{{ apartment.area }} m²</td>
+                  <td>
+                    <span class="status-badge"
+                      [ngClass]="{
+                        'status-rented': apartment.status === 'Đã thuê',
+                        'status-available': apartment.status === 'Chưa thuê'
+                      }">
+                      <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                      {{ apartment.status }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <a href="#" class="action-view">
+                      <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Xem
+                    </a>
+                    <a [routerLink]="['edit', apartment.apartmentId]" class="action-edit-btn">
+                      <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
+                      </svg>
+                      Sửa
+                    </a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="no-results">Không tìm thấy căn hộ nào phù hợp.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination" *ngIf="totalPages() > 1">
+        <span class="page-info">
+          Trang <span class="font-medium">{{ currentPage() }}</span> / <span class="font-medium">{{ totalPages() }}</span>
+        </span>
+        <div class="pagination-buttons">
+          <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="previousPage()">Trước</button>
+          <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">Tiếp</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

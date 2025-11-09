@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { InvoiceService } from '../../../services/finance/invoice.service';
 import { AuthService } from '../../../services/auth.service';
 import { InvoiceDto } from '../../../models/invoice.model';
@@ -8,7 +8,7 @@ import { InvoiceDto } from '../../../models/invoice.model';
 @Component({
   selector: 'app-invoice',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './invoice.component.html',
   styleUrls: ['./invoice.component.css']
 })
@@ -116,6 +116,10 @@ export class InvoiceComponent implements OnInit {
   downloadPDF(invoice: InvoiceDto): void {
     // TODO: Implement PDF download
     console.log('Download PDF for invoice:', invoice.invoiceId);
+  }
+
+  viewDetail(invoiceId: string): void {
+    this.router.navigate(['/my-invoice-detail', invoiceId]);
   }
 
   formatDate(dateString: string): string {

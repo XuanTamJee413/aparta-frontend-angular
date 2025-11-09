@@ -1,94 +1,101 @@
+// src/app/services/operation/meter-reading.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { 
+import {
+  ApartmentDto,
+  MeterReadingServiceDto,
+  MeterReadingCreateDto,
+  MeterReadingUpdateDto,
+  ApiResponse,
   MeterReadingDto,
-  RecordMeterReadingRequest,
-  MeterReadingQueryParams,
-  ApartmentMeterInfo,
-  RecordingProgressDto
+  MeterReadingCheckResponse,
+  MeterReadingStatusDto
 } from '../../models/meter-reading.model';
-
-export interface ApiResponse<T> {
-  data: T;
-  succeeded: boolean;
-  message: string;
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class MeterReadingService {
-  private apiUrl = `${environment.apiUrl}/MeterReadings`;
+  private apiUrl = `${environment.apiUrl}`;
 
-  constructor(private http: HttpClient) { }
-
-  /**
-   * Get recording sheet for a building
-   * GET /api/MeterReadings/recording-sheet?buildingCode=xxx
-   */
-  getRecordingSheet(buildingCode: string): Observable<ApiResponse<ApartmentMeterInfo[]>> {
-    const params = new HttpParams().set('buildingCode', buildingCode);
-    return this.http.get<ApiResponse<ApartmentMeterInfo[]>>(`${this.apiUrl}/recording-sheet`, { params });
-  }
+  constructor(private http: HttpClient) {}
 
   /**
-   * Record a meter reading
-   * POST /api/MeterReadings/record
+   * Lấy danh sách căn hộ có status = "Đã thuê" thuộc building có is_active = true và project có is_active = true
    */
-  recordReading(request: RecordMeterReadingRequest): Observable<ApiResponse<MeterReadingDto>> {
-    return this.http.post<ApiResponse<MeterReadingDto>>(`${this.apiUrl}/record`, request);
-  }
-
-  /**
-   * Get meter reading progress for a building and billing period
-   * GET /api/MeterReadings/progress/{buildingCode}?billingPeriod=xxx
-   */
-  getReadingProgress(buildingCode: string, billingPeriod: string): Observable<ApiResponse<RecordingProgressDto>> {
-    const params = new HttpParams().set('billingPeriod', billingPeriod);
-    return this.http.get<ApiResponse<RecordingProgressDto>>(
-      `${this.apiUrl}/progress/${buildingCode}`,
-      { params }
+  getApartmentsForBuilding(buildingId: string): Observable<ApiResponse<ApartmentDto[]>> {
+    return this.http.get<ApiResponse<ApartmentDto[]>>(
+      `${this.apiUrl}/Buildings/${buildingId}/rented-apartments`
     );
   }
 
   /**
-   * Generate invoices for a building
-   * POST /api/MeterReadings/generate-invoices/{buildingCode}
+   * Lấy danh sách các loại phí (fee_type) cần trả hằng tháng cho một căn hộ
    */
-  generateInvoices(buildingCode: string): Observable<ApiResponse<number>> {
-    return this.http.post<ApiResponse<number>>(`${this.apiUrl}/generate-invoices/${buildingCode}`, {});
+  getServicesForApartment(apartmentId: string): Observable<ApiResponse<MeterReadingServiceDto>> {
+    return this.http.get<ApiResponse<MeterReadingServiceDto>>(
+      `${this.apiUrl}/MeterReadings/services-for-apartment/${apartmentId}`
+    );
   }
 
   /**
-   * Get recorded meter readings for a building and billing period
-   * GET /api/MeterReadings/recorded-readings?buildingCode=xxx&billingPeriod=xxx
+   * Thêm các chỉ số mới cho một căn hộ
    */
-  getRecordedReadings(params: MeterReadingQueryParams): Observable<ApiResponse<MeterReadingDto[]>> {
-    let httpParams = new HttpParams()
-      .set('buildingCode', params.buildingCode)
-      .set('billingPeriod', params.billingPeriod);
-
-    if (params.pageNumber) {
-      httpParams = httpParams.set('pageNumber', params.pageNumber.toString());
-    }
-    
-    if (params.pageSize) {
-      httpParams = httpParams.set('pageSize', params.pageSize.toString());
-    }
-
-    return this.http.get<ApiResponse<MeterReadingDto[]>>(`${this.apiUrl}/recorded-readings`, { params: httpParams });
+  createMeterReadings(
+    apartmentId: string,
+    readings: MeterReadingCreateDto[]
+  ): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.apiUrl}/MeterReadings/for-apartment/${apartmentId}`,
+      readings
+    );
   }
 
   /**
-   * Get meter reading history for an apartment
-   * GET /api/MeterReadings/history/{apartmentId}?meterId=xxx&limit=12
+   * Kiểm tra xem có meterReading trong tháng này chưa
+   * GET /api/MeterReadings/check/{apartmentId}/{feeType}/{billingPeriod}
    */
-  getReadingHistory(apartmentId: string, meterId: string, limit: number = 12): Observable<ApiResponse<MeterReadingDto[]>> {
-    const params = new HttpParams()
-      .set('meterId', meterId)
-      .set('limit', limit.toString());
-    return this.http.get<ApiResponse<MeterReadingDto[]>>(`${this.apiUrl}/history/${apartmentId}`, { params });
+  checkMeterReadingExists(
+    apartmentId: string,
+    feeType: string,
+    billingPeriod: string
+  ): Observable<ApiResponse<MeterReadingCheckResponse>> {
+    return this.http.get<ApiResponse<MeterReadingCheckResponse>>(
+      `${this.apiUrl}/MeterReadings/check/${apartmentId}/${encodeURIComponent(feeType)}/${billingPeriod}`
+    );
   }
+
+  /**
+   * PUT /api/MeterReadings/{readingId}
+   * Sửa một chỉ số đã ghi (chỉ khi chưa bị khóa - invoice_item_id = null)
+   */
+  updateMeterReading(
+    readingId: string,
+    dto: MeterReadingUpdateDto
+  ): Observable<ApiResponse<MeterReadingDto>> {
+    return this.http.put<ApiResponse<MeterReadingDto>>(
+      `${this.apiUrl}/MeterReadings/${readingId}`,
+      dto
+    );
+  }
+
+  /**
+   * GET /api/MeterReadings/by-building/{buildingId}?billingPeriod={billingPeriod}
+   * Lấy báo cáo tình trạng ghi chỉ số theo tòa nhà
+   */
+  getMeterReadingStatusByBuilding(
+    buildingId: string,
+    billingPeriod: string
+  ): Observable<ApiResponse<MeterReadingStatusDto[]>> {
+    const params = new HttpParams().set('billingPeriod', billingPeriod);
+    return this.http.get<ApiResponse<MeterReadingStatusDto[]>>(
+      `${this.apiUrl}/MeterReadings/by-building/${buildingId}`,
+      { params }
+    );
+  }
+
 }
+

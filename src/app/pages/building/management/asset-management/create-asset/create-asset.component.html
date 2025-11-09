@@ -1,0 +1,106 @@
+<main class="content">
+  <div class="container-fluid p-0">
+    <h1 class="h3 mb-3">Thêm Tài sản mới</h1>
+
+    <div class="row">
+      <div class="col-12 col-lg-8 col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Thông tin tài sản</h5>
+          </div>
+
+          <div class="card-body">
+            <form [formGroup]="assetForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3">
+                <label for="buildingId" class="form-label">Tòa nhà</label>
+                <select
+                  id="buildingId"
+                  class="form-select"
+                  formControlName="buildingId"
+                  [class.is-invalid]="isInvalid('buildingId')">
+
+                  @if (buildingsLoading()) {
+                    <option [value]="null" disabled>Đang tải danh sách tòa nhà...</option>
+                  }
+                  @else if (buildingsError()) {
+                    <option [value]="null" disabled>Lỗi: {{ buildingsError() }}</option>
+                  }
+                  @else {
+                    <option [value]="null" disabled>-- Vui lòng chọn một tòa nhà --</option>
+                    @for (building of buildings(); track building.buildingId) {
+                      <option [value]="building.buildingId">{{ building.name }}</option>
+                    }
+                  }
+                </select>
+                @if (isInvalid('buildingId')) {
+                  <div class="invalid-feedback">Vui lòng chọn một tòa nhà.</div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="info" class="form-label">Tên Tài sản</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="info"
+                  formControlName="info"
+                  placeholder="Ví dụ: Bóng đèn, Bàn, Ghế..."
+                  [class.is-invalid]="
+                    (assetForm.get('info')?.touched || assetForm.get('info')?.dirty) &&
+                    (assetForm.get('info')?.hasError('required') || assetForm.get('info')?.hasError('assetExists'))
+                  "
+                />
+
+                @if ((assetForm.get('info')?.touched || assetForm.get('info')?.dirty) && assetForm.get('info')?.hasError('required')) {
+                  <div class="invalid-feedback">Tên tài sản không được để trống.</div>
+                }
+
+                @if ((assetForm.get('info')?.touched || assetForm.get('info')?.dirty) && assetForm.get('info')?.hasError('assetExists')) {
+                  <div class="invalid-feedback">
+                    Tài sản này đã tồn tại trong tòa nhà đã chọn. Vui lòng nhập tên khác.
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="quantity" class="form-label">Số Lượng</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="quantity"
+                  formControlName="quantity"
+                  [class.is-invalid]="isInvalid('quantity')"
+                   max="9999"
+                />
+                @if (isInvalid('quantity')) {
+                  <div class="invalid-feedback">
+                    @if (assetForm.get('quantity')?.hasError('required')) { Số lượng không được để trống. }
+                    @if (assetForm.get('quantity')?.hasError('min')) { Số lượng phải ít nhất là 0. }
+                    @if (assetForm.get('quantity')?.hasError('max')) { Số lượng tối đa là 9999. }
+                    @if (assetForm.get('quantity')?.hasError('pattern')) { Số lượng phải là một số nguyên. }
+                  </div>
+                }
+              </div>
+
+              @if (errorMessage()) {
+                <div class="alert alert-danger">{{ errorMessage() }}</div>
+              }
+
+              <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" (click)="onCancel()">Hủy</button>
+                <button type="submit" class="btn btn-success" [disabled]="assetForm.invalid || isSubmitting() || assetForm.pending">
+                  @if (isSubmitting()) {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Đang lưu...
+                  } @else {
+                    Lưu
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

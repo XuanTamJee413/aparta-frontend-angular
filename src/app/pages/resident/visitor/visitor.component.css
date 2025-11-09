@@ -45,3 +45,6 @@ table {
 button[disabled] mat-icon {
   color: rgba(0, 0, 0, 0.26);
 }
+:host ::ng-deep .mat-mdc-form-field .mat-mdc-form-field-required-marker {
+  color: red;
+}

@@ -1,0 +1,184 @@
+<div class="meter-reading-container">
+  <mat-card class="main-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>speed</mat-icon>
+        Nhập chỉ số điện nước
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Building Selection -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <mat-icon>business</mat-icon>
+          Chọn Tòa nhà
+        </h3>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Tòa nhà</mat-label>
+          <mat-select [(ngModel)]="selectedBuildingId" (selectionChange)="onBuildingChange()" [disabled]="loadingBuildings">
+            <mat-option *ngFor="let building of buildings" [value]="building.buildingId">
+              {{ building.name || building.buildingCode }}
+            </mat-option>
+          </mat-select>
+          <mat-spinner *ngIf="loadingBuildings" matPrefix diameter="20" style="margin-right: 10px;"></mat-spinner>
+        </mat-form-field>
+      </div>
+
+      <!-- Apartment List -->
+      <div class="form-section" *ngIf="selectedBuildingId && !loadingApartments">
+        <h3 class="section-title">
+          <mat-icon>home</mat-icon>
+          Danh sách căn hộ đã thuê
+        </h3>
+        
+        <!-- Search -->
+        <mat-form-field appearance="outline" class="full-width" style="margin-bottom: 16px;">
+          <mat-label>Tìm kiếm theo tên căn hộ</mat-label>
+          <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" placeholder="Nhập tên căn hộ...">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="apartment-list" *ngIf="filteredApartments.length > 0">
+          <div 
+            class="apartment-card" 
+            *ngFor="let apartment of getPaginatedApartments()"
+            [class.selected]="apartment.apartmentId === selectedApartmentId"
+            (click)="onApartmentClick(apartment)">
+            <div class="apartment-header">
+              <mat-icon class="apartment-icon">home</mat-icon>
+              <span class="apartment-code">{{ apartment.code }}</span>
+            </div>
+            <div class="apartment-details">
+              <div class="detail-item">
+                <span class="detail-label">Loại:</span>
+                <span class="detail-value">{{ apartment.type }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Diện tích:</span>
+                <span class="detail-value">{{ apartment.area }} m²</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Trạng thái:</span>
+                <span class="detail-value status-badge">{{ apartment.status }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <mat-paginator
+          *ngIf="filteredApartments.length > 0"
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="[20]"
+          [hidePageSize]="true"
+          [showFirstLastButtons]="true"
+          (page)="onPageChange($event)"
+          style="margin-top: 16px;">
+        </mat-paginator>
+
+        <div *ngIf="filteredApartments.length === 0 && !loadingApartments" class="empty-state">
+          <mat-icon>info</mat-icon>
+          <p>{{ searchText ? 'Không tìm thấy căn hộ nào' : 'Không có căn hộ nào đã thuê trong tòa nhà này' }}</p>
+        </div>
+        <div *ngIf="loadingApartments" class="loading-state">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Đang tải danh sách căn hộ...</p>
+        </div>
+      </div>
+
+      <!-- Selected Apartment Info & Form -->
+      <div class="form-section selected-apartment-section" *ngIf="selectedApartment && services.length > 0">
+        <div class="selected-apartment-info">
+          <h3 class="section-title">
+            <mat-icon>edit_note</mat-icon>
+            Nhập chỉ số hằng tháng cho căn hộ: <strong>{{ selectedApartment.code }}</strong>
+          </h3>
+          <div class="apartment-info-card">
+            <div class="info-grid">
+              <div class="info-item">
+                <mat-icon>category</mat-icon>
+                <span>Loại: {{ selectedApartment.type }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>square_foot</mat-icon>
+                <span>Diện tích: {{ selectedApartment.area }} m²</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <form [formGroup]="meterReadingForm" (ngSubmit)="onSubmit()" class="reading-form">
+          <!-- Loading Existing Readings -->
+          <div *ngIf="checkingExisting" class="checking-indicator" style="margin-bottom: 20px;">
+            <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+            <span>Đang kiểm tra chỉ số hiện có...</span>
+          </div>
+          
+          <!-- Mode Indicator - Chỉ hiển thị khi KHÔNG có readings hiện có -->
+          <div class="mode-indicator" *ngIf="selectedApartmentId && !hasAnyExistingReadings && !checkingExisting" style="margin-bottom: 20px;">
+            <mat-icon class="create-mode">add_circle</mat-icon>
+            <span class="create-mode-text">
+              Chế độ tạo mới: Nhập chỉ số cho tháng này
+            </span>
+          </div>
+
+          <!-- Dynamic Reading Inputs - Grid Layout (2 per row) -->
+          <div class="readings-grid-section">
+            <h4 class="grid-title">Nhập chỉ số cho các loại phí:</h4>
+            <div formArrayName="readings" class="readings-grid">
+              <div 
+                *ngFor="let reading of readingsFormArray.controls; let i = index" 
+                [formGroupName]="i" 
+                class="reading-card">
+                <div class="reading-card-header">
+                  <mat-icon>bolt</mat-icon>
+                  <span class="fee-type-label">{{ getReadingFormGroup(i).get('feeType')?.value }}</span>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Chỉ số</mat-label>
+                  <input matInput type="number" formControlName="readingValue" required min="0" step="0.01">
+                  <mat-icon matPrefix>calculate</mat-icon>
+                  <mat-hint *ngIf="getLatestReadingValue(getReadingFormGroup(i).get('feeType')?.value) !== null">
+                    Chỉ số trước: {{ getLatestReadingValue(getReadingFormGroup(i).get('feeType')?.value) }}
+                  </mat-hint>
+                  <mat-error *ngIf="getReadingFormGroup(i).get('readingValue')?.hasError('required')">
+                    Vui lòng nhập chỉ số
+                  </mat-error>
+                  <mat-error *ngIf="getReadingFormGroup(i).get('readingValue')?.hasError('min')">
+                    Chỉ số phải lớn hơn hoặc bằng 0
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="meterReadingForm.invalid || saving" class="submit-btn">
+              <mat-spinner *ngIf="saving" diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+              <mat-icon *ngIf="!saving">save</mat-icon>
+              {{ saving ? 'Đang lưu...' : 'Lưu chỉ số' }}
+            </button>
+            
+            <!-- Message ngay dưới nút Lưu -->
+            <div *ngIf="submitMessage" class="submit-message" [class.message-success]="submitMessageType === 'success'" [class.message-error]="submitMessageType === 'error'">
+              <mat-icon *ngIf="submitMessageType === 'success'" class="message-icon">check_circle</mat-icon>
+              <mat-icon *ngIf="submitMessageType === 'error'" class="message-icon">error</mat-icon>
+              <span>{{ submitMessage }}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Loading Services -->
+      <div class="form-section" *ngIf="loadingServices">
+        <div class="loading-state">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Đang tải danh sách loại phí...</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -37,7 +37,10 @@ export class VisitorList implements OnInit {
   private alertTimeout: any;
 
   apartmentList: ApartmentDto[] = []; 
-  paginatedVisitors: PagedList<VisitLogStaffViewDto> | null = null;
+  
+  // SỬA LỖI 1: Thay đổi kiểu PagedList<...> thành 'any' 
+  // để cho phép chúng ta thay đổi kiểu dữ liệu của 'checkinTime' (string -> Date)
+  paginatedVisitors: any | null = null;
   
   queryParams: VisitorQueryParams = {
     pageNumber: 1,
@@ -72,7 +75,39 @@ export class VisitorList implements OnInit {
     this.isLoading = true;
     this.visitorService.getAllVisitors(this.queryParams).subscribe({
       next: (data) => {
-        this.paginatedVisitors = data; 
+        
+        // --- SỬA LỖI 2: XỬ LÝ MÚI GIỜ ---
+        // Map qua mảng 'items' để xử lý chuỗi thời gian
+        const processedItems = data.items.map(log => {
+          let checkinTimeStr = (log as any).checkinTime;
+          let checkoutTimeStr = (log as any).checkoutTime;
+
+          // Xử lý Check-in Time (thêm 'Z' nếu thiếu)
+          if (typeof checkinTimeStr === 'string' && !checkinTimeStr.endsWith('Z')) {
+            checkinTimeStr += 'Z';
+          }
+          
+          // Xử lý Check-out Time (thêm 'Z' nếu thiếu và nếu tồn tại)
+          if (typeof checkoutTimeStr === 'string' && !checkoutTimeStr.endsWith('Z')) {
+            checkoutTimeStr += 'Z';
+          }
+
+          // Trả về object mới với Date objects
+          // DatePipe trong HTML sẽ tự động chuyển Date object này sang giờ local
+          return {
+            ...log,
+            checkinTime: new Date(checkinTimeStr),
+            checkoutTime: checkoutTimeStr ? new Date(checkoutTimeStr) : null
+          };
+        });
+        
+        // Gán lại PagedList với 'items' đã được xử lý
+        this.paginatedVisitors = {
+          ...data, // Giữ lại totalCount, totalPages, v.v.
+          items: processedItems // Ghi đè 'items' bằng mảng mới
+        };
+        // --- KẾT THÚC SỬA LỖI ---
+        
         this.isLoading = false;
       },
       error: (err) => {

@@ -21,6 +21,7 @@ interface JwtPayload {
 export class AuthService {
   private readonly storageKey = 'auth_token';
   private readonly tokenSig = signal<string | null>(this.readToken());
+  private userPermissions: string[] = [];
 
   readonly token = computed(() => this.tokenSig());
   readonly user = computed<JwtPayload | null>(() => this.decodeToken(this.tokenSig()));
@@ -30,9 +31,23 @@ export class AuthService {
     if (token) {
       localStorage.setItem(this.storageKey, token);
       this.tokenSig.set(token);
+      // Decode token và lưu permissions
+      const payload = this.decodeToken(token);
+      if (payload && payload.permission) {
+        if (Array.isArray(payload.permission)) {
+          this.userPermissions = [...payload.permission];
+        } else if (typeof payload.permission === 'string') {
+          this.userPermissions = [payload.permission];
+        } else {
+          this.userPermissions = [];
+        }
+      } else {
+        this.userPermissions = [];
+      }
     } else {
       localStorage.removeItem(this.storageKey);
       this.tokenSig.set(null);
+      this.userPermissions = [];
     }
   }
 
@@ -62,38 +77,14 @@ export class AuthService {
     return expectedSet.includes(normalized as UserRole);
   }
 
-  // Map permission format from backend policy to token format
-  private mapPermissionToTokenFormat(policyName: string): string[] {
-    const mappings: { [key: string]: string[] } = {
-      'CanReadNews': ['news.read', 'CanReadNews'],
-      'CanCreateNews': ['news.create', 'CanCreateNews'],
-      'CanUpdateNews': ['news.update', 'CanUpdateNews'],
-      'CanDeleteNews': ['news.delete', 'CanDeleteNews'],
-      'CanReadApartment': ['apartment.read', 'CanReadApartment'],
-      'CanCreateApartment': ['apartment.create', 'CanCreateApartment'],
-      'CanUpdateApartment': ['apartment.update', 'CanUpdateApartment'],
-      'CanDeleteApartment': ['apartment.delete', 'CanDeleteApartment'],
-      'CanReadMeterReadingSheet': ['meter.reading.sheet', 'CanReadMeterReadingSheet'],
-      'CanCreateMeterReading': ['meter.reading.create', 'CanCreateMeterReading'],
-      'CanReadMeterReadingProgress': ['meter.reading.progress', 'CanReadMeterReadingProgress'],
-      'CanReadMeterReadingRecord': ['meter.reading.record', 'CanReadMeterReadingRecord'],
-      'CanReadMeterReadingHistory': ['meter.reading.history', 'CanReadMeterReadingHistory'],
-      'CanReadInvoiceResident': ['invoice.resident.read', 'CanReadInvoiceResident'],
-      'CanReadInvoiceStaff': ['invoice.staff.read', 'CanReadInvoiceStaff'],
-      'CanCreateInvoicePayment': ['invoice.payment.create', 'CanCreateInvoicePayment']
-    };
-
-    // If exact match exists, return mapped values
-    if (mappings[policyName]) {
-      return mappings[policyName];
-    }
-
-    // Return original policy name as well
-    return [policyName];
-  }
-
   // Check if current user has a specific permission (from JWT payload)
   hasPermission(requiredPermission: string): boolean {
+    // Kiểm tra từ userPermissions array (đã lưu khi setToken)
+    if (this.userPermissions.length > 0) {
+      return this.userPermissions.includes(requiredPermission);
+    }
+
+    // Fallback: decode token mỗi lần (tương thích với code cũ)
     const payload = this.user();
     if (!payload) {
       return false;
@@ -104,47 +95,45 @@ export class AuthService {
       return true;
     }
 
-    // Try multiple field names for permissions (permission, permissions, Permission, Permissions)
-    let permissions: string | string[] | undefined = payload.permission;
-    if (!permissions && (payload as any).permissions) {
-      permissions = (payload as any).permissions;
-    }
-    if (!permissions && (payload as any).Permission) {
-      permissions = (payload as any).Permission;
-    }
-    if (!permissions && (payload as any).Permissions) {
-      permissions = (payload as any).Permissions;
-    }
-
-    if (!permissions) {
+    if (!payload.permission) {
       return false;
     }
 
-    // Normalize permission comparison (case-insensitive)
-    const normalizedRequired = requiredPermission.trim();
-    const permissionsArray: string[] = Array.isArray(permissions) 
-      ? permissions.map(p => String(p).trim())
-      : [String(permissions).trim()];
+    if (Array.isArray(payload.permission)) {
+      return payload.permission.includes(requiredPermission);
+    }
 
-    // Map policy name to possible token permission formats
-    const allowedPermissions = this.mapPermissionToTokenFormat(normalizedRequired);
-    
-    // Check if any of the mapped permissions exist in user's permissions
-    return allowedPermissions.some(allowed => 
-      permissionsArray.some(userPerm => 
-        userPerm === allowed || 
-        userPerm.toLowerCase() === allowed.toLowerCase()
-      )
-    );
+    if (typeof payload.permission === 'string') {
+      return payload.permission === requiredPermission;
+    }
+
+    return false;
   }
 
   logout(): void {
     this.setToken(null);
+    this.userPermissions = [];
   }
 
   private readToken(): string | null {
     try {
-      return localStorage.getItem(this.storageKey);
+      const token = localStorage.getItem(this.storageKey);
+      // Khi đọc token từ storage, cũng decode và lưu permissions
+      if (token) {
+        const payload = this.decodeToken(token);
+        if (payload && payload.permission) {
+          if (Array.isArray(payload.permission)) {
+            this.userPermissions = [...payload.permission];
+          } else if (typeof payload.permission === 'string') {
+            this.userPermissions = [payload.permission];
+          } else {
+            this.userPermissions = [];
+          }
+        } else {
+          this.userPermissions = [];
+        }
+      }
+      return token;
     } catch {
       return null;
     }
@@ -177,5 +166,4 @@ export class AuthService {
     }
   }
 }
-
 

@@ -27,6 +27,14 @@ export class InvoiceService {
   }
 
   /**
+   * Get user's own invoice detail (for residents)
+   * GET /api/invoices/my-invoices/{invoiceId}
+   */
+  getMyInvoiceDetail(invoiceId: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/invoice/${invoiceId}`);
+  }
+
+  /**
    * Get all invoices with query parameters (for staff)
    * GET /api/Invoice?status=xxx&apartmentCode=xxx
    */

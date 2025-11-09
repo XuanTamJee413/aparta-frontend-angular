@@ -19,10 +19,6 @@
         <mat-icon>home_work</mat-icon>
         <span>Quản lý tài sản</span>
       </a>
-      <a mat-list-item routerLink="manage-resident" routerLinkActive="active-link">
-        <mat-icon>group</mat-icon>
-        <span>Quản lý cư dân</span>
-      </a>
       <a mat-list-item routerLink="news/list" routerLinkActive="active-link">
         <mat-icon>article</mat-icon>
         <span>Quản lý News tòa nhà</span>
@@ -36,26 +32,20 @@
         <mat-icon>receipt_long</mat-icon>
         <span>Xem biên lai</span>
       </a>
-      <a mat-list-item routerLink="invoice-list" routerLinkActive="active-link">
-        <mat-icon>description</mat-icon>
-        <span>Danh sách hóa đơn</span>
+      <a mat-list-item routerLink="invoice-management" routerLinkActive="active-link">
+        <mat-icon>receipt</mat-icon>
+        <span>Quản lý Hóa đơn</span>
       </a>
-      <mat-divider></mat-divider>
-      <h3 mat-subheader class="list-subheader">Bảo Trì</h3>
-      <a mat-list-item routerLink="meter-record" routerLinkActive="active-link">
-        <mat-icon>speed</mat-icon>
-        <span>Ghi điện nước</span>
-      </a>
-      <a mat-list-item routerLink="meter-reading-list" routerLinkActive="active-link">
-        <mat-icon>history</mat-icon>
-        <span>Xem lịch sử ghi điện nước</span>
+      <a mat-list-item routerLink="meter-reading-status" routerLinkActive="active-link">
+        <mat-icon>assessment</mat-icon>
+        <span>Báo cáo Tình trạng Ghi chỉ số</span>
       </a>
 
       <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Vận hành</h3>
       <a mat-list-item routerLink="resident-list" routerLinkActive="active-link">
         <mat-icon>assignment_ind</mat-icon>
-        <span>Danh sách cư dân (Op)</span>
+        <span>Danh sách cư dân</span>
       </a>
 
       <a mat-list-item routerLink="manage-service" routerLinkActive="active-link">
@@ -77,8 +67,17 @@
       </a>
       <a mat-list-item routerLink="vehicle-list" routerLinkActive="active-link">
         <mat-icon>assignment_ind</mat-icon>
-        <span>Danh sách Phương Tiện</span>
+        <span>Danh sách Ph.Tiện</span>
       </a>
+
+
+      <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Vận hành </h3>
+      <a mat-list-item routerLink="meter-reading-form" routerLinkActive="active-link">
+        <mat-icon>speed</mat-icon>
+        <span>Nhập chỉ số điện nước</span>
+      </a>
+      
 
       <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Tài khoản</h3>
@@ -96,7 +95,7 @@
 
   <mat-sidenav-content class="content-container">
 
-    <mat-toolbar color="primary" class="main-toolbar">
+    <mat-toolbar class="main-toolbar">
 
       <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
         *ngIf="isSmallScreen$ | async">

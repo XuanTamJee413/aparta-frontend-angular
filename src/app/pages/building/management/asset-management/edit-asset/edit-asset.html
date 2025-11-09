@@ -1,0 +1,61 @@
+<div class="page-container">
+  <h1>Chỉnh sửa Tài sản</h1>
+
+  @if (isLoading()) {
+  <div class="loading">Đang tải dữ liệu...</div>
+  } @else {
+  @if (error()) {
+  <div class="alert alert-danger"><strong>Lỗi:</strong> {{ error() }}</div>
+  }
+
+  @if (asset()) {
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Thông tin tài sản</h2>
+    </div>
+
+    <form class="card-body form-vert" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-field">
+        <label for="buildingName">Tòa nhà</label>
+        <input id="buildingName" type="text" formControlName="buildingName" readonly />
+      </div>
+
+      <div class="form-field">
+        <label for="info">Tên Tài sản <span class="req">*</span></label>
+        <input id="info" type="text" formControlName="info" placeholder="Ví dụ: Bóng đèn, Bàn, Ghế..." />
+        @if (hasError('info','required')) {
+        <div class="field-error">Không được để trống.</div>
+        }
+        @if (hasError('info','maxlength')) {
+        <div class="field-error">Tối đa 200 ký tự.</div>
+        }
+        @if (hasError('info','assetExists')) {
+        <div class="field-error">Tên tài sản này đã tồn tại trong tòa nhà. Vui lòng nhập tên khác.</div>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="quantity">Số Lượng <span class="req">*</span></label>
+        <input id="quantity" type="number" inputmode="numeric" step="1" min="1" max="9999" formControlName="quantity"
+          placeholder="0" />
+        @if (hasError('quantity','max')) { <div class="field-error">Tối đa 9999.</div> }
+
+        @if (hasError('quantity','required')) {
+        <div class="field-error">Không được để trống.</div>
+        }
+        @if (hasError('quantity','positiveInteger')) {
+        <div class="field-error">Phải là số nguyên dương.</div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSaving()">Hủy</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving() || form.pending">
+          @if (isSaving()) { Đang lưu... } @else { Lưu }
+        </button>
+      </div>
+    </form>
+  </section>
+  }
+  }
+</div>
