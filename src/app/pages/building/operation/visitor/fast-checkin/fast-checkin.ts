@@ -1,7 +1,10 @@
+// SỬA 1: Xóa 'Input'
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { VisitorCreateDto, VisitorService } from '../../../../../services/resident/visitor.service';
+
+// SỬA 2: Thêm 'ApartmentDto' (vẫn giữ nguyên)
+import { VisitorCreateDto, VisitorService, ApartmentDto } from '../../../../../services/resident/visitor.service';
 
 @Component({
   selector: 'app-fast-checkin',
@@ -18,6 +21,9 @@ export class FastCheckin implements OnInit {
   // --- Thuộc tính Form ---
   manualVisitorForm!: FormGroup;
   
+  // SỬA 3: Xóa @Input() và biến nó thành một biến local
+  apartmentList: ApartmentDto[] = [];
+
   // --- Outputs (Phát sự kiện ra component cha) ---
   @Output() checkinSuccess = new EventEmitter<string>();
   @Output() closeForm = new EventEmitter<void>();
@@ -35,41 +41,60 @@ export class FastCheckin implements OnInit {
 
   // --- Lifecycle Hooks ---
   ngOnInit(): void {
-    // Khởi tạo form
     this.manualVisitorForm = this.fb.group({
       fullName: ['', Validators.required],
-      phone: [''],
-      idNumber: ['', Validators.required],
+      phone: ['', [
+        Validators.maxLength(15),
+        Validators.pattern('^[0-9]*$')
+      ]],
+      idNumber: ['', [
+        Validators.required,
+        Validators.maxLength(20),
+        Validators.pattern('^[0-9]+$')
+      ]],
       purpose: [''],
-      apartmentId: ['', Validators.required] // Staff phải nhập mã căn hộ
+      apartmentId: ['', Validators.required] 
+    });
+
+    // SỬA 4: Component con tự gọi API
+    this.loadApartments();
+  }
+
+  // SỬA 5: Thêm hàm loadApartments vào component con
+  loadApartments(): void {
+    this.visitorService.getAllApartments().subscribe({
+      next: (data) => {
+        this.apartmentList = data.sort((a, b) => a.code.localeCompare(b.code));
+      },
+      error: (err) => {
+        console.error('Lỗi tải danh sách căn hộ (trong fast-checkin)', err);
+        // Hiển thị lỗi ngay trong form con
+        this.showAlert('Không thể tải danh sách căn hộ', 'danger');
+      }
     });
   }
 
-  // --- Xử lý Form ---
 
-  /** Xử lý khi submit form */
+  // --- (Các hàm onManualSubmit, resetManualForm, onClose, showAlert giữ nguyên) ---
+  
   onManualSubmit(): void {
     if (this.manualVisitorForm.invalid) {
       this.manualVisitorForm.markAllAsTouched();
       return;
     }
 
-    // Tạo DTO
     const dto: VisitorCreateDto = {
       ...this.manualVisitorForm.value,
-      checkinTime: new Date().toISOString(), // Check-in ngay lập tức
-      status: 'Checked-in' // Trạng thái là "Checked-in" luôn
+      checkinTime: new Date().toISOString(), 
+      status: 'Checked-in' 
     };
 
-    // Gọi service
     this.visitorService.createVisitor(dto).subscribe({
       next: (createdVisitor) => {
-        // Bắn sự kiện thành công về component cha
         this.checkinSuccess.emit(createdVisitor.fullName);
         this.resetManualForm();
       },
       error: (err) => {
-        // Xử lý lỗi validation từ API
         if (err.error && err.error.message) {
           this.showAlert(err.error.message, 'danger');
         } 
@@ -86,26 +111,21 @@ export class FastCheckin implements OnInit {
     });
   }
 
-  /** Reset form về trạng thái ban đầu */
   resetManualForm(): void {
     this.manualVisitorForm.reset();
   }
 
-  // --- Xử lý UI ---
-
-  /** Đóng form và bắn sự kiện về component cha */
   onClose(): void {
     this.resetManualForm();
     this.closeForm.emit(); 
   }
 
-  /** Hiển thị thông báo (alert) */
   private showAlert(message: string, type: 'success' | 'danger'): void {
     this.alertMessage = message;
     this.alertType = type;
     if (this.alertTimeout) clearTimeout(this.alertTimeout);
     this.alertTimeout = setTimeout(() => {
       this.alertMessage = null;
-    }, 3000);
+    }, 5000);
   }
 }

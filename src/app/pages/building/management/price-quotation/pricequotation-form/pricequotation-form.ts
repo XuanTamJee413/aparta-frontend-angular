@@ -41,7 +41,7 @@ export class PriceQuotationFormComponent implements OnInit {
 
   form!: FormGroup;
   buildings: BuildingDto[] = [];
-  calcMethods: CalculationMethodOption[] = [];
+  calcMethods: CalculationMethodOption[] = []; 
 
   isEditMode = false;
   editId: string | null = null;
@@ -51,13 +51,14 @@ export class PriceQuotationFormComponent implements OnInit {
   ECalcMethod = ECalculationMethod;
 
   constructor() {
-    this.calcMethods = this.quotationService.getCalculationMethods();
   }
 
   ngOnInit(): void {
     this.initForm();
     this.loadBuildings();
     this.checkEditMode();
+
+    this.loadCalculationMethods();
 
     this.form.get('calculationMethod')?.valueChanges.subscribe(value => {
       this.onCalcMethodChange(value);
@@ -151,6 +152,19 @@ export class PriceQuotationFormComponent implements OnInit {
       }
     });
   }
+
+  loadCalculationMethods(): void {
+    this.quotationService.getCalculationMethods().subscribe({
+      next: (data) => {
+        this.calcMethods = data;
+      },
+      error: (err) => {
+        console.error(err);
+        this.snackBar.open('Không thể tải danh sách phương thức tính', 'Đóng', { duration: 3000 });
+      }
+    });
+  }
+
 
   onCalcMethodChange(method: ECalculationMethod): void {
     const unitPriceControl = this.form.get('unitPrice');

@@ -38,19 +38,13 @@ export interface TieredPrice {
 }
 
 export enum ECalculationMethod {
+  FIXED = "FIXED",
+  PER_UNIT_METER = "PER_UNIT_METER",
   PER_AREA = "PER_AREA",
-  FIXED_PER_VEHICLE = "FIXED_PER_VEHICLE",
-  PER_HOUR = "PER_HOUR",
-  TIERED = "TIERED",
-  FIXED_RATE = "FIXED_RATE",
-  PER_PERSON_PER_MONTH = "PER_PERSON_PER_MONTH",
-  PER_USE = "PER_USE",
-  FIXED_ONE_TIME = "FIXED_ONE_TIME",
-  FIXED_PER_PET_PER_MONTH = "FIXED_PER_PET_PER_MONTH",
-  PER_SLOT = "PER_SLOT",
-  FIXED_PER_MONTH = "FIXED_PER_MONTH",
-  PER_KG = "PER_KG",
-  PERCENT_PER_DAY_ON_DEBT = "PERCENT_PER_DAY_ON_DEBT"
+  PER_PERSON = "PER_PERSON",
+  PER_ITEM = "PER_ITEM",
+  ONE_TIME = "ONE_TIME",
+  TIERED = "TIERED", 
 }
 
 export interface BuildingDto {
@@ -142,22 +136,20 @@ export class PriceQuotationService {
     return this.http.delete<ApiResponse<any>>(`${this.quotationApiUrl}/${id}`);
   }
 
-  getCalculationMethods(): CalculationMethodOption[] {
-    return [
-      { value: ECalculationMethod.PER_AREA, name: "Tính theo diện tích (m2)", description: "Đơn giá * Diện tích căn hộ." },
-      { value: ECalculationMethod.FIXED_RATE, name: "Tính đồng giá (Điện/Nước)", description: "ví dụ: nước nóng, gas,..  được cung cấp bởi tòa nhà, vẫn tính theo số như số điện nhưng không lũy tiến." },
-      { value: ECalculationMethod.FIXED_PER_MONTH, name: "Cố định theo tháng", description: "Thu cố định mỗi căn hộ hàng tháng." },
-      //{ value: ECalculationMethod.TIERED, name: "Tính lũy tiến (Bậc thang)", description: "Tính theo bậc, dùng cho Điện/Nước." },
-      { value: ECalculationMethod.FIXED_PER_VEHICLE, name: "Cố định theo phương tiện", description: "Thu phí theo từng phương tiện." },
-      { value: ECalculationMethod.PER_PERSON_PER_MONTH, name: "Tính theo người/tháng", description: "Đơn giá * Số người trong căn hộ." },
-      { value: ECalculationMethod.PER_USE, name: "Tính theo lượt sử dụng", description: "Thu phí mỗi khi đăng ký." },
-      { value: ECalculationMethod.PER_SLOT, name: "Tính theo gói (ví dụ: BBQ)", description: "Thu phí theo khung giờ đăng ký." },
-      { value: ECalculationMethod.PERCENT_PER_DAY_ON_DEBT, name: "Phạt % quá hạn", description: "Đơn giá là % (ví dụ: 0.05 = 5%)." },
-      
-      { value: ECalculationMethod.PER_HOUR, name: "Tính theo giờ", description: "Đơn giá * số giờ sử dụng." },
-      { value: ECalculationMethod.FIXED_ONE_TIME, name: "Cố định một lần", description: "Thu phí một lần duy nhất khi phát sinh." },
-      { value: ECalculationMethod.FIXED_PER_PET_PER_MONTH, name: "Cố định theo thú cưng/tháng", description: "Đơn giá * số lượng thú cưng." },
-      { value: ECalculationMethod.PER_KG, name: "Tính theo KG", description: "Đơn giá * số KG (ví dụ: giặt là)." }
-    ];
+  getCalculationMethods(): Observable<CalculationMethodOption[]> {
+    
+    return this.http.get<ApiResponse<any[]>>(`${this.quotationApiUrl}/calculation-methods`)
+      .pipe(
+        map(response => {
+          if (!response || !response.data) {
+            return [];
+          }
+          return response.data.map(item => ({
+            value: item.value, 
+            name: item.name,
+            description: item.description
+          }));
+        })
+      );
   }
 }
