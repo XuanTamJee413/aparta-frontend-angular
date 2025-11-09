@@ -64,13 +64,10 @@ export class AssetManagementService {
     return { succeeded, message, data };
   }
 
-  /** Rút data từ nhiều shape (raw object, wrapped data, PascalCase/camelCase) */
   private extractSingle<T>(res: any): T | null {
     if (!res) return null;
 
-    // 1) Trả thẳng object: { assetId, ... } hoặc PascalCase
     if (res.assetId || res.AssetId) {
-      // Chuẩn hóa nhỏ: chuyển PascalCase tối thiểu cho 2 field thường gặp
       const obj: any = { ...res };
       if (obj.AssetId && !obj.assetId) obj.assetId = obj.AssetId;
       if (obj.BuildingId && !obj.buildingId) obj.buildingId = obj.BuildingId;
@@ -79,7 +76,6 @@ export class AssetManagementService {
       return obj as T;
     }
 
-    // 2) Bọc trong data/Data
     const data = res.data ?? res.Data ?? null;
     if (data) {
       if (data.assetId || data.AssetId) {
@@ -90,16 +86,13 @@ export class AssetManagementService {
         if (obj.CreatedAt && !obj.createdAt) obj.createdAt = obj.CreatedAt;
         return obj as T;
       }
-      // một số API có thể trả { data: {...} } nhưng field chưa map — cứ trả luôn
       return data as T;
     }
 
     return null;
   }
 
-  /** Lấy 1 asset theo ID – linh hoạt theo nhiều dạng trả về */
   getAssetById(id: string): Observable<AssetDto | AssetView | null> {
-    // Thử dạng /{id}. Nếu fail, fallback dạng ?id=
     return this.http.get<any>(`${this.assetApiUrl}/${id}`).pipe(
       map(res => this.extractSingle<AssetDto | AssetView>(res)),
       switchMap(parsed =>
@@ -162,5 +155,36 @@ export class AssetManagementService {
 
   deleteAsset(id: string): Observable<any> {
     return this.http.delete(`${this.assetApiUrl}/${id}`);
+  }
+
+  checkAssetExists(buildingId: string, info: string): Observable<boolean>;
+  checkAssetExists(buildingId: string, info: string, excludeAssetId?: string): Observable<boolean>;
+
+  checkAssetExists(buildingId: string, info: string, excludeAssetId?: string): Observable<boolean> {
+    const norm = (s: string) => (s ?? '').toString().trim().replace(/\s+/g, ' ').toLowerCase();
+
+    const params: AssetQueryParameters = {
+      buildingId,
+      searchTerm: info,
+      sortBy: null,
+      sortOrder: null
+    };
+
+    return this.getAssets(params).pipe(
+      map(res => {
+        const raw = res?.data as any;
+        const list: any[] = Array.isArray(raw) ? raw : (raw?.items ?? []);
+        const targetInfo = norm(info);
+
+        return list.some(a => {
+          const id = a.assetId ?? a.AssetId ?? '';
+          const sameBuilding = (a.buildingId ?? a.BuildingId) === buildingId;
+          const sameInfo = norm(a.info ?? a.Info) === targetInfo;
+          const notExcluded = !excludeAssetId || id !== excludeAssetId;
+          return sameBuilding && sameInfo && notExcluded;
+        });
+      }),
+      catchError(() => of(false))
+    );
   }
 }

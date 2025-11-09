@@ -45,10 +45,20 @@
                   id="info"
                   formControlName="info"
                   placeholder="Ví dụ: Bóng đèn, Bàn, Ghế..."
-                  [class.is-invalid]="isInvalid('info')"
+                  [class.is-invalid]="
+                    (assetForm.get('info')?.touched || assetForm.get('info')?.dirty) &&
+                    (assetForm.get('info')?.hasError('required') || assetForm.get('info')?.hasError('assetExists'))
+                  "
                 />
-                @if (isInvalid('info')) {
+
+                @if ((assetForm.get('info')?.touched || assetForm.get('info')?.dirty) && assetForm.get('info')?.hasError('required')) {
                   <div class="invalid-feedback">Tên tài sản không được để trống.</div>
+                }
+
+                @if ((assetForm.get('info')?.touched || assetForm.get('info')?.dirty) && assetForm.get('info')?.hasError('assetExists')) {
+                  <div class="invalid-feedback">
+                    Tài sản này đã tồn tại trong tòa nhà đã chọn. Vui lòng nhập tên khác.
+                  </div>
                 }
               </div>
 
@@ -60,11 +70,13 @@
                   id="quantity"
                   formControlName="quantity"
                   [class.is-invalid]="isInvalid('quantity')"
+                   max="9999"
                 />
                 @if (isInvalid('quantity')) {
                   <div class="invalid-feedback">
                     @if (assetForm.get('quantity')?.hasError('required')) { Số lượng không được để trống. }
                     @if (assetForm.get('quantity')?.hasError('min')) { Số lượng phải ít nhất là 0. }
+                    @if (assetForm.get('quantity')?.hasError('max')) { Số lượng tối đa là 9999. }
                     @if (assetForm.get('quantity')?.hasError('pattern')) { Số lượng phải là một số nguyên. }
                   </div>
                 }
@@ -76,7 +88,7 @@
 
               <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-secondary" (click)="onCancel()">Hủy</button>
-                <button type="submit" class="btn btn-success" [disabled]="assetForm.invalid || isSubmitting()">
+                <button type="submit" class="btn btn-success" [disabled]="assetForm.invalid || isSubmitting() || assetForm.pending">
                   @if (isSubmitting()) {
                     <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                     Đang lưu...

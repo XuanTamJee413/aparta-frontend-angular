@@ -1,12 +1,21 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AsyncValidatorFn,
+  AbstractControl,
+  ValidationErrors
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   AssetManagementService,
   BuildingDto,
   AssetCreateDto
 } from '../../../../../services/management/asset-management/asset-management.service';
+import { map, of, switchMap, catchError } from 'rxjs';
 
 @Component({
   selector: 'app-create-asset',
@@ -32,11 +41,33 @@ export class CreateAsset implements OnInit {
   ngOnInit(): void {
     this.assetForm = this.fb.group({
       buildingId: [null, Validators.required],
-      info: ['', Validators.required],
-      quantity: [0, [Validators.required, Validators.min(0), Validators.pattern('^[0-9]*$')]]
+      info: [
+        '',
+        Validators.required,
+        [this.uniqueInfoInBuildingValidator()]
+      ],
+      quantity: [0, [Validators.required, Validators.min(0), Validators.max(9999), Validators.pattern('^[0-9]*$')]]
+    });
+
+    this.assetForm.get('buildingId')!.valueChanges.subscribe(() => {
+      this.assetForm.get('info')!.updateValueAndValidity({ emitEvent: false });
     });
 
     this.loadBuildings();
+  }
+
+  private uniqueInfoInBuildingValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      const infoRaw = (control.value ?? '') as string;
+      const buildingId = this.assetForm?.get('buildingId')?.value as string | null;
+
+      if (!buildingId || !infoRaw?.trim()) return of(null);
+
+      return this.assetService.checkAssetExists(buildingId, infoRaw).pipe(
+        map(exists => (exists ? ({ assetExists: true } as ValidationErrors) : null)),
+        catchError(() => of(null))
+      );
+    };
   }
 
   loadBuildings(): void {
@@ -74,8 +105,20 @@ export class CreateAsset implements OnInit {
 
     const createDto: AssetCreateDto = this.assetForm.value;
 
-    this.assetService.createAsset(createDto).subscribe({
-      next: () => {
+    this.assetService.checkAssetExists(createDto.buildingId, createDto.info).pipe(
+      switchMap(exists => {
+        if (exists) {
+          this.isSubmitting.set(false);
+          this.assetForm.get('info')?.setErrors({ assetExists: true });
+          this.assetForm.get('info')?.markAsTouched();
+          this.errorMessage.set('Thêm mới thất bại. Tài sản đã tồn tại trong tòa nhà này, vui lòng nhập tên khác.');
+          return of(null);
+        }
+        return this.assetService.createAsset(createDto);
+      })
+    ).subscribe({
+      next: (res) => {
+        if (!res) return;
         this.isSubmitting.set(false);
         this.router.navigate(['manager/manage-asset']);
       },

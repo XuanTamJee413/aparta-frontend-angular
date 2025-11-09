@@ -1,22 +1,41 @@
 <div class="container">
   <div class="card">
     <header>
-      <h1>Cập nhật Căn hộ: {{ apartmentCode() }}</h1>
-      <p>Chỉnh sửa thông tin bên dưới và bấm Lưu.</p>
+      <h1>Tạo Căn hộ</h1>
+      <p>Nhập thông tin bên dưới để thêm căn hộ mới.</p>
     </header>
 
     @if (isLoading()) {
       <div class="text-center" style="padding: 2rem;">
-        <p>Đang tải dữ liệu...</p>
+        <p>Đang tải…</p>
       </div>
     } @else {
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
 
         <div class="form-group">
+          <label for="building" class="form-label">Tòa nhà</label>
+          <select id="building" class="form-select" formControlName="buildingId">
+            <option [ngValue]="null" disabled>-- Chọn tòa nhà --</option>
+            @if (buildingsLoading()) {
+              <option [ngValue]="null" disabled>Đang tải...</option>
+            } @else if (buildingsError()) {
+              <option [ngValue]="null" disabled>{{ buildingsError() }}</option>
+            } @else {
+              @for (b of buildings(); track b.buildingId) {
+                <option [value]="b.buildingId">{{ b.name }}</option>
+              }
+            }
+          </select>
+          @if (form.controls.buildingId.invalid && (form.controls.buildingId.dirty || form.controls.buildingId.touched)) {
+            <div class="form-error">Vui lòng chọn tòa nhà.</div>
+          }
+        </div>
+
+        <div class="form-group">
           <label for="code" class="form-label">Mã Căn hộ (Code)</label>
           <input id="code" type="text" class="form-control" formControlName="code" />
           @if (form.controls.code.pending) {
-            <div class="form-hint"></div>
+            <div class="form-hint">Đang kiểm tra trùng mã trong tòa nhà...</div>
           }
           @if (form.controls.code.invalid && (form.controls.code.dirty || form.controls.code.touched)) {
             @if (form.controls.code.errors?.['required']) {
@@ -41,7 +60,9 @@
             <div class="form-error">Vui lòng chọn loại căn hộ.</div>
           }
           @if (currentRange) {
-            <div class="form-hint">Khoảng diện tích cho {{ form.value.type }}: {{ currentRange.min }} – {{ currentRange.max }} m²</div>
+            <div class="form-hint">
+              Khoảng diện tích cho {{ form.value.type }}: {{ currentRange.min }} – {{ currentRange.max }} m²
+            </div>
           }
         </div>
 
@@ -72,17 +93,13 @@
           }
         </div>
 
-        @if (success()) {
-          <div class="alert-success">{{ success() }}</div>
-        }
-        @if (error()) {
-          <div class="alert-danger">{{ error() }}</div>
-        }
+        @if (success()) { <div class="alert-success">{{ success() }}</div> }
+        @if (error()) { <div class="alert-danger">{{ error() }}</div> }
 
         <div class="form-actions">
           <a routerLink="/manager/manage-apartment" class="btn-secondary">Hủy</a>
-          <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting() || form.pending">
-            @if (submitting()) { <span>Đang lưu...</span> } @else { <span>Lưu thay đổi</span> }
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || form.pending || submitting()">
+            @if (submitting()) { <span>Đang lưu...</span> } @else { <span>Tạo căn hộ</span> }
           </button>
         </div>
       </form>

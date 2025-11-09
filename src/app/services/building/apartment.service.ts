@@ -26,8 +26,17 @@ export interface Apartment {
   createdAt: string;
 }
 
+export interface ApartmentCreateDto {
+  buildingId: string;
+  code: string;
+  type: string;
+  area: number;
+  status: string;
+}
+
 export interface ApartmentUpdateDto {
   code?: string;
+  type?: string;
   area?: number;
 }
 
@@ -64,7 +73,11 @@ export class ApartmentService {
     return this.http.get<Apartment>(`${this.apiUrl}/${id}`);
   }
 
-  updateApartment(id: string, dto: ApartmentUpdateDto): Observable<any> {
+  createApartment(dto: ApartmentCreateDto): Observable<any> {
+    return this.http.post(this.apiUrl, dto);
+  }
+
+  updateApartment(id: string, dto: Partial<ApartmentCreateDto>): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, dto);
   }
 
@@ -73,5 +86,33 @@ export class ApartmentService {
     return this.http
       .get<ApiResponse<PaginatedResult<BuildingOption>>>(this.buildingApiUrl, { params })
       .pipe(map(res => res.data.items));
+  }
+
+  isCodeUniqueInBuilding(
+    buildingId: string,
+    code: string,
+    excludeApartmentId?: string
+  ): Observable<boolean> {
+    const trimmed = code.trim();
+    const params = {
+      searchTerm: trimmed,
+      sortBy: null,
+      sortOrder: null,
+      status: null,
+      buildingId: buildingId
+    } as ApartmentQueryParameters;
+
+    return this.getApartments(params).pipe(
+      map(res => {
+        const list = res.data || [];
+        const lower = trimmed.toLowerCase();
+        const exists = list.some(a =>
+          a.buildingId === buildingId &&
+          a.code?.trim().toLowerCase() === lower &&
+          a.apartmentId !== (excludeApartmentId ?? '')
+        );
+        return !exists;
+      })
+    );
   }
 }
