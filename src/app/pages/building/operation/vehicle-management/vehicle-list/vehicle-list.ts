@@ -44,7 +44,6 @@ export interface VehicleUpdateDto {
     CommonModule,
     FormsModule,
     HttpClientModule,
-    RouterLink
   ],
 
   template: `
