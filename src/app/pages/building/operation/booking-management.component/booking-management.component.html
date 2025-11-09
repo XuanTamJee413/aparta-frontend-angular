@@ -1,0 +1,117 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Quản lý Đặt lịch Dịch vụ</h3>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="search">Tìm theo tên dịch vụ:</label>
+      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Nhập tên dịch vụ...">
+    </div>
+
+    <div class="filter-group">
+      <label for="statusFilter">Lọc theo trạng thái:</label>
+      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
+        <option *ngFor="let option of statusOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn btn-filter" (click)="onSearch()">Tìm kiếm / Lọc</button>
+  </div>
+
+  <div class="card-body">
+    <div class="loading" *ngIf="isLoading">Đang tải...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Dịch Vụ</th>
+          <th>Cư Dân</th>
+          <th>Ngày Hẹn</th>
+          <th>Trạng Thái</th>
+          <th>Ghi Chú (Cư dân)</th>
+          <th>Chi Phí</th>
+          <th>Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings">
+          <td>{{ booking.serviceName }}</td>
+          <td>{{ booking.residentName }}</td>
+          <td>{{ booking.bookingDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="status-badge status-{{ booking.status | lowercase }}">
+              {{ getStatusLabel(booking.status) }}
+            </span>
+          </td>
+          <td>{{ booking.residentNote || '-' }}</td>
+          <td>{{ booking.paymentAmount | number }} VND</td>
+          <td class="action-cell">
+            <button class="btn btn-edit" (click)="openEditModal(booking)">Cập nhật</button>
+            <!-- <button class="btn btn-delete" (click)="delete(booking.serviceBookingId)">Xóa</button> -->
+          </td>
+        </tr>
+        <tr *ngIf="bookings.length === 0 && !isLoading" class="empty-row">
+          <td colspan="7">Không tìm thấy đơn đặt lịch nào.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-footer" *ngIf="totalPages > 0">
+    <div class="pagination-summary">
+      Hiển thị {{ bookings.length }} / Tổng số {{ totalCount }} mục
+    </div>
+    <div class="pagination-controls">
+      <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(1)">&laquo;</button>
+      <button class="btn-page" [disabled]="!hasPreviousPage" (click)="onPageChange(currentPage - 1)">&lsaquo;</button>
+
+      <span> Trang {{ currentPage }} / {{ totalPages }} </span>
+
+      <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">&rsaquo;</button>
+      <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(totalPages)">&raquo;</button>
+    </div>
+  </div>
+</div>
+
+<dialog #bookingDialog (close)="onDialogClose()">
+  <form [formGroup]="bookingForm" (ngSubmit)="saveBooking()">
+    <div class="form-header">
+      <h3>Cập nhật Đặt lịch</h3>
+      <button type="button" class="btn-close" (click)="hideDialog()">×</button>
+    </div>
+
+    <div class="form-body">
+      <div class="form-group">
+        <label for="status">Trạng thái</label>
+        <select id="status" formControlName="status">
+          <option *ngFor="let option of dialogStatusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="paymentAmount">Chi phí thực tế (VND)</label>
+        <input id="paymentAmount" type="number" formControlName="paymentAmount" min="0">
+        <small class="form-error" *ngIf="bookingForm.get('paymentAmount')?.invalid && bookingForm.get('paymentAmount')?.touched">
+          Chi phí là bắt buộc và phải ≥ 0.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="staffNote">Ghi chú (Nhân viên)</label>
+        <textarea id="staffNote" formControlName="staffNote" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-cancel" (click)="hideDialog()">Hủy</button>
+      <button type="submit" class="btn btn-save" [disabled]="bookingForm.invalid">
+        Lưu
+      </button>
+    </div>
+  </form>
+</dialog>

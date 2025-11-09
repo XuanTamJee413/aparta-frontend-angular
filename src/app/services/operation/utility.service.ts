@@ -1,10 +1,14 @@
 // src/app/services/operation/utility.service.ts
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http'; // <-- THÊM HttpParams
 import { Observable } from 'rxjs';
-import { UtilityDto, UtilityCreateDto, UtilityUpdateDto } from '../../models/utility.model';
 import { environment } from '../../../environments/environment';
+
+// Import DTOs
+import { UtilityDto, UtilityCreateDto, UtilityUpdateDto, PagedList, ServiceQueryParameters  } from '../../models/utility.model';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +19,22 @@ export class UtilityService {
 
   constructor(private http: HttpClient) { }
 
-  // GET: api/Utility
-  getUtilities(): Observable<UtilityDto[]> {
-    return this.http.get<UtilityDto[]>(this.apiUrl);
+  // --- CẬP NHẬT PHƯƠNG THỨC NÀY ---
+  // GET: api/Utility (với phân trang và lọc)
+  getUtilities(params: ServiceQueryParameters): Observable<PagedList<UtilityDto>> {
+
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.searchTerm) {
+      httpParams = httpParams.set('searchTerm', params.searchTerm);
+    }
+    if (params.status) {
+      httpParams = httpParams.set('status', params.status);
+    }
+
+    return this.http.get<PagedList<UtilityDto>>(this.apiUrl, { params: httpParams });
   }
 
   // GET: api/Utility/{id}

@@ -24,3 +24,21 @@ export interface UtilityUpdateDto {
   location: string | null;
   periodTime: number | null;
 }
+
+export interface ServiceQueryParameters {
+  pageNumber: number;
+  pageSize: number;
+  searchTerm?: string | null;
+  status?: string | null;
+}
+
+
+export interface PagedList<T> {
+  items: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}

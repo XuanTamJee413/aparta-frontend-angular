@@ -1,8 +1,27 @@
 <div class="card">
   <div class="card-header">
-    <h3>Quản lý Tiện ích</h3> <button class="btn btn-add-new" (click)="openCreateModal()">
+    <h3>Quản lý Tiện ích</h3>
+    <button class="btn btn-add-new" (click)="openCreateModal()">
       &#43; Thêm mới
     </button>
+  </div>
+
+    <div class="filter-bar">
+    <div class="filter-group">
+      <label for="search">Tìm theo tên:</label>
+      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Nhập tên dịch vụ...">
+    </div>
+    
+    <div class="filter-group">
+      <label for="statusFilter">Lọc theo trạng thái:</label>
+      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
+        <option *ngFor="let option of statusOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn btn-filter" (click)="onSearch()">Tìm kiếm / Lọc</button>
   </div>
   
   <div class="card-body">
@@ -20,7 +39,8 @@
         <tr *ngFor="let utility of utilities">
           <td>{{ utility.name }}</td>
           <td>{{ utility.location }}</td>
-          <td>{{ utility.periodTime }}</td> <td>
+          <td>{{ utility.periodTime }}</td> 
+          <td>
             <span class="status-badge status-{{ utility.status | lowercase }}">
               {{ utility.status }}
             </span>
@@ -34,6 +54,25 @@
       </tbody>
     </table>
   </div>
+
+  <div class="pagination" *ngIf="totalPages > 0">
+    <button 
+      (click)="onPageChange(currentPage - 1)" 
+      [disabled]="!hasPreviousPage">
+      &laquo; Trang trước
+    </button>
+    
+    <span>
+      Trang {{ currentPage }} / {{ totalPages }} (Tổng: {{ totalCount }} items)
+    </span>
+    
+    <button 
+      (click)="onPageChange(currentPage + 1)" 
+      [disabled]="!hasNextPage">
+      Trang sau &raquo;
+    </button>
+  </div>
+
 </div>
 
 
@@ -42,7 +81,8 @@
   <form [formGroup]="utilityForm" (ngSubmit)="saveUtility()">
     
     <div class="form-header">
-      <h3>{{ isEditMode ? 'Cập nhật Tiện ích' : 'Thêm mới Tiện ích' }}</h3> <button type="button" class="btn-close" (click)="hideDialog()">×</button>
+      <h3>{{ isEditMode ? 'Cập nhật Tiện ích' : 'Thêm mới Tiện ích' }}</h3> 
+      <button type="button" class="btn-close" (click)="hideDialog()">×</button>
     </div>
 
     <div class="form-body">
@@ -67,14 +107,14 @@
         <label for="periodTime">Thời gian (kỳ)</label>
         <input id="periodTime" type="number" step="any" formControlName="periodTime">
         <small class="form-error" *ngIf="utilityForm.get('periodTime')?.invalid && utilityForm.get('periodTime')?.touched">
-          Thời gian phải là một con số.
+          Thời gian là bắt buộc và phải lớn hơn 1.
         </small>
       </div>
 
       <div class="form-group">
         <label for="status">Trạng thái</label>
         <select id="status" formControlName="status">
-          <option *ngFor="let option of statusOptions" [value]="option.value">
+          <option *ngFor="let option of dialogStatusOptions" [value]="option.value">
             {{ option.label }}
           </option>
         </select>

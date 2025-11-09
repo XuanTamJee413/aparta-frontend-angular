@@ -1,3 +1,4 @@
+
 .card {
   background: #fff;
   border-radius: 8px;
@@ -334,6 +335,8 @@ dialog::backdrop {
   cursor: not-allowed;
 }
 
+
+
 /* Animation for dialog */
 @keyframes fadeIn {
   from {
@@ -402,3 +405,4 @@ dialog::backdrop {
     padding: 8px;
   }
 }
+

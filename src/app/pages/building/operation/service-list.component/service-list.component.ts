@@ -89,13 +89,10 @@ export class ServiceListComponent implements OnInit {
     }
   }
 
-  // Hàm helper này không còn được dùng trong HTML, nhưng bạn có thể giữ lại
   getPageNumbers(): number[] {
     return Array(this.totalPages).fill(0).map((x, i) => i + 1);
   }
-  // ... (code của bạn)
 
-  // 🔽 THÊM 2 HÀM GET NÀY VÀO 🔽
 
   get hasPreviousPage(): boolean {
     return this.currentPage > 1;
@@ -105,8 +102,6 @@ export class ServiceListComponent implements OnInit {
     return this.currentPage < this.totalPages;
   }
 
-  // --- Các hàm Dialog (Cập nhậtเล็กน้อย) ---
-// ... (code còn lại)
 
   openCreateModal(): void {
     this.isEditMode = false;
@@ -138,7 +133,6 @@ export class ServiceListComponent implements OnInit {
     this.serviceForm.reset();
   }
 
-  // 🔽 SỬA LỖI TRONG HÀM NÀY 🔽
   saveService(): void {
     if (this.serviceForm.invalid) {
       this.serviceForm.markAllAsTouched();
@@ -148,7 +142,6 @@ export class ServiceListComponent implements OnInit {
     const formValue = this.serviceForm.value;
 
     if (this.isEditMode && this.currentServiceId) {
-      // SỬA LỖI 1: Khởi tạo DTO trực tiếp từ formValue
       const updateDto: ServiceUpdateDto = {
         name: formValue.name,
         price: formValue.price,
@@ -163,7 +156,6 @@ export class ServiceListComponent implements OnInit {
         error: (err) => console.error('Lỗi khi cập nhật:', err)
       });
     } else {
-      // SỬA LỖI 2: Khởi tạo DTO trực tiếp từ formValue
       const createDto: ServiceCreateDto = {
         name: formValue.name,
         price: formValue.price,
@@ -180,21 +172,14 @@ export class ServiceListComponent implements OnInit {
     }
   }
 
-  // 🔽 SỬA LỖI TRONG HÀM NÀY 🔽
   delete(id: string): void {
     if (confirm('Bạn có chắc muốn xóa dịch vụ này?')) {
       this.serviceService.deleteService(id).subscribe({
         next: () => {
           console.log('Xóa thành công');
-          
-          // SỬA LỖI 3: Chỉ gọi loadServices() MỘT LẦN
-          
-          // Xử lý logic phân trang trước
           if (this.services.length === 1 && this.currentPage > 1) {
              this.currentPage--;
           }
-          
-          // Sau đó mới tải lại dữ liệu
           this.loadServices(); 
         },
         error: (err) => {

@@ -4,6 +4,7 @@ import { ResidentList } from './operation/resident-management/resident-list/resi
 import { NewsListComponent } from './management/news/news-list/news-list';
 import { NewsCreateComponent } from './management/news/news-create/news-create';
 import { NewsEditComponent } from './management/news/news-edit/news-edit';
+
 import { AssetList } from './management/asset-management/asset-list/asset-list.component';
 import { ResidentDetail } from './operation/resident-management/resident-detail/resident-detail.component';
 import { CreateAsset } from './management/asset-management/create-asset/create-asset.component';
@@ -52,7 +53,12 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'profile', loadComponent: () => import('../common/profile/profile.component').then(m => m.ProfileComponent), title: 'Profile' },
   { path: 'manage-service', loadComponent: () => import('./operation/service-list.component/service-list.component').then(m => m.ServiceListComponent), title: 'Quản lý Dịch vụ' },
   { path: 'manage-utility', loadComponent: () => import('./operation/utility-list.component/utility-list.component').then(m => m.UtilityListComponent), title: 'Quản lý Tiện ích' },
-
+  {
+    path: 'service-bookings', 
+    loadComponent: () => import('./operation/booking-management.component/booking-management.component') 
+      .then(m => m.BookingManagementComponent),
+    title: 'Quản lý Đặt Dịch Vụ'
+  },
   { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
   { path: 'meter-reading-status', canActivate: [permissionGuard(['meterreading.read.status'])], loadComponent: () => import('./operation/meter-reading-status/meter-reading-status.component').then(m => m.MeterReadingStatusComponent), title: 'Báo cáo Tình trạng Ghi chỉ số' },
 
