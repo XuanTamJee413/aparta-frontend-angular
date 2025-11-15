@@ -4,7 +4,6 @@
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-/* Nền xám nhạt + card trắng giống trang Căn hộ */
 .container {
   background-color: #f9fafb;
   min-height: 100vh;
@@ -34,7 +33,6 @@ header p {
   color: #6b7280;
 }
 
-/* TOOLBAR */
 
 .toolbar {
   display: flex;
@@ -94,7 +92,6 @@ header p {
   gap: 0.5rem;
 }
 
-/* Nút giống “+ Tạo Căn hộ” */
 .btn-create {
   display: inline-flex;
   align-items: center;
@@ -113,7 +110,6 @@ header p {
   filter: brightness(1.05);
 }
 
-/* TABLE */
 
 .table-container {
   margin-top: 1.5rem;
@@ -166,7 +162,6 @@ header p {
   color: #111827;
 }
 
-/* Sort icon giống trang Căn hộ */
 .sortable-header {
   cursor: pointer;
   user-select: none;
@@ -183,7 +178,6 @@ header p {
   opacity: 0.7;
 }
 
-/* HÀNG RỖNG */
 
 .no-results {
   text-align: center;
@@ -191,7 +185,6 @@ header p {
   color: #6b7280;
 }
 
-/* ACTIONS */
 
 .actions {
   display: flex;
@@ -253,7 +246,6 @@ header p {
   background-color: #fecaca;
 }
 
-/* PAGINATION giống trang Căn hộ */
 
 .pagination {
   margin-top: 1.5rem;
@@ -301,7 +293,6 @@ header p {
   margin-left: 0.5rem;
 }
 
-/* helper */
 
 .text-center {
   text-align: center;

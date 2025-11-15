@@ -1,10 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
-/**
- * Giao diện cho phản hồi API chung
- */
 export interface ApiResponse<T> {
   statusCode: number;
   succeeded: boolean;
@@ -13,10 +10,6 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-/**
- * DTO hiển thị hợp đồng
- * Đã mở rộng theo API backend (apartmentCode, ownerName, ...)
- */
 export interface ContractDto {
   contractId: string;
   apartmentId: string;
@@ -31,8 +24,8 @@ export interface ContractDto {
 
 export interface ContractQueryParameters {
   apartmentId?: string | null;
-  sortBy?: string | null;    // 'startDate' | 'endDate'
-  sortOrder?: string | null; // 'asc' | 'desc'
+  sortBy?: string | null;
+  sortOrder?: string | null;
 }
 
 export interface ContractCreateDto {
@@ -50,6 +43,11 @@ export interface ContractCreateDto {
   ownerNationality: string;
 }
 
+export interface AvailableApartmentDto {
+  apartmentId: string;
+  code: string;
+}
+
 export interface ContractUpdateDto {
   startDate?: string;
   endDate?: string | null;
@@ -60,12 +58,24 @@ export interface ContractUpdateDto {
   ownerPhoneNumber?: string;
 }
 
+
+interface ApartmentListItemFromApi {
+  apartmentId: string;
+  buildingId: string;
+  code: string;
+  type?: string | null;
+  status: string;
+  area?: number | null;
+  createdAt?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ContractManagementService {
 
   private apiUrl = 'http://localhost:5175/api/Contracts';
+  private apartmentApiUrl = 'http://localhost:5175/api/Apartments';
 
   constructor(private http: HttpClient) { }
 
@@ -87,19 +97,43 @@ export class ContractManagementService {
     return this.http.get<ApiResponse<ContractDto[]>>(this.apiUrl, { params });
   }
 
-  getContractById(id: string): Observable<ContractDto> {
-    return this.http.get<ContractDto>(`${this.apiUrl}/${id}`);
+  getContractById(id: string): Observable<ApiResponse<ContractDto>> {
+    return this.http.get<ApiResponse<ContractDto>>(`${this.apiUrl}/${id}`);
   }
 
-  createContract(dto: ContractCreateDto): Observable<ContractDto> {
-    return this.http.post<ContractDto>(this.apiUrl, dto);
+
+  createContract(dto: ContractCreateDto): Observable<ContractDto | ApiResponse<ContractDto>> {
+    return this.http.post<ContractDto | ApiResponse<ContractDto>>(this.apiUrl, dto);
   }
 
-  updateContract(id: string, dto: ContractUpdateDto): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, dto);
+
+  getAvailableApartments(): Observable<ApiResponse<AvailableApartmentDto[]>> {
+    const params = new HttpParams()
+      .set('status', 'Chưa Thuê')
+      .set('sortBy', 'code')
+      .set('sortOrder', 'asc');
+
+    return this.http
+      .get<ApiResponse<ApartmentListItemFromApi[]>>(this.apartmentApiUrl, { params })
+      .pipe(
+        map(res => ({
+          statusCode: res.statusCode,
+          succeeded: res.succeeded,
+          messageCode: res.messageCode,
+          message: res.message,
+          data: (res.data || []).map(a => ({
+            apartmentId: a.apartmentId,
+            code: a.code
+          }))
+        }))
+      );
   }
 
-  deleteContract(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  updateContract(id: string, dto: ContractUpdateDto): Observable<ApiResponse<ContractDto>> {
+    return this.http.put<ApiResponse<ContractDto>>(`${this.apiUrl}/${id}`, dto);
+  }
+
+  deleteContract(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
   }
 }

@@ -26,11 +26,9 @@ export class ContractList implements OnInit {
   public filteredContracts: ContractDto[] = [];
   private searchSubject = new Subject<string>();
 
-  // Sort
   public sortBy: 'startDate' | 'endDate' | null = null;
   public sortOrder: 'asc' | 'desc' = 'desc';
 
-  // Pagination (client-side)
   public pageSize = 10;
   public currentPage = 1;
 
@@ -64,10 +62,7 @@ export class ContractList implements OnInit {
     });
   }
 
-  /**
-   * Tải danh sách hợp đồng từ service
-   * Có truyền sortBy, sortOrder lên backend
-   */
+
   loadContracts(): void {
     this.isLoading = true;
 
@@ -82,7 +77,6 @@ export class ContractList implements OnInit {
           this.allContracts = response.data;
           this.filteredContracts = response.data;
 
-          // Nếu đang có từ khóa tìm kiếm thì filter lại
           if (this.searchTerm) {
             this.filterContracts(this.searchTerm);
           } else {
@@ -103,18 +97,14 @@ export class ContractList implements OnInit {
     });
   }
 
-  /**
-   * Đẩy từ khóa tìm kiếm vào luồng (stream)
-   */
+
   onSearchInput(event: Event): void {
     const term = (event.target as HTMLInputElement).value;
     this.searchTerm = term;
     this.searchSubject.next(term);
   }
 
-  /**
-   * Lọc danh sách hợp đồng dựa trên từ khóa
-   */
+
   filterContracts(term: string): void {
     const lowerTerm = term.toLowerCase().trim();
     if (!lowerTerm) {
@@ -144,12 +134,9 @@ export class ContractList implements OnInit {
     this.currentPage = 1;
   }
 
-  /**
-   * Sort theo startDate / endDate
-   */
+
   onSort(field: 'startDate' | 'endDate'): void {
     if (this.sortBy === field) {
-      // Toggle asc/desc
       this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortBy = field;
@@ -159,9 +146,7 @@ export class ContractList implements OnInit {
     this.loadContracts();
   }
 
-  // =========================
-  // Pagination handlers
-  // =========================
+
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
@@ -182,34 +167,30 @@ export class ContractList implements OnInit {
     this.currentPage = 1;
   }
 
-  //============================================
-  // Xử lý hành động (Actions)
-  //============================================
+
 
   onAdd(): void {
-    this.router.navigate(['/quan-ly/hop-dong/them-moi']);
+    this.router.navigate(['/manager/manage-contract/create']);
   }
 
   onView(id: string): void {
-    this.router.navigate(['/quan-ly/hop-dong/chi-tiet', id]);
+    this.router.navigate(['/manager/manage-contract/detail', id]);
   }
 
   onEdit(id: string): void {
-    this.router.navigate(['/quan-ly/hop-dong/sua', id]);
+    this.router.navigate(['/manager/manage-contract/edit', id]);
   }
 
   onDelete(id: string): void {
-    if (confirm(`Bạn có chắc chắn muốn xóa hợp đồng (ID: ${id}) không?`)) {
+    if (confirm(`Bạn có chắc chắn muốn xóa hợp đồng này không?`)) {
       this.isLoading = true;
       this.contractService.deleteContract(id).subscribe({
         next: () => {
           this.loadContracts();
-          // TODO: Hiển thị toast "Xóa thành công"
         },
         error: (err) => {
           console.error('Lỗi khi xóa:', err);
           this.isLoading = false;
-          // TODO: Hiển thị toast "Xóa thất bại"
         }
       });
     }

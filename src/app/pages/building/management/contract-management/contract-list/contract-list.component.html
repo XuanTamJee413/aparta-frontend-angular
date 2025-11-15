@@ -5,9 +5,7 @@
       <p>Danh sách hợp đồng thuê căn hộ</p>
     </header>
 
-    <!-- TOOLBAR -->
     <div class="toolbar">
-      <!-- Ô tìm kiếm giống trang căn hộ -->
       <div class="search-wrapper">
         <div class="search-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -25,15 +23,14 @@
         />
       </div>
 
-      <!-- Nút tạo HĐ bên phải giống nút Tạo Căn hộ -->
       <div class="actions-right">
         <button class="btn-create" type="button" (click)="onAdd()">
           + Tạo Hợp đồng
         </button>
+
       </div>
     </div>
 
-    <!-- NỘI DUNG CHÍNH -->
     <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
       <p>Đang tải dữ liệu...</p>
     </div>
@@ -116,13 +113,13 @@
                     Sửa
                   </button>
 
-                  <button type="button" class="action-delete-btn" (click)="onDelete(contract.contractId)">
+                  <!-- <button type="button" class="action-delete-btn" (click)="onDelete(contract.contractId)">
                     <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-3h4m-7 3h10" />
                     </svg>
                     Xóa
-                  </button>
+                  </button> -->
                 </td>
               </tr>
             </tbody>
@@ -130,7 +127,6 @@
         </div>
       </div>
 
-      <!-- PHÂN TRANG giống trang căn hộ -->
       <div class="pagination" *ngIf="totalPages > 1">
         <span class="page-info">
           Trang <span class="font-medium">{{ currentPage }}</span> /
