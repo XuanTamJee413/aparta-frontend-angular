@@ -16,6 +16,8 @@ import { permissionGuard } from '../../guards/permission.guard';
 import { EditApartment } from './management/apartment-management/edit-apartment/edit-apartment.component';
 import { EditAsset } from './management/asset-management/edit-asset/edit-asset';
 import { CreateApartment } from './management/apartment-management/create-apartment/create-apartment';
+import { ContractList } from './management/contract-management/contract-list/contract-list.component';
+import { CreateContract } from './management/contract-management/create-contract/create-contract';
 
 
 export const MANAGER_ROUTES: Routes = [
@@ -24,6 +26,8 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-apartment', component: ApartmentList },
   { path: 'manage-apartment/create', component: CreateApartment },
   { path: 'manage-apartment/edit/:id', component: EditApartment },
+  { path: 'manage-contract', component: ContractList },
+  { path: 'manage-contract/create', component: CreateContract },
 
   { path: 'manage-asset', component: AssetList },
   { path: 'manage-asset/create', component: CreateAsset },
