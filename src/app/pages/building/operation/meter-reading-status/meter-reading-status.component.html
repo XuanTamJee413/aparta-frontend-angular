@@ -37,7 +37,6 @@
             <mat-select [(ngModel)]="selectedBuildingId" (selectionChange)="onBuildingChange()" [disabled]="loadingBuildings">
               <mat-select-trigger>
                 <div class="select-trigger-content">
-                  <mat-icon class="trigger-icon">business</mat-icon>
                   <span>{{ getSelectedBuildingName() }}</span>
                 </div>
               </mat-select-trigger>
@@ -89,19 +88,6 @@
             <mat-icon matPrefix>calendar_today</mat-icon>
           </mat-form-field>
 
-          <!-- Billing Action Button -->
-          <ng-container *ngIf="authService.hasPermission('billing.generate')">
-            <button 
-              mat-raised-button 
-              color="primary" 
-              (click)="runBillingJob()" 
-              [disabled]="isGenerating || !selectedBuildingId"
-              class="billing-btn-inline">
-              <mat-spinner *ngIf="isGenerating" diameter="20" class="btn-spinner"></mat-spinner>
-              <mat-icon *ngIf="!isGenerating" class="btn-icon">receipt_long</mat-icon>
-              <span>{{ isGenerating ? 'Đang xử lý...' : 'Chốt sổ & Tạo Hóa đơn' }}</span>
-            </button>
-          </ng-container>
         </div>
       </mat-card-content>
     </mat-card>
