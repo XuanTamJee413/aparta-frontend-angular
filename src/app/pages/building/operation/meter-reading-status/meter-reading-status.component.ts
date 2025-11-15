@@ -1,21 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, NativeDateAdapter, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { Inject, Optional } from '@angular/core';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatTableModule } from '@angular/material/table';
 
 import { MeterReadingService } from '../../../../services/operation/meter-reading.service';
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
@@ -24,66 +9,12 @@ import { BillingService } from '../../../../services/billing.service';
 import { AuthService } from '../../../../services/auth.service';
 import { finalize } from 'rxjs/operators';
 
-// Custom date formats for month/year picker
-export const MONTH_YEAR_FORMATS = {
-  parse: {
-    dateInput: 'MM/YYYY',
-  },
-  display: {
-    dateInput: 'MM/YYYY',
-    monthYearLabel: 'MMM YYYY',
-    dateA11yLabel: 'LL',
-    monthYearA11yLabel: 'MMMM YYYY',
-  },
-};
-
-// Custom DateAdapter để chỉ cho phép chọn tháng/năm
-export class MonthYearDateAdapter extends NativeDateAdapter {
-  override format(date: Date, displayFormat: object): string {
-    const formatStr = (displayFormat as any)?.dateInput || (displayFormat as any);
-    if (formatStr === MONTH_YEAR_FORMATS.display.dateInput || formatStr === 'MM/YYYY') {
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
-      return `${String(month).padStart(2, '0')}/${year}`;
-    }
-    return super.format(date, displayFormat);
-  }
-
-  override parse(value: any): Date | null {
-    if (typeof value === 'string' && value.indexOf('/') > -1) {
-      const str = value.split('/');
-      const month = parseInt(str[0], 10);
-      const year = parseInt(str[1], 10);
-      return new Date(year, month - 1, 1);
-    }
-    const timestamp = typeof value === 'number' ? value : Date.parse(value);
-    return isNaN(timestamp) ? null : new Date(timestamp);
-  }
-}
-
 @Component({
   selector: 'app-meter-reading-status',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatChipsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatPaginatorModule,
-    MatTableModule
-  ],
-  providers: [
-    { provide: DateAdapter, useClass: MonthYearDateAdapter, deps: [MAT_DATE_LOCALE] },
-    { provide: MAT_DATE_FORMATS, useValue: MONTH_YEAR_FORMATS }
+    FormsModule
   ],
   templateUrl: './meter-reading-status.component.html',
   styleUrls: ['./meter-reading-status.component.css']
@@ -93,7 +24,7 @@ export class MeterReadingStatusComponent implements OnInit {
   filteredBuildings: BuildingDto[] = [];
   buildingSearchText: string = '';
   selectedBuildingId: string = '';
-  billingPeriodDate: Date | null = null;
+  billingPeriodInput: string = ''; // Format: yyyy-MM for native month input
   billingPeriod: string = '';
   statusList: MeterReadingStatusDto[] = [];
   groupedReadings: Map<string, MeterReadingStatusDto[]> = new Map();
@@ -114,19 +45,21 @@ export class MeterReadingStatusComponent implements OnInit {
   loadingStatus = false;
   hasData = false;
   isGenerating = false;
+  
+  // Toast notification
+  private toastTimeout: any;
 
   constructor(
     public authService: AuthService,
     private meterReadingService: MeterReadingService,
     private buildingService: BuildingService,
-    private billingService: BillingService,
-    private snackBar: MatSnackBar
+    private billingService: BillingService
   ) {}
 
   ngOnInit(): void {
     const now = new Date();
-    this.billingPeriodDate = new Date(now.getFullYear(), now.getMonth(), 1);
     this.billingPeriod = this.getCurrentBillingPeriod();
+    this.billingPeriodInput = this.billingPeriod; // Set initial value for month input
     this.loadBuildings();
   }
 
@@ -138,35 +71,13 @@ export class MeterReadingStatusComponent implements OnInit {
     return `${year}-${month}`;
   }
 
-  // Chuyển đổi Date sang billing period (yyyy-MM)
-  dateToBillingPeriod(date: Date | null): string {
-    if (!date) return this.getCurrentBillingPeriod();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-  }
-
-  // Xử lý khi chọn date (chỉ month/year)
-  onDateChange(date: Date | null): void {
-    if (date) {
-      // Set ngày về 1 để chỉ quan tâm tháng/năm
-      const normalizedDate = new Date(date.getFullYear(), date.getMonth(), 1);
-      this.billingPeriodDate = normalizedDate;
-      this.billingPeriod = this.dateToBillingPeriod(normalizedDate);
+  // Xử lý khi thay đổi month input
+  onMonthInputChange(): void {
+    if (this.billingPeriodInput) {
+      this.billingPeriod = this.billingPeriodInput;
       if (this.selectedBuildingId) {
         this.loadStatus();
       }
-    }
-  }
-
-  // Xử lý khi chọn tháng trong datepicker
-  onMonthSelected(event: Date, datepicker: any): void {
-    const normalizedDate = new Date(event.getFullYear(), event.getMonth(), 1);
-    this.billingPeriodDate = normalizedDate;
-    this.billingPeriod = this.dateToBillingPeriod(normalizedDate);
-    datepicker.close();
-    if (this.selectedBuildingId) {
-      this.loadStatus();
     }
   }
 
@@ -216,6 +127,13 @@ export class MeterReadingStatusComponent implements OnInit {
 
   // Xử lý khi chọn building
   onBuildingChange(): void {
+    if (this.selectedBuildingId && this.billingPeriod) {
+      this.loadStatus();
+    }
+  }
+
+  // Xử lý khi click nút tìm kiếm
+  onSearchClick(): void {
     if (this.selectedBuildingId && this.billingPeriod) {
       this.loadStatus();
     }
@@ -281,10 +199,38 @@ export class MeterReadingStatusComponent implements OnInit {
     return this.filteredApartmentIds.slice(startIndex, endIndex);
   }
 
-  // Xử lý khi thay đổi trang
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+  // Pagination methods
+  getTotalPages(): number {
+    return Math.ceil(this.totalApartments / this.pageSize);
+  }
+
+  getStartIndex(): number {
+    return this.pageIndex * this.pageSize;
+  }
+
+  getEndIndex(): number {
+    const end = (this.pageIndex + 1) * this.pageSize;
+    return end > this.totalApartments ? this.totalApartments : end;
+  }
+
+  goToFirstPage(): void {
+    this.pageIndex = 0;
+  }
+
+  goToPreviousPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.pageIndex < this.getTotalPages() - 1) {
+      this.pageIndex++;
+    }
+  }
+
+  goToLastPage(): void {
+    this.pageIndex = this.getTotalPages() - 1;
   }
 
   // Lấy danh sách readings dạng flat list (cho table) - group theo apartment và filter theo status
@@ -390,23 +336,36 @@ export class MeterReadingStatusComponent implements OnInit {
     }
   }
 
+  // Toast Notification Methods
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' // 'success' or 'error'
+  };
+
+  showToast(message: string, type: 'success' | 'error' = 'success', duration: number = 5000): void {
+    this.toast.message = message;
+    this.toast.type = type;
+    this.toast.show = true;
+
+    clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.hideToast();
+    }, duration);
+  }
+
+  hideToast(): void {
+    this.toast.show = false;
+  }
+
   // Hiển thị thông báo lỗi
   showError(message: string): void {
-    this.snackBar.open(message, 'Đóng', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['error-snackbar']
-    });
+    this.showToast(message, 'error', 5000);
   }
 
   // Hiển thị thông báo thành công
   showSuccess(message: string): void {
-    this.snackBar.open(message, 'Đóng', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top'
-    });
+    this.showToast(message, 'success', 3000);
   }
 
   // Chạy billing job để chốt sổ và tạo hóa đơn
