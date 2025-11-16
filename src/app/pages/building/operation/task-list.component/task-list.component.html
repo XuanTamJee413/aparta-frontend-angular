@@ -1,9 +1,7 @@
 <div class="card">
   <div class="card-header">
-    <h3>Quản lý Công việc (Tasks)</h3>
-    <button class="btn btn-add-new" (click)="openCreateModal()">
-      &#43; Tạo Task Lẻ
-    </button>
+    <h3>Quản lý Công việc</h3>
+    <button class="btn btn-add-new" (click)="openCreateModal()">+ Tạo Task Lẻ</button>
   </div>
 
   <div *ngIf="pageSuccessMessage" class="alert alert-success">
@@ -12,20 +10,20 @@
 
   <div class="filter-bar">
     <div class="filter-group">
-      <label>Tìm kiếm:</label>
-      <input type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Mô tả, loại...">
+      <label for="search">Tìm kiếm:</label>
+      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Mô tả, loại...">
     </div>
 
     <div class="filter-group">
-      <label>Loại:</label>
-      <select [formControl]="typeFilterControl" (change)="onFilterChange()">
+      <label for="typeFilter">Loại:</label>
+      <select id="typeFilter" [formControl]="typeFilterControl" (change)="onFilterChange()">
         <option *ngFor="let t of typeOptions" [value]="t.value">{{ t.label }}</option>
       </select>
     </div>
 
     <div class="filter-group">
-      <label>Trạng thái:</label>
-      <select [formControl]="statusFilterControl" (change)="onFilterChange()">
+      <label for="statusFilter">Trạng thái:</label>
+      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
         <option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</option>
       </select>
     </div>
@@ -34,6 +32,8 @@
   </div>
 
   <div class="card-body">
+    <div class="loading" *ngIf="isLoading">Đang tải...</div>
+
     <table>
       <thead>
         <tr>
@@ -41,38 +41,39 @@
           <th>Loại</th>
           <th>Người Tạo</th>
           <th>Người Thực Hiện</th>
-          <th>Trạng Thái</th>
+          <th>Trạng thái</th>
           <th>Ngày Tạo</th>
-          <th>Hành Động</th>
+          <th>Hành động</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let task of tasks">
           <td>{{ task.description }}</td>
           <td>
-            <span class="badge-type">{{ task.type }}</span>
-            <small *ngIf="task.serviceBookingId" style="display:block; color:blue">(Từ Booking)</small>
+            <span class="badge-type">{{ getTypeLabel(task.type) }}</span>
+            <small *ngIf="task.serviceBookingId" class="text-info">(Từ Booking)</small>
           </td>
           <td>{{ task.operationStaffName }}</td>
           <td>
-            <span *ngIf="task.assigneeName" class="text-bold">{{ task.assigneeName }}</span>
-            <span *ngIf="!task.assigneeName" class="text-muted">--Chưa giao--</span>
+            <span *ngIf="task.assigneeName" class="text-success">{{ task.assigneeName }}</span>
+            <span *ngIf="!task.assigneeName" class="text-muted">Chưa giao</span>
           </td>
           <td>
             <span class="status-badge status-{{ task.status | lowercase }}">
-              {{ task.status }}
+              {{ getStatusLabel(task.status) }}
             </span>
           </td>
           <td>{{ task.createdAt | date:'dd/MM/yyyy' }}</td>
-<td class="action-cell">
-  <button class="btn btn-edit" 
-          (click)="openAssignModal(task)"
-          [disabled]="task.status === 'Completed'">
-    {{ task.assigneeName ? 'Đổi NV' : 'Phân công' }}
-  </button>
-</td>
+          <td class="action-cell">
+            <button 
+              class="btn btn-edit" 
+              (click)="openAssignModal(task)"
+              [disabled]="task.status === 'Completed'">
+              {{ task.assigneeName ? 'Đổi NV' : 'Phân công' }}
+            </button>
+          </td>
         </tr>
-        <tr *ngIf="tasks.length === 0" class="empty-row">
+        <tr *ngIf="tasks.length === 0 && !isLoading" class="empty-row">
           <td colspan="7">Không tìm thấy công việc nào.</td>
         </tr>
       </tbody>
@@ -80,14 +81,20 @@
   </div>
 
   <div class="card-footer" *ngIf="totalPages > 0">
+    <div class="pagination-summary">
+      Hiển thị {{ tasks.length }} / Tổng số {{ totalCount }} mục
+    </div>
     <div class="pagination-controls">
-      <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">&laquo;</button>
-      <span>Trang {{ currentPage }} / {{ totalPages }}</span>
-      <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">&raquo;</button>
+      <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(1)">&laquo;</button>
+      <button class="btn-page" [disabled]="!hasPreviousPage" (click)="onPageChange(currentPage - 1)">&lsaquo;</button>
+      <span> Trang {{ currentPage }} / {{ totalPages }} </span>
+      <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">&rsaquo;</button>
+      <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(totalPages)">&raquo;</button>
     </div>
   </div>
 </div>
 
+<!-- Dialog: Tạo Task -->
 <dialog #createTaskDialog (close)="closeDialogs()">
   <form [formGroup]="createForm" (ngSubmit)="saveNewTask()">
     <div class="form-header">
@@ -97,29 +104,29 @@
 
     <div class="form-body">
       <div class="form-group">
-        <label>Loại công việc</label>
-        <select formControlName="type">
-          <option *ngFor="let t of typeOptions" [value]="t.value" [hidden]="t.value===''">
+        <label for="type">Loại công việc</label>
+        <select id="type" formControlName="type">
+          <option *ngFor="let t of typeOptions" [value]="t.value" [hidden]="t.value === ''">
             {{ t.label }}
           </option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Mô tả chi tiết</label>
-        <textarea formControlName="description" rows="3"></textarea>
+        <label for="description">Mô tả chi tiết</label>
+        <textarea id="description" formControlName="description" rows="3"></textarea>
         <small class="form-error" *ngIf="createForm.get('description')?.invalid && createForm.get('description')?.touched">
           Mô tả là bắt buộc.
         </small>
       </div>
 
-      <div class="form-row" style="display:flex; gap:10px">
-        <div class="form-group" style="flex:1">
-          <label>Ngày bắt đầu (Dự kiến)</label>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày bắt đầu</label>
           <input type="datetime-local" formControlName="startDate">
         </div>
-        <div class="form-group" style="flex:1">
-          <label>Ngày kết thúc (Dự kiến)</label>
+        <div class="form-group">
+          <label>Ngày kết thúc</label>
           <input type="datetime-local" formControlName="endDate">
         </div>
       </div>
@@ -130,12 +137,13 @@
     </div>
 
     <div class="form-footer">
-      <button type="button" class="btn-cancel" (click)="closeDialogs()">Hủy</button>
+      <button type="button" class="btn btn-cancel" (click)="closeDialogs()">Hủy</button>
       <button type="submit" class="btn btn-save" [disabled]="createForm.invalid">Tạo Task</button>
     </div>
   </form>
 </dialog>
 
+<!-- Dialog: Phân công -->
 <dialog #assignTaskDialog (close)="closeDialogs()">
   <form [formGroup]="assignForm" (ngSubmit)="submitAssignment()">
     <div class="form-header">
@@ -144,11 +152,9 @@
     </div>
 
     <div class="form-body">
-      <p>Chọn nhân viên kỹ thuật để thực hiện công việc này:</p>
-      
       <div class="form-group">
-        <label>Nhân viên bảo trì</label>
-        <select formControlName="assigneeUserId">
+        <label for="assignee">Nhân viên bảo trì</label>
+        <select id="assignee" formControlName="assigneeUserId">
           <option value="" disabled>-- Chọn nhân viên --</option>
           <option *ngFor="let staff of maintenanceStaffs" [value]="staff.userId">
             {{ staff.name }}
@@ -165,7 +171,7 @@
     </div>
 
     <div class="form-footer">
-      <button type="button" class="btn-cancel" (click)="closeDialogs()">Hủy</button>
+      <button type="button" class="btn btn-cancel" (click)="closeDialogs()">Hủy</button>
       <button type="submit" class="btn btn-save" [disabled]="assignForm.invalid">Phân Công</button>
     </div>
   </form>

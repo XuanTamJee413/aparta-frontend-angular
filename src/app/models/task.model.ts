@@ -1,5 +1,4 @@
-// 1. Interface PagedList (Generic)
-// Dùng để hứng dữ liệu phân trang trả về từ Backend
+
 export interface PagedList<T> {
   items: T[];
   pageNumber: number;
@@ -10,8 +9,6 @@ export interface PagedList<T> {
   hasNextPage: boolean;
 }
 
-// 2. Interface Query Parameters dành riêng cho Task
-// Map chính xác với TaskQueryParameters ở Backend
 export interface TaskQueryParameters {
   // Phân trang
   pageNumber: number;
