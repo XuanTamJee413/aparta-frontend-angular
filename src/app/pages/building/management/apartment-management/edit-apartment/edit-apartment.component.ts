@@ -114,15 +114,19 @@ export class EditApartment implements OnInit {
       .subscribe(apartment => {
         if (!apartment) return;
 
+        this.apartmentCode.set(apartment.code);
         this.buildingId = apartment.buildingId;
-
         this.form.patchValue({
           code: apartment.code,
-          type: (['Small','Medium','Big','Large'].includes(apartment.type) ? apartment.type as AptType : ''),
+          type: (['Small', 'Medium', 'Big', 'Large'].includes(apartment.type) ? apartment.type as AptType : ''),
           area: apartment.area ?? 0
         });
-        this.apartmentCode.set(apartment.code);
 
+        if (apartment.status === 'Đã Thuê') {
+          this.error.set('Không được phép chỉnh sửa căn hộ đang có người thuê');
+          this.form.disable();
+
+        }
         this.form.get('type')?.valueChanges.subscribe(() => {
           this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
         });
@@ -137,7 +141,8 @@ export class EditApartment implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.form.invalid || !this.apartmentId) return;
+
+    if (this.form.invalid || !this.apartmentId || this.form.disabled) return;
 
     this.submitting.set(true);
     this.error.set(null);
