@@ -24,8 +24,8 @@
       <div class="filters-right">
         <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
           <option [ngValue]="null">Tất cả trạng thái</option>
-          <option value="Đã thuê">Đã thuê</option>
-          <option value="Chưa thuê">Chưa Thuê</option>
+          <option value="Đã Thuê">Đã Thuê</option>
+          <option value="Chưa Thuê">Chưa Thuê</option>
         </select>
 
         <select class="filter-select" [(ngModel)]="selectedBuildingId" (change)="onFilterChange()">
@@ -100,8 +100,8 @@
                   <td>
                     <span class="status-badge"
                       [ngClass]="{
-                        'status-rented': apartment.status === 'Đã thuê',
-                        'status-available': apartment.status === 'Chưa thuê'
+                        'status-rented': apartment.status === 'Đã Thuê',
+                        'status-available': apartment.status === 'Chưa Thuê'
                       }">
                       <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
                       {{ apartment.status }}

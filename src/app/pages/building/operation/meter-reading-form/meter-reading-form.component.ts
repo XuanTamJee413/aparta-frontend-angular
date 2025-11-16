@@ -2,16 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 import { MeterReadingService } from '../../../../services/operation/meter-reading.service';
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
@@ -30,16 +20,7 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatPaginatorModule
+    ReactiveFormsModule
   ],
   templateUrl: './meter-reading-form.component.html',
   styleUrls: ['./meter-reading-form.component.css']
@@ -73,11 +54,18 @@ export class MeterReadingFormComponent implements OnInit {
   pageIndex = 0;
   totalItems = 0;
 
+  // Toast notification
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' as 'success' | 'error'
+  };
+  private toastTimeout: any;
+
   constructor(
     private meterReadingService: MeterReadingService,
     private buildingService: BuildingService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private fb: FormBuilder
   ) {
     this.meterReadingForm = this.fb.group({
       readings: this.fb.array([])
@@ -191,10 +179,38 @@ export class MeterReadingFormComponent implements OnInit {
     }
   }
 
-  // Xử lý khi thay đổi trang
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+  // Pagination methods
+  getTotalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  getStartIndex(): number {
+    return this.pageIndex * this.pageSize;
+  }
+
+  getEndIndex(): number {
+    const end = (this.pageIndex + 1) * this.pageSize;
+    return end > this.totalItems ? this.totalItems : end;
+  }
+
+  goToFirstPage(): void {
+    this.pageIndex = 0;
+  }
+
+  goToPreviousPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.pageIndex < this.getTotalPages() - 1) {
+      this.pageIndex++;
+    }
+  }
+
+  goToLastPage(): void {
+    this.pageIndex = this.getTotalPages() - 1;
   }
 
   // Lấy danh sách căn hộ theo trang hiện tại
@@ -521,22 +537,29 @@ export class MeterReadingFormComponent implements OnInit {
     this.isUpdateMode = false;
   }
 
+  // Toast Notification Methods
+  showToast(message: string, type: 'success' | 'error' = 'success', duration: number = 5000): void {
+    this.toast.message = message;
+    this.toast.type = type;
+    this.toast.show = true;
+
+    clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.hideToast();
+    }, duration);
+  }
+
+  hideToast(): void {
+    this.toast.show = false;
+  }
+
   // Hiển thị thông báo thành công
   showSuccess(message: string): void {
-    this.snackBar.open(message, 'Đóng', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top'
-    });
+    this.showToast(message, 'success', 3000);
   }
 
   // Hiển thị thông báo lỗi
   showError(message: string): void {
-    this.snackBar.open(message, 'Đóng', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['error-snackbar']
-    });
+    this.showToast(message, 'error', 5000);
   }
 }
