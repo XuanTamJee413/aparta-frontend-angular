@@ -59,6 +59,12 @@ export const MANAGER_ROUTES: Routes = [
       .then(m => m.BookingManagementComponent),
     title: 'Quản lý Đặt Dịch Vụ'
   },
+  {
+    path: 'manage-task',
+    loadComponent: () => import('./operation/task-list.component/task-list.component')
+      .then(m => m.TaskListComponent),
+    title: 'Quản lý Công việc'
+  },
   { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
   { path: 'meter-reading-status', canActivate: [permissionGuard(['meterreading.read.status'])], loadComponent: () => import('./operation/meter-reading-status/meter-reading-status.component').then(m => m.MeterReadingStatusComponent), title: 'Báo cáo Tình trạng Ghi chỉ số' },
 

@@ -1,0 +1,127 @@
+:host {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.subtitle {
+  color: #6c757d;
+  margin: 0.25rem 0 0 0;
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #e9ecef;
+}
+
+.btn-small {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.875rem;
+}
+
+.status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.status.high { background-color: #f8d7da; color: #dc3545; }
+.status.medium { background-color: #cff4fc; color: #0dcaf0; }
+.status.low { background-color: #e2e3e5; color: #6c757d; }
+
+.item-name { font-weight: 600; }
+
+.item-date { font-size: 0.85rem; color: #6c757d; }
+
+.icon-bg {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.accent-grey {
+  background-color: #f1f3f5;
+  color: #6c757d;
+}
+
+.announcements-list {
+  margin-top: 2rem;
+}
+
+.announcement-card {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.announcement-content {
+  flex-grow: 1;
+}
+
+.announcement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.item-description {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.announcement-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.meta-tags {
+  display: flex;
+  gap: 1rem;
+}
+
+.item-category {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.item-category::before {
+  content: "•";
+  margin-right: 1rem;
+}

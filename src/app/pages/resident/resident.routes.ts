@@ -5,6 +5,7 @@ import { InvoiceComponent } from './invoice/invoice.component';
 import { ChatComponent } from './chat/chat.component';
 import { BookServiceComponent } from './service/book-service.component/book-service.component';
 import { MyBookingsComponent } from './service/my-bookings.component/my-bookings.component';
+import { NewsListComponent } from './news/news.list.component/news.list.component';
 import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
@@ -40,7 +41,7 @@ export const RESIDENT_ROUTES: Routes = [
   },
   {
     path: 'news',
-    component: AnnouncementComponent
+    component: NewsListComponent
   },
   {
     path: 'visitor',
