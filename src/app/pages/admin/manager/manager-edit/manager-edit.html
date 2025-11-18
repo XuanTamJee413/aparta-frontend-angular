@@ -93,6 +93,30 @@
         <div class="form-group"></div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label class="form-label" for="buildingIds">Các building được quản lý</label>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+            <div *ngFor="let building of (allBuildings$ | async)" style="display: flex; align-items: center;">
+              <input 
+                type="checkbox" 
+                style="margin-right: 8px; height: 16px; width: 16px; flex-shrink: 0;"
+                [id]="'edit-building-' + building.buildingId"
+                [value]="building.buildingId"
+                [checked]="manager.buildingIds.includes(building.buildingId)"
+                (change)="onBuildingChange($event)"
+                [disabled]="submitting">
+              <label [for]="'edit-building-' + building.buildingId" style="cursor: pointer; margin: 0;">
+                {{ building.name }} ({{ building.buildingCode }})
+              </label>
+            </div>
+            <div *ngIf="(allBuildings$ | async)?.length === 0" style="grid-column: 1 / -1; color: #6b7280;">
+              Không có building nào để gán.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="currentManager.avatarUrl" class="avatar-preview">
         <span class="avatar-label">Avatar hiện tại:</span>
         <img [src]="currentManager.avatarUrl" alt="Avatar" class="avatar-img" />

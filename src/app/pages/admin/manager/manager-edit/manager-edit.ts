@@ -2,7 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { Manager, ManagerService, UpdateManagerRequest } from '../../../../services/admin/manager.service';
+import { Manager } from '../../../../models/manager.model';
+import { ManagerService, UpdateManagerDto } from '../../../../services/admin/manager.service';
+import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-manager-edit',
@@ -14,16 +18,18 @@ import { Manager, ManagerService, UpdateManagerRequest } from '../../../../servi
 export class ManagerEditComponent implements OnInit {
   managerId: string = '';
   currentManager: Manager | null = null;
-  manager: UpdateManagerRequest = {
+  manager: UpdateManagerDto = {
     name: '',
     phone: '',
     email: '',
     password: '',
     staffCode: '',
     avatarUrl: '',
-    status: ''
+    status: '',
+    buildingIds: []
   };
 
+  allBuildings$!: Observable<BuildingDto[]>;
   statusOptions = [
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' }
@@ -35,12 +41,19 @@ export class ManagerEditComponent implements OnInit {
 
   constructor(
     private managerService: ManagerService,
+    private buildingService: BuildingService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.managerId = this.route.snapshot.paramMap.get('id') || '';
+    
+    // Tải danh sách tất cả các building
+    this.allBuildings$ = this.buildingService.getAllBuildings().pipe(
+      map(response => response.succeeded ? response.data?.items || [] : [])
+    );
+    
     if (this.managerId) {
       this.loadManagerData();
     } else {
@@ -68,8 +81,14 @@ export class ManagerEditComponent implements OnInit {
               staffCode: this.currentManager.staffCode,
               avatarUrl: this.currentManager.avatarUrl || '',
               password: '',
-              status: this.currentManager.status
+              status: this.currentManager.status,
+              buildingIds: []
             };
+            
+            // Map assignedBuildings (mảng object) thành buildingIds (mảng string)
+            if (this.currentManager.assignedBuildings && this.currentManager.assignedBuildings.length > 0) {
+              this.manager.buildingIds = this.currentManager.assignedBuildings.map(b => b.buildingId);
+            }
           } else {
             this.errorMessage = 'Manager not found';
           }
@@ -86,18 +105,33 @@ export class ManagerEditComponent implements OnInit {
     });
   }
 
+  onBuildingChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const buildingId = input.value;
+    const isChecked = input.checked;
+
+    if (isChecked) {
+      if (!this.manager.buildingIds.includes(buildingId)) {
+        this.manager.buildingIds.push(buildingId);
+      }
+    } else {
+      this.manager.buildingIds = this.manager.buildingIds.filter(id => id !== buildingId);
+    }
+  }
+
   onSubmit(): void {
     if (this.submitting) return;
 
     this.submitting = true;
     this.errorMessage = '';
 
-    const managerData: UpdateManagerRequest = {
+    const managerData: UpdateManagerDto = {
       name: this.manager.name,
       phone: this.manager.phone,
       email: this.manager.email,
       staffCode: this.manager.staffCode,
-      status: this.manager.status
+      status: this.manager.status,
+      buildingIds: this.manager.buildingIds
     };
 
     if (this.manager.password && this.manager.password.trim()) {

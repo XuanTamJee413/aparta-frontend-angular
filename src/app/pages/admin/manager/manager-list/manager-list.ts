@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Manager, ManagerService } from '../../../../services/admin/manager.service';
+import { Manager } from '../../../../models/manager.model';
+import { ManagerService } from '../../../../services/admin/manager.service';
 
 @Component({
   selector: 'app-manager-list',
@@ -47,7 +48,6 @@ export class ManagerListComponent implements OnInit {
       error: (error) => {
         this.errorMessage = error.error?.message || 'An error occurred while loading managers';
         this.loading = false;
-        console.error('Error loading managers:', error);
       }
     });
   }
