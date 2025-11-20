@@ -122,8 +122,8 @@ export class EditApartment implements OnInit {
           area: apartment.area ?? 0
         });
 
-        if (apartment.status === 'Đã Thuê') {
-          this.error.set('Không được phép chỉnh sửa căn hộ đang có người thuê');
+        if (apartment.status === 'Đã Thuê' ||apartment.status === 'Đã Đóng' ) {
+          this.error.set('Không được phép chỉnh sửa căn hộ này!');
           this.form.disable();
 
         }
