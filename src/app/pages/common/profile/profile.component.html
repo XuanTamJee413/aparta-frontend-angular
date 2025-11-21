@@ -1,111 +1,305 @@
-<div class="page-container">
-  <header class="profile-header">
-    <div class="profile-summary">
-      <ng-container *ngIf="profile()?.avatarUrl; else initialsAvatar">
-        <img class="avatar avatar-img" [src]="profile()?.avatarUrl!" alt="avatar" (error)="$event.target['style'].display='none'">
-      </ng-container>
-      <ng-template #initialsAvatar>
-        <div class="avatar">{{ initials() }}</div>
-      </ng-template>
-      <div class="info">
-        <h1>{{ profile()?.name || '—' }}</h1>
-        <div class="contact-details">
-          <span>{{ profile()?.email || auth.user()?.email || '—' }}</span>
-          <span>{{ profile()?.phone || auth.user()?.phone || '—' }}</span>
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Thông tin cá nhân</h1>
+          <p>Xem và quản lý thông tin tài khoản của bạn</p>
         </div>
       </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      <strong>Lỗi!</strong> {{ errorMessage }}
+      <button class="alert-close" (click)="errorMessage = ''">×</button>
     </div>
-    <button class="btn btn-primary" (click)="toggleEdit()">{{ editing() ? 'Cancel' : 'Edit' }}</button>
-  </header>
 
-  <section class="card" *ngIf="!editing(); else editForm">
-    <h3 class="card-title">Personal Information</h3>
-    <p class="card-subtitle">Your account details</p>
+    <div *ngIf="successMessage" class="alert-success">
+      <strong>Thành công!</strong> {{ successMessage }}
+      <button class="alert-close" (click)="successMessage = ''">×</button>
+    </div>
 
-    <ng-container *ngIf="loading(); else loaded">
-      <div class="skeleton-row"></div>
-      <div class="skeleton-row"></div>
-      <div class="skeleton-row"></div>
-    </ng-container>
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
 
-    <ng-template #loaded>
-      <div class="error" *ngIf="error()">{{ error() }}</div>
-      <ul class="details-list" *ngIf="profile(); else empty">
-        <li>
-          <span class="detail-label">Full Name</span>
-          <span class="detail-value">{{ profile()?.name || auth.user()?.name || '—' }}</span>
-        </li>
-        <li>
-          <span class="detail-label">Email</span>
-          <span class="detail-value">{{ profile()?.email || auth.user()?.email || '—' }}</span>
-        </li>
-        <li>
-          <span class="detail-label">Phone</span>
-          <span class="detail-value">{{ profile()?.phone || auth.user()?.phone || '—' }}</span>
-        </li>
-        <li>
-          <span class="detail-label">Role</span>
-          <span class="detail-value text-cap">{{ roleDisplay() }}</span>
-        </li>
-        <li *ngIf="profile()?.status">
-          <span class="detail-label">Status</span>
-          <span class="detail-value text-cap">{{ profile()?.status }}</span>
-        </li>
-        <li *ngIf="profile()?.lastLoginAt">
-          <span class="detail-label">Last login</span>
-          <span class="detail-value">{{ profile()?.lastLoginAt }}</span>
-        </li>
-        <li *ngIf="profile()?.staffCode">
-          <span class="detail-label">Staff code</span>
-          <span class="detail-value">{{ profile()?.staffCode }}</span>
-        </li>
-        <li *ngIf="profile()?.apartmentId">
-          <span class="detail-label">Apartment ID</span>
-          <span class="detail-value">{{ profile()?.apartmentId }}</span>
-        </li>
-      </ul>
-      <ng-template #empty>
-        <p>No profile data.</p>
-      </ng-template>
-    </ng-template>
-  </section>
-
-  <ng-template #editForm>
-    <section class="card">
-      <h3 class="card-title">Edit Profile</h3>
-      <p class="card-subtitle">Update your account details</p>
-      <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
-        <label>
-          <span>Full Name</span>
-          <input type="text" formControlName="name" />
-        </label>
-        <label>
-          <span>Email</span>
-          <input type="email" readonly [value]="profile()?.email || auth.user()?.email || '—'" />
-        </label>
-        <label>
-          <span>Phone</span>
-          <input type="text" formControlName="phone" />
-        </label>
-        <div class="avatar-upload">
-          <span>Avatar</span>
-          <div class="avatar-row">
-            <img *ngIf="previewUrl(); else currentAvatar" [src]="previewUrl()!" class="avatar avatar-img" alt="preview">
-            <ng-template #currentAvatar>
-              <img *ngIf="profile()?.avatarUrl" [src]="profile()?.avatarUrl!" class="avatar avatar-img" alt="avatar">
-            </ng-template>
-            <input type="file" accept="image/*" (change)="onFileSelected($event)" />
-            <button type="button" class="btn" [disabled]="!selectedFile() || uploading()" (click)="uploadAvatar()">Upload</button>
+    <div *ngIf="!loading && profile" class="profile-content">
+      <!-- Profile Header -->
+      <section class="profile-panel">
+        <div class="profile-panel__avatar">
+          <img
+            [src]="getAvatarUrl()"
+            alt="Ảnh đại diện"
+            class="avatar-image" />
+          <div class="upload-controls">
+            <button
+              type="button"
+              class="upload-btn"
+              (click)="avatarInput.click()"
+              [disabled]="uploadingAvatar">
+              <span *ngIf="!uploadingAvatar">Đổi ảnh</span>
+              <span *ngIf="uploadingAvatar" class="upload-btn-loading">
+                <span class="upload-spinner"></span> Đang tải...
+              </span>
+            </button>
+          </div>
+          <p *ngIf="avatarUploadError" class="error-message">{{ avatarUploadError }}</p>
+          <input
+            #avatarInput
+            type="file"
+            accept="image/*"
+            hidden
+            (change)="onFileSelected($event); avatarInput.value='';" />
+        </div>
+        <div class="profile-panel__meta">
+          <div class="meta-chip role-chip">
+            {{ getRoleDisplayName() }}
+          </div>
+          <div class="meta-grid">
+            <div class="meta-card">
+              <span class="meta-label">Email</span>
+              <strong>{{ profile.email || 'Chưa có' }}</strong>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Số điện thoại</span>
+              <strong>{{ profile.phoneNumber || 'Chưa có' }}</strong>
+            </div>
+            <div class="meta-card" *ngIf="profile.apartmentInfo">
+              <span class="meta-label">Căn hộ</span>
+              <strong>{{ profile.apartmentInfo }}</strong>
+            </div>
+            <div class="meta-card" *ngIf="profile.managedBuildingNames && profile.managedBuildingNames.length > 0">
+              <span class="meta-label">Tòa nhà quản lý</span>
+              <strong>{{ profile.managedBuildingNames.length }}</strong>
+            </div>
           </div>
         </div>
-        <div class="actions">
-          <button type="button" class="btn" (click)="toggleEdit()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Save</button>
+      </section>
+
+      <!-- Basic Information -->
+      <section class="info-section">
+        <div class="section-header">
+          <div>
+            <h2>Thông tin cơ bản</h2>
+            <p class="section-note" *ngIf="!isAdmin()">Thông tin này chỉ có thể được thay đổi bởi quản trị viên. Vui lòng liên hệ admin nếu cần cập nhật.</p>
+          </div>
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="toggleEditProfile()"
+            *ngIf="isAdmin()"
+            [disabled]="updatingProfile">
+            {{ showEditProfile ? 'Hủy' : 'Chỉnh sửa' }}
+          </button>
         </div>
-        <div class="error" *ngIf="error()">{{ error() }}</div>
-      </form>
-    </section>
-  </ng-template>
+
+        <!-- View Mode -->
+        <div *ngIf="!showEditProfile" class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Họ tên:</span>
+            <span class="info-value">{{ profile.fullName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ profile.email || 'Chưa có' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Số điện thoại:</span>
+            <span class="info-value">{{ profile.phoneNumber || 'Chưa có' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Vai trò:</span>
+            <span class="info-value">{{ getRoleDisplayName() }}</span>
+          </div>
+          <div class="info-item" *ngIf="profile.apartmentInfo">
+            <span class="info-label">Căn hộ:</span>
+            <span class="info-value">{{ profile.apartmentInfo }}</span>
+          </div>
+        </div>
+
+        <!-- Edit Mode (Admin only) -->
+        <div *ngIf="showEditProfile && isAdmin()" class="profile-form-container">
+          <form (ngSubmit)="onUpdateProfile(profileForm)" #profileForm="ngForm" class="profile-form">
+            <div class="form-group">
+              <label class="form-label" for="fullName">Họ tên <span class="required">*</span></label>
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                class="form-input"
+                [(ngModel)]="profileEditDto.fullName"
+                #fullNameCtrl="ngModel"
+                required
+                placeholder="Nhập họ tên đầy đủ"
+                [disabled]="updatingProfile"
+                [ngClass]="{'input-error': fullNameCtrl.invalid && (fullNameCtrl.touched || profileForm.submitted)}" />
+              <p *ngIf="fullNameCtrl.invalid && (fullNameCtrl.touched || profileForm.submitted)" class="error-message">
+                Họ tên là bắt buộc.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">Email <span class="required">*</span></label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-input"
+                [(ngModel)]="profileEditDto.email"
+                #emailCtrl="ngModel"
+                required
+                email
+                placeholder="example@email.com"
+                [disabled]="updatingProfile"
+                [ngClass]="{'input-error': emailCtrl.invalid && (emailCtrl.touched || profileForm.submitted)}" />
+              <p *ngIf="emailCtrl.invalid && (emailCtrl.touched || profileForm.submitted)" class="error-message">
+                Email không hợp lệ hoặc là bắt buộc.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="phoneNumber">Số điện thoại <span class="required">*</span></label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                class="form-input"
+                [(ngModel)]="profileEditDto.phoneNumber"
+                #phoneNumberCtrl="ngModel"
+                required
+                pattern="^[0-9]{10,11}$"
+                placeholder="0987654321"
+                [disabled]="updatingProfile"
+                [ngClass]="{'input-error': phoneNumberCtrl.invalid && (phoneNumberCtrl.touched || profileForm.submitted)}" />
+              <p *ngIf="phoneNumberCtrl.invalid && (phoneNumberCtrl.touched || profileForm.submitted)" class="error-message">
+                Số điện thoại không hợp lệ (10-11 chữ số).
+              </p>
+            </div>
+
+            <p *ngIf="profileError" class="error-message">{{ profileError }}</p>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="updatingProfile || profileForm.invalid">
+                <svg *ngIf="!updatingProfile" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <div *ngIf="updatingProfile" class="btn-spinner"></div>
+                {{ updatingProfile ? 'Đang cập nhật...' : 'Cập nhật thông tin' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Managed Buildings (for Manager) -->
+      <section class="info-section" *ngIf="profile.managedBuildingNames && profile.managedBuildingNames.length > 0">
+        <div class="section-header">
+          <h2>Tòa nhà phụ trách</h2>
+        </div>
+        <div class="building-grid">
+          <div class="building-item" *ngFor="let buildingName of profile.managedBuildingNames">
+            <strong>{{ buildingName }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Change Password Section -->
+      <section class="info-section">
+        <div class="section-header">
+          <div>
+            <h2>Bảo mật tài khoản</h2>
+            <p class="section-note">Thay đổi mật khẩu của bạn để bảo vệ tài khoản</p>
+          </div>
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="toggleChangePassword()"
+            [disabled]="changingPassword">
+            {{ showChangePassword ? 'Hủy' : 'Đổi mật khẩu' }}
+          </button>
+        </div>
+
+        <div *ngIf="showChangePassword" class="password-form-container">
+          <form (ngSubmit)="onChangePassword(passwordForm)" #passwordForm="ngForm" class="password-form">
+            <div class="form-group">
+              <label class="form-label" for="currentPassword">Mật khẩu hiện tại <span class="required">*</span></label>
+              <input
+                type="password"
+                id="currentPassword"
+                name="currentPassword"
+                class="form-input"
+                [(ngModel)]="passwordDto.currentPassword"
+                #currentPasswordCtrl="ngModel"
+                required
+                placeholder="Nhập mật khẩu hiện tại"
+                [disabled]="changingPassword"
+                [ngClass]="{'input-error': currentPasswordCtrl.invalid && (currentPasswordCtrl.touched || passwordForm.submitted)}" />
+              <p *ngIf="currentPasswordCtrl.invalid && (currentPasswordCtrl.touched || passwordForm.submitted)" class="error-message">
+                Mật khẩu hiện tại là bắt buộc.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="newPassword">Mật khẩu mới <span class="required">*</span></label>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                class="form-input"
+                [(ngModel)]="passwordDto.newPassword"
+                #newPasswordCtrl="ngModel"
+                required
+                minlength="6"
+                placeholder="Tối thiểu 6 ký tự"
+                [disabled]="changingPassword"
+                [ngClass]="{'input-error': newPasswordCtrl.invalid && (newPasswordCtrl.touched || passwordForm.submitted)}" />
+              <p *ngIf="newPasswordCtrl.invalid && (newPasswordCtrl.touched || passwordForm.submitted)" class="error-message">
+                Mật khẩu mới phải có ít nhất 6 ký tự.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="confirmPassword">Xác nhận mật khẩu mới <span class="required">*</span></label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                class="form-input"
+                [(ngModel)]="passwordDto.confirmPassword"
+                #confirmPasswordCtrl="ngModel"
+                required
+                placeholder="Nhập lại mật khẩu mới"
+                [disabled]="changingPassword"
+                [ngClass]="{'input-error': (confirmPasswordCtrl.invalid || passwordDto.newPassword !== passwordDto.confirmPassword) && (confirmPasswordCtrl.touched || passwordForm.submitted)}" />
+              <p *ngIf="confirmPasswordCtrl.invalid && (confirmPasswordCtrl.touched || passwordForm.submitted)" class="error-message">
+                Xác nhận mật khẩu là bắt buộc.
+              </p>
+              <p *ngIf="passwordDto.newPassword && passwordDto.confirmPassword && passwordDto.newPassword !== passwordDto.confirmPassword && (confirmPasswordCtrl.touched || passwordForm.submitted)" class="error-message">
+                Mật khẩu xác nhận không khớp.
+              </p>
+            </div>
+
+            <p *ngIf="passwordError" class="error-message">{{ passwordError }}</p>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="changingPassword || passwordForm.invalid || (passwordDto.newPassword !== passwordDto.confirmPassword)">
+                <svg *ngIf="!changingPassword" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <div *ngIf="changingPassword" class="btn-spinner"></div>
+                {{ changingPassword ? 'Đang xử lý...' : 'Xác nhận đổi mật khẩu' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
 </div>
-
-
