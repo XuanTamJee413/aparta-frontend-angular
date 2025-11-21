@@ -19,6 +19,12 @@ export const MANAGER_ROUTES: Routes = [
       .then(m => m.ManagerEditComponent),
     title: 'Chỉnh sửa Manager'
   },
+  {
+    path: 'profile/:id',
+    loadComponent: () => import('./manager-profile/manager-profile')
+      .then(m => m.ManagerProfileComponent),
+    title: 'Thông tin Manager'
+  },
 
   {
     path: '',

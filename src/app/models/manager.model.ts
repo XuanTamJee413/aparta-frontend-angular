@@ -13,7 +13,7 @@ export interface Manager {
   name: string;
   email: string;
   staffCode: string;
-  avatarUrl: string | null;
+  avatarUrl?: string | null;
   phone: string;
   role: string | null;
   status: string;

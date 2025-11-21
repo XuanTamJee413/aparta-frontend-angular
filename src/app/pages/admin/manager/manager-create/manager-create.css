@@ -144,14 +144,71 @@ header p {
   height: 1.5rem;
 }
 
-form {
+.manager-form {
   margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
 }
 
-.form-row {
+.profile-panel {
+  background: linear-gradient(135deg, #fdf4ff, #eef2ff);
+  border-radius: 1rem;
+  padding: 1.75rem;
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+}
+
+.profile-panel__avatar {
+  text-align: center;
+  flex: 0 0 220px;
+}
+
+.profile-panel__meta {
+  flex: 1;
+  min-width: 260px;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.meta-chip.status-active {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.meta-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.meta-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.meta-label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
 }
 
 .form-group {
@@ -193,11 +250,158 @@ form {
   cursor: not-allowed;
 }
 
+.form-section {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.06);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.section-header p {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.building-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.building-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.85rem;
+  padding: 0.9rem;
+  display: flex;
+  gap: 0.75rem;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.building-item:hover {
+  border-color: #6366f1;
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15);
+}
+
+.building-item input {
+  width: 18px;
+  height: 18px;
+}
+
+.building-item p {
+  margin: 0.2rem 0 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.building-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #6b7280;
+  padding: 1rem;
+}
+
+.avatar-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e5e7eb;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.upload-controls {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.upload-btn {
+  background-color: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-btn:not(:disabled):hover {
+  background-color: #1f2937;
+  transform: translateY(-1px);
+}
+
+.upload-btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.upload-spinner {
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.8s linear infinite;
+}
+
+.upload-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4f46e5;
+  font-weight: 500;
+  justify-content: center;
+}
+
+.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px #ef444433 !important;
+}
+
+.error-message {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
+
 .form-actions {
   display: flex;
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 768px) {
@@ -215,8 +419,9 @@ form {
     gap: 1rem;
   }
 
-  .form-row {
+  .profile-panel {
     flex-direction: column;
+    text-align: center;
   }
 
   .form-actions {
