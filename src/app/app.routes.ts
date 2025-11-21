@@ -3,7 +3,9 @@ import { AdminLayout } from './layout/admin-layout/admin-layout';
 import { ManagerLayout } from './layout/manager-layout/manager-layout';
 import { ResidentLayoutComponent } from './layout/resident-layout/resident-layout.component';
 import { NotFound } from './pages/common/not-found/not-found';
-import { LoginComponent } from './pages/auth/login.component';
+import { LoginComponent } from './pages/auth/login/login.component';
+import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password.component';
 import { authCanMatch, authCanActivate } from './guards/auth.guard';
 import { roleCanMatch, roleCanActivate } from './guards/role.guard';
 
@@ -18,6 +20,22 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     canActivate: [authCanActivate],
+  },
+  
+  {
+    path: 'auth/forgot-password',
+    component: ForgotPasswordComponent,
+  },
+  
+  {
+    path: 'auth/login',
+    component: LoginComponent,
+    canActivate: [authCanActivate],
+  },
+  
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
   
   {

@@ -1,0 +1,74 @@
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="logo">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 21H21M5 21V7L12 3L19 7V21M9 9V21M15 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="subtitle">Chào mừng bạn trở lại</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="phone" class="form-label">Số điện thoại</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8325 20.7292C21.7209 20.9842 21.5573 21.2126 21.3522 21.3979C21.1472 21.5832 20.9053 21.7212 20.6441 21.8021C20.3829 21.883 20.1086 21.9049 19.84 21.86C16.7435 21.3666 13.787 20.1579 11.19 18.31C8.77382 16.6057 6.72533 14.4072 5.19 11.86C3.31497 9.27054 2.08562 6.37923 1.58 3.36C1.53511 3.09136 1.55698 2.81714 1.63788 2.55593C1.71878 2.29472 1.85679 2.05279 2.04208 1.84777C2.22737 1.64275 2.45579 1.47916 2.71078 1.36757C2.96577 1.25598 3.24152 1.19899 3.52 1.2H6.52C7.11987 1.19599 7.70555 1.39478 8.17718 1.75978C8.64881 2.12478 8.97912 2.63436 9.11 3.2L10.18 7.64C10.3119 8.20438 10.3422 8.79259 10.2689 9.37178C10.1956 9.95097 10.0204 10.5095 9.754 11.02C9.56068 11.3848 9.30373 11.7103 9.00001 11.98L7.42 13.56C8.91237 15.7743 10.8256 17.6876 13.04 19.18L14.62 17.6C14.9097 17.2963 15.2352 17.0393 15.6 16.846C16.1105 16.5796 16.669 16.4044 17.2482 16.3311C17.8274 16.2578 18.4156 16.2881 18.98 16.42L23.4 17.49C23.9656 17.6209 24.4752 17.9512 24.8402 18.4228C25.2052 18.8944 25.404 19.4801 25.4 20.08V21.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input 
+            type="tel" 
+            id="phone" 
+            formControlName="phone" 
+            class="form-input"
+            placeholder="Nhập số điện thoại"
+            [class.input-error]="form.get('phone')?.invalid && form.get('phone')?.touched" />
+        </div>
+        <div class="error-message" *ngIf="form.get('phone')?.touched && form.get('phone')?.errors">
+          <span *ngIf="form.get('phone')?.errors?.['required']">Vui lòng nhập số điện thoại</span>
+          <span *ngIf="form.get('phone')?.errors?.['pattern']">Số điện thoại phải có 9-11 chữ số</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Mật khẩu</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password" 
+            class="form-input"
+            placeholder="Nhập mật khẩu"
+            [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched" />
+        </div>
+        <div class="error-message" *ngIf="form.get('password')?.touched && form.get('password')?.errors">
+          <span *ngIf="form.get('password')?.errors?.['required']">Vui lòng nhập mật khẩu</span>
+          <span *ngIf="form.get('password')?.errors?.['minlength']">Mật khẩu tối thiểu 6 ký tự</span>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <a routerLink="/auth/forgot-password" class="forgot-link">Quên mật khẩu?</a>
+      </div>
+
+      <div class="error-alert" *ngIf="error()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{{ error() }}</span>
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="form.invalid || submitting()">
+        <span *ngIf="!submitting()">Đăng nhập</span>
+        <span *ngIf="submitting()" class="loading">
+          <span class="spinner"></span>
+          Đang xử lý...
+        </span>
+      </button>
+    </form>
+  </div>
+</div>

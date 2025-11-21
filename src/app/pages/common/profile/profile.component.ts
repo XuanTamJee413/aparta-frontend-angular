@@ -117,7 +117,7 @@ export class ProfileComponent implements OnInit {
       this.passwordError = '';
       if (this.passwordForm) {
         this.passwordForm.resetForm();
-      }
+    }
     }
   }
 
@@ -151,7 +151,7 @@ export class ProfileComponent implements OnInit {
         console.error('Error changing password:', error);
         this.passwordError = error.error?.message || 'Đã xảy ra lỗi khi đổi mật khẩu.';
         this.changingPassword = false;
-      }
+    }
     });
   }
 
@@ -166,11 +166,11 @@ export class ProfileComponent implements OnInit {
     if (role === 'manager') return 'Quản lý';
     if (role === 'resident') return 'Cư dân';
     return this.profile.role;
-  }
+    }
 
   isAdmin(): boolean {
     return this.profile?.role?.toLowerCase() === 'admin';
-  }
+    }
 
   toggleEditProfile(): void {
     this.showEditProfile = !this.showEditProfile;
@@ -196,7 +196,7 @@ export class ProfileComponent implements OnInit {
         Object.keys(form.controls).forEach(key => {
           form.controls[key].markAsTouched();
         });
-      }
+    }
       return;
     }
 
@@ -222,5 +222,5 @@ export class ProfileComponent implements OnInit {
         this.updatingProfile = false;
       }
     });
-  }
+}
 }
