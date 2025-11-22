@@ -32,7 +32,8 @@
         </p>
       </div>
 
-      <!-- <div class="actions">
+      <!--
+      <div class="actions">
         <a
           *ngIf="pdfUrl"
           [href]="pdfUrl"
@@ -42,7 +43,8 @@
         >
           Tải PDF
         </a>
-      </div> -->
+      </div>
+      -->
     </div>
 
     <div class="card-body">
@@ -93,7 +95,7 @@
       <div class="section-title">Tệp đính kèm</div>
 
       <div class="row">
-        <div class="label">Tải hình / scan hợp đồng</div>
+        <div class="label">Tải hình</div>
         <div class="value value-column">
           <input
             type="file"
@@ -107,8 +109,8 @@
           </div>
 
           <a
-            *ngIf="previewUrl"
-            [href]="previewUrl"
+            *ngIf="safePreviewUrl"
+            [href]="safePreviewUrl"
             target="_blank"
             rel="noopener"
             class="preview-link"

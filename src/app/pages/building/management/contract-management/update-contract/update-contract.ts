@@ -2,6 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+
 import {
   ContractDto,
   ContractManagementService,
@@ -21,6 +23,7 @@ export class UpdateContract implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private contractService = inject(ContractManagementService);
+  private sanitizer = inject(DomSanitizer);
 
   form!: FormGroup;
 
@@ -31,6 +34,7 @@ export class UpdateContract implements OnInit {
   contract: ContractDto | null = null;
 
   previewUrl: string | null = null;
+  safePreviewUrl: SafeUrl | null = null;
   selectedFileName: string | null = null;
 
   ngOnInit(): void {
@@ -62,9 +66,7 @@ export class UpdateContract implements OnInit {
   }
 
   private buildForm(): void {
-    if (!this.contract) {
-      return;
-    }
+    if (!this.contract) return;
 
     const endDateRaw = this.contract.endDate
       ? this.contract.endDate.substring(0, 10)
@@ -72,10 +74,13 @@ export class UpdateContract implements OnInit {
 
     this.form = this.fb.group({
       endDate: [endDateRaw, []],
-      image: [this.contract.image ?? '', [Validators.maxLength(2000000)]]
+      image: [this.contract.image ?? '', [Validators.maxLength(2_000_000)]]
     });
 
     this.previewUrl = this.contract.image ?? null;
+    this.safePreviewUrl = this.previewUrl
+      ? this.sanitizer.bypassSecurityTrustUrl(this.previewUrl)
+      : null;
     this.selectedFileName = null;
   }
 
@@ -86,75 +91,71 @@ export class UpdateContract implements OnInit {
 
   formatDate(value: string | null | undefined): string {
     if (!value) return '—';
-    const datePart = value.substring(0, 10);
-    return datePart;
+    return value.substring(0, 10);
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
+    if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
     this.selectedFileName = file.name;
 
     const reader = new FileReader();
-
     reader.onload = () => {
       const result = reader.result as string;
       this.form.patchValue({ image: result });
       this.previewUrl = result;
+      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(result);
     };
 
     reader.readAsDataURL(file);
   }
 
- onSubmit(): void {
-  if (!this.contract || !this.form) return;
+  onSubmit(): void {
+    if (!this.contract || !this.form) return;
 
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    return;
-  }
-
-  const formValue = this.form.value;
-
-  const startStr = this.contract.startDate;
-  const endStr: string | null = formValue.endDate ? String(formValue.endDate) : null;
-
-  if (startStr && endStr) {
-    const startDate = new Date(startStr.substring(0, 10));
-    const endDate = new Date(endStr);
-
-    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) && endDate < startDate) {
-      alert('Ngày kết thúc không hợp lệ. Vui lòng chọn ngày lớn hơn hoặc bằng ngày bắt đầu.');
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
-  }
 
-  const payload: ContractUpdateDto = {
-    endDate: endStr ? endStr : null,
-    image: formValue.image ? String(formValue.image) : null
-  };
+    const formValue = this.form.value;
 
-  this.isSaving = true;
-  this.errorMessage = null;
+    const startStr = this.contract.startDate;
+    const endStr: string | null = formValue.endDate ? String(formValue.endDate) : null;
 
-  this.contractService.updateContract(this.contract.contractId, payload).subscribe({
-    next: () => {
-      this.isSaving = false;
-      this.router.navigate(['/manager/manage-contract']);
-    },
-    error: (err) => {
-      console.error('Lỗi khi cập nhật hợp đồng:', err);
-      this.isSaving = false;
-      this.errorMessage =
-        err?.error?.message || 'Không thể cập nhật hợp đồng. Vui lòng thử lại.';
+    if (startStr && endStr) {
+      const startDate = new Date(startStr.substring(0, 10));
+      const endDate = new Date(endStr);
+
+      if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) && endDate < startDate) {
+        alert('Ngày kết thúc không hợp lệ. Vui lòng chọn ngày lớn hơn hoặc bằng ngày bắt đầu.');
+        return;
+      }
     }
-  });
-}
 
+    const payload: ContractUpdateDto = {
+      endDate: endStr ? endStr : null,
+      image: formValue.image ? String(formValue.image) : null
+    };
+
+    this.isSaving = true;
+    this.errorMessage = null;
+
+    this.contractService.updateContract(this.contract.contractId, payload).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.router.navigate(['/manager/manage-contract']);
+      },
+      error: (err) => {
+        console.error('Lỗi khi cập nhật hợp đồng:', err);
+        this.isSaving = false;
+        this.errorMessage =
+          err?.error?.message || 'Không thể cập nhật hợp đồng. Vui lòng thử lại.';
+      }
+    });
+  }
 
   onCancel(): void {
     this.router.navigate(['/manager/manage-contract']);

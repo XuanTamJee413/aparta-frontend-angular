@@ -26,6 +26,7 @@
           <option [ngValue]="null">Tất cả trạng thái</option>
           <option value="Đã Thuê">Đã Thuê</option>
           <option value="Chưa Thuê">Chưa Thuê</option>
+          <option value="Đang Bảo Trì">Đang Bảo Trì</option>
           <option value="Đã Đóng">Đã Đóng</option>
         </select>
 
@@ -103,6 +104,7 @@
                       [ngClass]="{
                         'status-rented': apartment.status === 'Đã Thuê',
                         'status-available': apartment.status === 'Chưa Thuê',
+                        'status-maintenance': apartment.status === 'Đang Bảo Trì',
                         'status-closed': apartment.status === 'Đã Đóng'
                       }">
                       <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
