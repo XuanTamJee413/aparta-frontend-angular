@@ -62,7 +62,6 @@ export class ContractList implements OnInit {
     });
   }
 
-
   loadContracts(): void {
     this.isLoading = true;
 
@@ -97,13 +96,11 @@ export class ContractList implements OnInit {
     });
   }
 
-
   onSearchInput(event: Event): void {
     const term = (event.target as HTMLInputElement).value;
     this.searchTerm = term;
     this.searchSubject.next(term);
   }
-
 
   filterContracts(term: string): void {
     const lowerTerm = term.toLowerCase().trim();
@@ -134,7 +131,6 @@ export class ContractList implements OnInit {
     this.currentPage = 1;
   }
 
-
   onSort(field: 'startDate' | 'endDate'): void {
     if (this.sortBy === field) {
       this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -145,8 +141,6 @@ export class ContractList implements OnInit {
 
     this.loadContracts();
   }
-
-
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
@@ -168,7 +162,6 @@ export class ContractList implements OnInit {
   }
 
 
-
   onAdd(): void {
     this.router.navigate(['/manager/manage-contract/create']);
   }
@@ -178,19 +171,55 @@ export class ContractList implements OnInit {
   }
 
   onEdit(id: string): void {
-    this.router.navigate(['/manager/manage-contract/edit', id]);
+    this.router.navigate(['/manager/manage-contract/update', id]);
+  }
+
+
+  isHistorical(contract: ContractDto): boolean {
+    const code = contract.apartmentCode ?? '';
+    return code.toUpperCase().includes('HIS');
+  }
+
+  canDelete(contract: ContractDto): boolean {
+    if (!contract.endDate) return false;
+
+    const endDate = new Date(contract.endDate);
+    if (isNaN(endDate.getTime())) return false;
+
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+    return endOnly <= todayOnly;
   }
 
   onDelete(id: string): void {
+    const contract = this.allContracts.find(c => c.contractId === id);
+    if (!contract) return;
+
+    if (this.isHistorical(contract)) {
+      alert('Hợp đồng này đã được xử lý trước đó, không thể xóa thêm.');
+      return;
+    }
+
+    if (!this.canDelete(contract)) {
+      alert('Hợp đồng chưa hết hạn, không được phép xóa.');
+      return;
+    }
+
     if (confirm(`Bạn có chắc chắn muốn xóa hợp đồng này không?`)) {
       this.isLoading = true;
       this.contractService.deleteContract(id).subscribe({
         next: () => {
+          this.isLoading = false;
+          alert('Xóa hợp đồng thành công.');
           this.loadContracts();
         },
         error: (err) => {
-          console.error('Lỗi khi xóa:', err);
           this.isLoading = false;
+          const msg = err?.error?.message || 'Không thể xóa hợp đồng.';
+          alert(msg);
+          console.error('Lỗi khi xóa:', err);
         }
       });
     }

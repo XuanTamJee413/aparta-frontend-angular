@@ -1,7 +1,8 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { map, shareReplay, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { MatSidenav } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -29,7 +30,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './resident-layout.component.html',
   styleUrls: ['./resident-layout.component.css']  
 })
-export class ResidentLayoutComponent {
+export class ResidentLayoutComponent implements OnInit, AfterViewInit {
 
   @ViewChild('drawer') drawer!: MatSidenav;
   @ViewChild('userMenuRef') userMenu!: MatMenu;
@@ -45,8 +46,32 @@ export class ResidentLayoutComponent {
     this.isSmallScreen$ = this.breakpointObserver.observe(this.isSmallScreenQuery)
       .pipe(
         map(result => result.matches),
-        shareReplay()
+        shareReplay(1),
+        catchError(error => {
+          console.error('Error in breakpoint observer:', error);
+          return of(false);
+        })
       );
+  }
+
+  ngOnInit(): void {
+    try {
+      console.log('ResidentLayoutComponent initialized');
+    } catch (error) {
+      console.error('Error initializing ResidentLayoutComponent:', error);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Đảm bảo drawer được khởi tạo đúng cách
+    try {
+      if (this.drawer) {
+        // Sidenav đã sẵn sàng
+        console.log('Sidenav initialized');
+      }
+    } catch (error) {
+      console.error('Error initializing sidenav:', error);
+    }
   }
 
   closeSidenavOnMobile(): void {

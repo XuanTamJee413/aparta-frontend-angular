@@ -1,15 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
-import { environment } from '../../../environments/environment';
+import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -49,7 +50,15 @@ export class LoginComponent {
             return;
           }
           this.auth.setToken(token);
-          this.navigateByRole();
+          
+          // Kiểm tra isFirstLogin từ response
+          const isFirstLogin = res?.isFirstLogin || res?.IsFirstLogin || false;
+          if (isFirstLogin) {
+            // Redirect đến reset-password cho first login
+            this.router.navigateByUrl('/reset-password?firstLogin=true');
+          } else {
+            this.navigateByRole();
+          }
           this.submitting.set(false);
         },
         error: (err) => {
@@ -89,3 +98,4 @@ export class LoginComponent {
     this.router.navigateByUrl('/not-found');
   }
 }
+

@@ -26,6 +26,8 @@
           <option [ngValue]="null">Tất cả trạng thái</option>
           <option value="Đã Thuê">Đã Thuê</option>
           <option value="Chưa Thuê">Chưa Thuê</option>
+          <option value="Đang Bảo Trì">Đang Bảo Trì</option>
+          <option value="Đã Đóng">Đã Đóng</option>
         </select>
 
         <select class="filter-select" [(ngModel)]="selectedBuildingId" (change)="onFilterChange()">
@@ -101,20 +103,22 @@
                     <span class="status-badge"
                       [ngClass]="{
                         'status-rented': apartment.status === 'Đã Thuê',
-                        'status-available': apartment.status === 'Chưa Thuê'
+                        'status-available': apartment.status === 'Chưa Thuê',
+                        'status-maintenance': apartment.status === 'Đang Bảo Trì',
+                        'status-closed': apartment.status === 'Đã Đóng'
                       }">
                       <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
                       {{ apartment.status }}
                     </span>
                   </td>
                   <td class="actions">
-                    <a href="#" class="action-view">
+                    <!-- <a href="#" class="action-view">
                       <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                       Xem
-                    </a>
+                    </a> -->
                     <a [routerLink]="['edit', apartment.apartmentId]" class="action-edit-btn">
                       <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

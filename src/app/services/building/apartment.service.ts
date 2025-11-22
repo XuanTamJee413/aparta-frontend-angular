@@ -37,6 +37,7 @@ export interface ApartmentCreateDto {
 export interface ApartmentUpdateDto {
   code?: string;
   type?: string;
+  status?: string;
   area?: number;
 }
 
@@ -56,15 +57,15 @@ export class ApartmentService {
   private apiUrl = 'http://localhost:5175/api/Apartments';
   private buildingApiUrl = 'http://localhost:5175/api/Buildings';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getApartments(query: ApartmentQueryParameters): Observable<ApiResponse<Apartment[]>> {
     let params = new HttpParams();
     if (query.searchTerm) params = params.append('SearchTerm', query.searchTerm);
-    if (query.status)     params = params.append('Status', query.status);
+    if (query.status) params = params.append('Status', query.status);
     if (query.buildingId) params = params.append('BuildingId', query.buildingId);
-    if (query.sortBy)     params = params.append('SortBy', query.sortBy);
-    if (query.sortOrder)  params = params.append('SortOrder', query.sortOrder);
+    if (query.sortBy) params = params.append('SortBy', query.sortBy);
+    if (query.sortOrder) params = params.append('SortOrder', query.sortOrder);
 
     return this.http.get<ApiResponse<Apartment[]>>(this.apiUrl, { params });
   }
@@ -77,7 +78,7 @@ export class ApartmentService {
     return this.http.post(this.apiUrl, dto);
   }
 
-  updateApartment(id: string, dto: Partial<ApartmentCreateDto>): Observable<any> {
+  updateApartment(id: string, dto: ApartmentUpdateDto): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, dto);
   }
 

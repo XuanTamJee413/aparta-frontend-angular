@@ -14,6 +14,8 @@
   overflow-y: auto;
   padding: 24px; 
   background-color: #f4f7fa; /* Giữ màu nền nội dung*/
+  min-height: 0; /* Fix flexbox issue */
+  position: relative; /* Ensure proper stacking context */
 }
 
 .layout-footer {

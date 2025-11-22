@@ -2,19 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-export interface Manager {
-  userId: string;
-  name: string;
-  email: string;
-  staffCode: string;
-  avatarUrl: string | null;
-  phone: string;
-  role: string | null;
-  status: string;
-  lastLoginAt: string | null;
-  permissionGroup: string | null;
-}
+import { Manager } from '../../models/manager.model';
 
 export interface ManagerResponse {
   data: Manager[] | Manager;
@@ -22,16 +10,19 @@ export interface ManagerResponse {
   message: string;
 }
 
-export interface CreateManagerRequest {
+// DTO để tạo mới Manager
+export interface CreateManagerDto {
   name: string;
   phone: string;
   password: string;
   email: string;
   staffCode: string;
   avatarUrl?: string;
+  buildingIds: string[];
 }
 
-export interface UpdateManagerRequest {
+// DTO để cập nhật Manager
+export interface UpdateManagerDto {
   name: string;
   phone: string;
   email: string;
@@ -39,7 +30,12 @@ export interface UpdateManagerRequest {
   staffCode: string;
   avatarUrl?: string;
   status?: string;
+  buildingIds: string[];
 }
+
+// Legacy interfaces for backward compatibility
+export interface CreateManagerRequest extends CreateManagerDto {}
+export interface UpdateManagerRequest extends UpdateManagerDto {}
 
 @Injectable({
   providedIn: 'root'
@@ -57,11 +53,11 @@ export class ManagerService {
     return this.http.get<ManagerResponse>(url);
   }
 
-  createManager(data: CreateManagerRequest): Observable<ManagerResponse> {
+  createManager(data: CreateManagerDto): Observable<ManagerResponse> {
     return this.http.post<ManagerResponse>(this.apiUrl, data);
   }
 
-  updateManager(id: string, data: UpdateManagerRequest): Observable<ManagerResponse> {
+  updateManager(id: string, data: UpdateManagerDto): Observable<ManagerResponse> {
     return this.http.put<ManagerResponse>(`${this.apiUrl}/${id}`, data);
   }
 }
