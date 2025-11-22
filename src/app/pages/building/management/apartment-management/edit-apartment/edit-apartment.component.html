@@ -67,6 +67,19 @@
         }
       </div>
 
+      <div class="form-group">
+        <label for="status" class="form-label">Trạng thái</label>
+        <select id="status" class="form-select" formControlName="status">
+          <option value="" disabled>-- Chọn trạng thái --</option>
+          <option value="Chưa Thuê">Chưa Thuê</option>
+          <option value="Đang Bảo Trì">Đang Bảo Trì</option>
+        </select>
+        @if (form.controls.status.invalid && (form.controls.status.dirty || form.controls.status.touched)) {
+        <div class="form-error">Vui lòng chọn trạng thái.</div>
+        }
+      </div>
+
+
       @if (success()) {
       <div class="alert-success">{{ success() }}</div>
       }

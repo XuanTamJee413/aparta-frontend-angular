@@ -20,6 +20,7 @@ export interface ContractDto {
   startDate: string | null;
   endDate: string | null;
   image?: string | null;
+  createdAt?: string | null;
 }
 
 export interface ContractQueryParameters {
@@ -57,7 +58,6 @@ export interface ContractUpdateDto {
   ownerEmail?: string;
   ownerPhoneNumber?: string;
 }
-
 
 interface ApartmentListItemFromApi {
   apartmentId: string;
@@ -97,15 +97,13 @@ export class ContractManagementService {
     return this.http.get<ApiResponse<ContractDto[]>>(this.apiUrl, { params });
   }
 
-  getContractById(id: string): Observable<ApiResponse<ContractDto>> {
-    return this.http.get<ApiResponse<ContractDto>>(`${this.apiUrl}/${id}`);
+  getContractById(id: string): Observable<ContractDto> {
+    return this.http.get<ContractDto>(`${this.apiUrl}/${id}`);
   }
 
-
-  createContract(dto: ContractCreateDto): Observable<ContractDto | ApiResponse<ContractDto>> {
-    return this.http.post<ContractDto | ApiResponse<ContractDto>>(this.apiUrl, dto);
+  createContract(dto: ContractCreateDto): Observable<ContractDto> {
+    return this.http.post<ContractDto>(this.apiUrl, dto);
   }
-
 
   getAvailableApartments(): Observable<ApiResponse<AvailableApartmentDto[]>> {
     const params = new HttpParams()
@@ -129,11 +127,15 @@ export class ContractManagementService {
       );
   }
 
-  updateContract(id: string, dto: ContractUpdateDto): Observable<ApiResponse<ContractDto>> {
-    return this.http.put<ApiResponse<ContractDto>>(`${this.apiUrl}/${id}`, dto);
+  updateContract(id: string, dto: ContractUpdateDto): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, dto);
   }
 
-  deleteContract(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
+  deleteContract(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getContractPdfUrl(id: string): string {
+    return `${this.apiUrl}/${id}/pdf`;
   }
 }

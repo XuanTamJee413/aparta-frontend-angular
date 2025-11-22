@@ -15,6 +15,7 @@ import { map, switchMap, finalize, catchError } from 'rxjs/operators';
 import { EMPTY, of } from 'rxjs';
 
 type AptType = 'Small' | 'Medium' | 'Big' | 'Large';
+type ApartmentStatus = 'Chưa Thuê' | 'Đang Bảo Trì' | 'Đã Thuê' | 'Đã Trả Phòng' | 'Đã Đóng';
 
 const TYPE_RANGES: Record<AptType, { min: number; max: number }> = {
   Small: { min: 25, max: 45 },
@@ -72,6 +73,8 @@ export class EditApartment implements OnInit {
     };
   }
 
+  readonly editableStatuses: ApartmentStatus[] = ['Chưa Thuê', 'Đang Bảo Trì'];
+
   form = this.fb.group(
     {
       code: this.fb.control<string>('', {
@@ -82,6 +85,10 @@ export class EditApartment implements OnInit {
       }),
       type: this.fb.control<AptType | ''>('', { validators: [Validators.required], nonNullable: true }),
       area: this.fb.control<number>(0, { validators: [Validators.required, Validators.min(1)], nonNullable: true }),
+      status: this.fb.control<ApartmentStatus | ''>('', {
+        validators: [Validators.required],
+        nonNullable: true
+      }),
     },
     { validators: [areaByTypeValidator()] }
   );
@@ -116,17 +123,26 @@ export class EditApartment implements OnInit {
 
         this.apartmentCode.set(apartment.code);
         this.buildingId = apartment.buildingId;
+
+        const status = apartment.status as ApartmentStatus;
+
+        // ❌ Không cho phép chỉnh sửa: Đã Thuê / Đã Trả Phòng / Đã Đóng
+        if (status === 'Đã Thuê' || status === 'Đã Trả Phòng' || status === 'Đã Đóng') {
+          this.error.set('Không được phép chỉnh sửa căn hộ này!');
+          this.form.disable();
+          return;
+        }
+
+        // ✅ Cho phép chỉnh sửa: Chưa Thuê / Đang Bảo Trì
         this.form.patchValue({
           code: apartment.code,
-          type: (['Small', 'Medium', 'Big', 'Large'].includes(apartment.type) ? apartment.type as AptType : ''),
-          area: apartment.area ?? 0
+          type: (['Small', 'Medium', 'Big', 'Large'].includes(apartment.type)
+            ? apartment.type as AptType
+            : ''),
+          area: apartment.area ?? 0,
+          status: this.editableStatuses.includes(status) ? status : 'Chưa Thuê'
         });
 
-        if (apartment.status === 'Đã Thuê') {
-          this.error.set('Không được phép chỉnh sửa căn hộ đang có người thuê');
-          this.form.disable();
-
-        }
         this.form.get('type')?.valueChanges.subscribe(() => {
           this.form.updateValueAndValidity({ onlySelf: false, emitEvent: false });
         });
@@ -135,13 +151,12 @@ export class EditApartment implements OnInit {
       });
   }
 
+
   get currentRange() {
     const t = this.form.get('type')?.value as AptType | '';
     return t ? TYPE_RANGES[t] : null;
   }
-
   onSubmit(): void {
-
     if (this.form.invalid || !this.apartmentId || this.form.disabled) return;
 
     this.submitting.set(true);
@@ -151,7 +166,8 @@ export class EditApartment implements OnInit {
     const updateDto: ApartmentUpdateDto = {
       code: this.form.value.code!,
       type: this.form.value.type! as AptType,
-      area: this.form.value.area!
+      area: this.form.value.area!,
+      status: this.form.value.status! as string
     };
 
     this.apartmentService.updateApartment(this.apartmentId, updateDto).subscribe({
@@ -168,4 +184,5 @@ export class EditApartment implements OnInit {
       }
     });
   }
+
 }
