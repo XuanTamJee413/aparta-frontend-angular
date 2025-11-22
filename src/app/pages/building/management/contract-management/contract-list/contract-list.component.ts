@@ -171,7 +171,7 @@ export class ContractList implements OnInit {
   }
 
   onEdit(id: string): void {
-    this.router.navigate(['/manager/manage-contract/edit', id]);
+    this.router.navigate(['/manager/manage-contract/update', id]);
   }
 
 

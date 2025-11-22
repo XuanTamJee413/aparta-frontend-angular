@@ -19,6 +19,7 @@ import { CreateApartment } from './management/apartment-management/create-apartm
 import { ContractList } from './management/contract-management/contract-list/contract-list.component';
 import { CreateContract } from './management/contract-management/create-contract/create-contract';
 import { ContractDetail } from './management/contract-management/contract-detail/contract-detail.component';
+import { UpdateContract } from './management/contract-management/update-contract/update-contract';
 
 
 export const MANAGER_ROUTES: Routes = [
@@ -30,6 +31,7 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-contract', component: ContractList },
   { path: 'manage-contract/create', component: CreateContract },
   { path: 'manage-contract/detail/:id', component: ContractDetail },
+   { path: 'manage-contract/update/:id', component: UpdateContract },
   { path: 'manage-asset', component: AssetList },
   { path: 'manage-asset/create', component: CreateAsset },
   { path: 'manage-asset/edit/:id', component: EditAsset },
