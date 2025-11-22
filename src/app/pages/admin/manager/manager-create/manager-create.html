@@ -131,7 +131,8 @@
               [disabled]="submitting"
               [ngClass]="{'input-error': emailCtrl.invalid && (emailCtrl.touched || managerForm.submitted)}" />
             <p class="error-message" *ngIf="emailCtrl.invalid && (emailCtrl.touched || managerForm.submitted)">
-              Nhập email hợp lệ.
+              <span *ngIf="emailCtrl.errors?.['required']">Email là bắt buộc.</span>
+              <span *ngIf="emailCtrl.errors?.['email'] && !emailCtrl.errors?.['required'] && emailCtrl.value">Email không hợp lệ.</span>
             </p>
           </div>
           <div class="form-group">

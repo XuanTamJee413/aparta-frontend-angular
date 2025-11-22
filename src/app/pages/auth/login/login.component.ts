@@ -50,7 +50,15 @@ export class LoginComponent {
             return;
           }
           this.auth.setToken(token);
-          this.navigateByRole();
+          
+          // Kiểm tra isFirstLogin từ response
+          const isFirstLogin = res?.isFirstLogin || res?.IsFirstLogin || false;
+          if (isFirstLogin) {
+            // Redirect đến reset-password cho first login
+            this.router.navigateByUrl('/reset-password?firstLogin=true');
+          } else {
+            this.navigateByRole();
+          }
           this.submitting.set(false);
         },
         error: (err) => {
