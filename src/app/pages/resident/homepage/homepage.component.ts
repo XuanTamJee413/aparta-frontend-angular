@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -93,11 +93,15 @@ import { CommonModule } from '@angular/common';
     :host {
       display: block;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100%;
+      background-color: transparent;
     }
 
     .page-container {
       max-width: 1200px;
       margin: 0 auto;
+      min-height: 100%;
+      background-color: transparent;
     }
     .page-header h1 {
       font-size: 1.75rem;
@@ -251,7 +255,7 @@ import { CommonModule } from '@angular/common';
     .status-icon.resolved { background-color: #d1e7dd; }
   `]
 })
-export class HomepageComponent {
+export class HomepageComponent implements OnInit {
   userName = 'John Anderson';
 
   bills = [
@@ -266,5 +270,15 @@ export class HomepageComponent {
   ];
 
   constructor() { }
+
+  ngOnInit(): void {
+    // Đảm bảo component được khởi tạo đúng cách
+    try {
+      // Có thể thêm logic load data từ API ở đây nếu cần
+      console.log('HomepageComponent initialized');
+    } catch (error) {
+      console.error('Error initializing HomepageComponent:', error);
+    }
+  }
 }
 
