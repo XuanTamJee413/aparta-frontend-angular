@@ -1,56 +1,73 @@
 <div class="page-container">
 
   <header class="page-header">
-    <h1>News & Updates</h1>
-    <p class="subtitle">Stay updated with latest announcements</p>
+    <h1>Tin tức & Thông báo</h1>
   </header>
 
   @if (loading) {
-    <p>Loading...</p>
+    <div class="loading-center">
+      <p>Đang tải tin tức...</p>
+    </div>
+  } @else if (newsList.length === 0) {
+    <p class="text-center text-muted">Chưa có thông báo nào.</p>
   } @else {
 
     <div class="announcements-list">
       @for (item of newsList; track item.newsId) {
-        <section class="card announcement-card">
-
-          <div class="icon-bg accent-grey">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </div>
-
+        <section class="card announcement-card" (click)="openDetail(item)">
           <div class="announcement-content">
-
             <div class="announcement-header">
               <strong class="item-name">{{ item.title }}</strong>
             </div>
 
-            <p class="item-description">{{ item.content }}</p>
+            <p class="item-description">
+              {{ truncateContent(item.content) }}
+            </p>
 
             <div class="announcement-footer">
               <div class="meta-tags">
                 <span class="item-date">
-                  {{ item.publishedDate | date:'MMM dd, yyyy' }}
+                  {{ item.publishedDate | date:'dd/MM/yyyy' }}
                 </span>
-
                 <span class="item-category">
                   {{ item.authorName }}
                 </span>
               </div>
 
-              <button class="btn btn-secondary btn-small"
-                      (click)="viewDetail(item.newsId)">
-                View Details
+              <button class="btn btn-secondary btn-small" (click)="$event.stopPropagation(); openDetail(item)">
+                Xem chi tiết →
               </button>
             </div>
-
           </div>
         </section>
       }
     </div>
-
   }
 </div>
+
+<!-- DIALOG CHI TIẾT TIN TỨC -->
+<dialog #newsDialog class="news-dialog" (click)="closeDialog()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    @if (selectedNews) {
+      <header class="dialog-header">
+        <h2>{{ selectedNews.title }}</h2>
+        <button class="btn-close" (click)="closeDialog()">×</button>
+      </header>
+
+      <div class="dialog-body">
+        <div class="dialog-meta">
+          <span class="author">Đăng bởi: <strong>{{ selectedNews.authorName }}</strong></span>
+          <span class="date">Ngày {{ formatDate(selectedNews.publishedDate) }}</span>
+        </div>
+
+        <div class="dialog-text">
+          <p [innerHTML]="selectedNews.content"></p>
+        </div>
+      </div>
+
+      <footer class="dialog-footer">
+        <button class="btn btn-primary" (click)="closeDialog()">Đóng</button>
+      </footer>
+    }
+  </div>
+</dialog>
