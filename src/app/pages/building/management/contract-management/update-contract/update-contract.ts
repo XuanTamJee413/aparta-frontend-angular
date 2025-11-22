@@ -36,6 +36,7 @@ export class UpdateContract implements OnInit {
   previewUrl: string | null = null;
   safePreviewUrl: SafeUrl | null = null;
   selectedFileName: string | null = null;
+  selectedFile: File | null = null;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -73,8 +74,7 @@ export class UpdateContract implements OnInit {
       : '';
 
     this.form = this.fb.group({
-      endDate: [endDateRaw, []],
-      image: [this.contract.image ?? '', [Validators.maxLength(2_000_000)]]
+      endDate: [endDateRaw, []]
     });
 
     this.previewUrl = this.contract.image ?? null;
@@ -82,6 +82,7 @@ export class UpdateContract implements OnInit {
       ? this.sanitizer.bypassSecurityTrustUrl(this.previewUrl)
       : null;
     this.selectedFileName = null;
+    this.selectedFile = null;
   }
 
   get pdfUrl(): string | null {
@@ -100,11 +101,11 @@ export class UpdateContract implements OnInit {
 
     const file = input.files[0];
     this.selectedFileName = file.name;
+    this.selectedFile = file;
 
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      this.form.patchValue({ image: result });
       this.previewUrl = result;
       this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(result);
     };
@@ -136,14 +137,17 @@ export class UpdateContract implements OnInit {
     }
 
     const payload: ContractUpdateDto = {
-      endDate: endStr ? endStr : null,
-      image: formValue.image ? String(formValue.image) : null
+      endDate: endStr ? endStr : null
     };
 
     this.isSaving = true;
     this.errorMessage = null;
 
-    this.contractService.updateContract(this.contract.contractId, payload).subscribe({
+    this.contractService.updateContract(
+      this.contract.contractId,
+      payload,
+      this.selectedFile || undefined
+    ).subscribe({
       next: () => {
         this.isSaving = false;
         this.router.navigate(['/manager/manage-contract']);

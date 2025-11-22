@@ -127,8 +127,22 @@ export class ContractManagementService {
       );
   }
 
-  updateContract(id: string, dto: ContractUpdateDto): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, dto);
+  updateContract(id: string, dto: ContractUpdateDto, file?: File): Observable<void> {
+    const formData = new FormData();
+
+    if (dto.endDate !== undefined && dto.endDate !== null) {
+      formData.append('EndDate', dto.endDate);
+    }
+
+    if (file) {
+      formData.append('ImageFile', file);
+    } else {
+      if (dto.image !== undefined && dto.image !== null) {
+        formData.append('Image', dto.image);
+      }
+    }
+
+    return this.http.put<void>(`${this.apiUrl}/${id}`, formData);
   }
 
   deleteContract(id: string): Observable<void> {
