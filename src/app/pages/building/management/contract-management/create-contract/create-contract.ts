@@ -138,50 +138,67 @@ export class CreateContract implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.contractForm.invalid) {
-      this.contractForm.markAllAsTouched();
-      return;
-    }
+  if (this.contractForm.invalid) {
+    this.contractForm.markAllAsTouched();
+    return;
+  }
 
-    if (!this.availableApartments().length) {
-      this.submitError.set('Hiện không còn căn hộ trống để tạo hợp đồng.');
-      return;
-    }
+  if (!this.availableApartments().length) {
+    this.submitError.set('Hiện không còn căn hộ trống để tạo hợp đồng.');
+    return;
+  }
 
-    this.isSubmitting.set(true);
-    this.submitError.set(null);
+  this.isSubmitting.set(true);
+  this.submitError.set(null);
 
-    const formData = this.contractForm.value as ContractCreateDto;
+  const formData = this.contractForm.value as ContractCreateDto;
 
-    this.contractService.createContract(formData)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      .subscribe({
-        next: (res: any) => {
-          let succeeded = true;
-          let message: string | undefined;
+  this.contractService.createContract(formData)
+    .pipe(finalize(() => this.isSubmitting.set(false)))
+    .subscribe({
+      next: (res: any) => {
+        let succeeded = true;
+        let message: string | undefined;
 
-          if (res && typeof res === 'object' && 'succeeded' in res) {
-            succeeded = !!res.succeeded;
-            message = res.message;
+        if (res && typeof res === 'object' && 'succeeded' in res) {
+          succeeded = !!res.succeeded;
+          message = res.message;
+        }
+
+        if (succeeded) {
+          alert('Tạo hợp đồng thành công!');
+          this.router.navigate(['/manager/manage-contract']);
+        } else {
+          this.submitError.set(message || 'Đã xảy ra lỗi khi tạo hợp đồng.');
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi khi tạo hợp đồng', err);
+
+        const backendMsg: string =
+          err?.error?.message ||
+          err?.error?.Message ||
+          '';
+
+        if (backendMsg && (backendMsg.includes('CMND') || backendMsg.includes('CCCD'))) {
+          const cccdControl = this.contractForm.get('ownerIdNumber');
+          if (cccdControl) {
+            const currentErrors = cccdControl.errors || {};
+            currentErrors['duplicateIdNumber'] = true;
+            cccdControl.setErrors(currentErrors);
+            cccdControl.markAsTouched();
           }
 
-          if (succeeded) {
-            alert('Tạo hợp đồng thành công!');
-            this.router.navigate(['/manager/manage-contract']);
-          } else {
-            this.submitError.set(message || 'Đã xảy ra lỗi khi tạo hợp đồng.');
-          }
-        },
-        error: (err) => {
-          console.error('Lỗi khi tạo hợp đồng', err);
+          this.submitError.set(null);
+        } else {
           this.submitError.set(
-            err?.error?.message ||
-            err?.error?.Message ||
-            'Đã xảy ra lỗi trong quá trình tạo hợp đồng.'
+            backendMsg || 'Đã xảy ra lỗi trong quá trình tạo hợp đồng.'
           );
         }
-      });
-  }
+      }
+    });
+}
+
 
   onCancel(): void {
     this.location.back();

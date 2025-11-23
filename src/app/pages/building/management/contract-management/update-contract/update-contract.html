@@ -108,15 +108,35 @@
             Đã chọn: <strong>{{ selectedFileName }}</strong>
           </div>
 
-          <!-- <a
-            *ngIf="safePreviewUrl"
-            [href]="safePreviewUrl"
-            target="_blank"
-            rel="noopener"
-            class="preview-link"
-          >
-            Xem tệp hiện tại
-          </a> -->
+          <div class="preview-wrapper" *ngIf="previewMode !== 'none'">
+  <ng-container [ngSwitch]="previewMode">
+
+    <a
+      *ngSwitchCase="'link'"
+      [href]="safePreviewUrl"
+      target="_blank"
+      rel="noopener"
+      class="preview-link"
+    >
+      Xem tệp hiện tại
+    </a>
+
+    <img
+      *ngSwitchCase="'image'"
+      [src]="safePreviewUrl"
+      alt="Xem trước hợp đồng"
+      class="preview-image"
+    />
+
+    <iframe
+      *ngSwitchCase="'pdf'"
+      [src]="safePreviewUrl"
+      class="preview-pdf"
+    ></iframe>
+
+  </ng-container>
+</div>
+
         </div>
       </div>
     </div>

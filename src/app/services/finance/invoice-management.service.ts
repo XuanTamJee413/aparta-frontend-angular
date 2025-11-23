@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { InvoiceGroupDto, InvoiceDetailDto, ApiResponse } from '../../models/invoice-management.model';
+import { InvoiceGroupDto, InvoiceDetailDto, InvoiceDto, ApiResponse } from '../../models/invoice-management.model';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +19,8 @@ export class InvoiceManagementService {
   getInvoicesByBuilding(
     buildingId: string,
     status?: string,
-    apartmentCode?: string
+    apartmentCode?: string,
+    feeType?: string
   ): Observable<ApiResponse<InvoiceGroupDto[]>> {
     let params = new HttpParams();
     if (status && status !== 'Tất cả') {
@@ -27,6 +28,9 @@ export class InvoiceManagementService {
     }
     if (apartmentCode && apartmentCode.trim()) {
       params = params.set('apartmentCode', apartmentCode.trim());
+    }
+    if (feeType) {
+      params = params.set('feeType', feeType);
     }
 
     return this.http.get<ApiResponse<InvoiceGroupDto[]>>(
@@ -42,6 +46,38 @@ export class InvoiceManagementService {
   getInvoiceDetail(invoiceId: string): Observable<ApiResponse<InvoiceDetailDto>> {
     return this.http.get<ApiResponse<InvoiceDetailDto>>(
       `${this.apiUrl}/invoice/${invoiceId}`
+    );
+  }
+
+  /**
+   * Tạo hóa đơn một lần
+   * POST /api/invoices/one-time
+   */
+  createOneTimeInvoice(formData: FormData): Observable<ApiResponse<InvoiceDto>> {
+    return this.http.post<ApiResponse<InvoiceDto>>(
+      `${this.apiUrl}/Invoice/one-time`,
+      formData
+    );
+  }
+
+  /**
+   * Đánh dấu hóa đơn đã thanh toán
+   * PUT /api/invoices/{id}/mark-paid
+   */
+  markInvoiceAsPaid(invoiceId: string): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(
+      `${this.apiUrl}/Invoice/${invoiceId}/mark-paid`,
+      {}
+    );
+  }
+
+  /**
+   * Xóa hóa đơn
+   * DELETE /api/invoices/{id}
+   */
+  deleteInvoice(invoiceId: string): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(
+      `${this.apiUrl}/Invoice/${invoiceId}`
     );
   }
 }

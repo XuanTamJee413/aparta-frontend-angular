@@ -37,6 +37,7 @@ export class UpdateContract implements OnInit {
   safePreviewUrl: SafeUrl | null = null;
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
+  previewMode: 'none' | 'image' | 'pdf' | 'link' = 'none';
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -66,24 +67,33 @@ export class UpdateContract implements OnInit {
     });
   }
 
-  private buildForm(): void {
-    if (!this.contract) return;
+ private buildForm(): void {
+  if (!this.contract) return;
 
-    const endDateRaw = this.contract.endDate
-      ? this.contract.endDate.substring(0, 10)
-      : '';
+  const endDateRaw = this.contract.endDate
+    ? this.contract.endDate.substring(0, 10)
+    : '';
 
-    this.form = this.fb.group({
-      endDate: [endDateRaw, []]
-    });
+  this.form = this.fb.group({
+    endDate: [endDateRaw, []],
+    image: [this.contract.image ?? '', [Validators.maxLength(2_000_000)]]
+  });
 
-    this.previewUrl = this.contract.image ?? null;
-    this.safePreviewUrl = this.previewUrl
-      ? this.sanitizer.bypassSecurityTrustUrl(this.previewUrl)
-      : null;
-    this.selectedFileName = null;
-    this.selectedFile = null;
+  this.previewUrl = this.contract.image ?? null;
+  this.selectedFileName = null;
+
+  if (this.previewUrl) {
+    this.previewMode = this.previewUrl.startsWith('data:')
+      ? 'image'
+      : 'link';
+
+    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.previewUrl);
+  } else {
+    this.previewMode = 'none';
+    this.safePreviewUrl = null;
   }
+}
+
 
   get pdfUrl(): string | null {
     if (!this.contract) return null;
@@ -96,22 +106,30 @@ export class UpdateContract implements OnInit {
   }
 
   onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+  const input = event.target as HTMLInputElement;
+  if (!input.files || input.files.length === 0) return;
 
-    const file = input.files[0];
-    this.selectedFileName = file.name;
-    this.selectedFile = file;
+  const file = input.files[0];
+  this.selectedFileName = file.name;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      this.previewUrl = result;
-      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(result);
-    };
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result as string;
+    this.form.patchValue({ image: result });
+    this.previewUrl = result;
 
-    reader.readAsDataURL(file);
-  }
+    if (result.startsWith('data:application/pdf')) {
+      this.previewMode = 'pdf';
+    } else {
+      this.previewMode = 'image';
+    }
+
+    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(result);
+  };
+
+  reader.readAsDataURL(file);
+}
+
 
   onSubmit(): void {
     if (!this.contract || !this.form) return;
