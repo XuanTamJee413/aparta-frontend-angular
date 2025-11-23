@@ -71,8 +71,9 @@ export const MANAGER_ROUTES: Routes = [
   },
   { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
   { path: 'meter-reading-status', canActivate: [permissionGuard(['meterreading.read.status'])], loadComponent: () => import('./operation/meter-reading-status/meter-reading-status.component').then(m => m.MeterReadingStatusComponent), title: 'Báo cáo Tình trạng Ghi chỉ số' },
+  { path: 'create-one-time-invoice', canActivate: [permissionGuard('invoice.pay.create')], loadComponent: () => import('./operation/create-one-time-invoice/create-one-time-invoice.component').then(m => m.CreateOneTimeInvoiceComponent), title: 'Tạo Phiếu Thu' },
 
-  // --- END OPERATION  ---
+  // --- END OPERATION  ---
 
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
 ];

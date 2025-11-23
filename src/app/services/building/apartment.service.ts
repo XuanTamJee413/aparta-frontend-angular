@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> {
   succeeded: boolean;
@@ -53,8 +54,8 @@ export interface PaginatedResult<T> {
 
 @Injectable({ providedIn: 'root' })
 export class ApartmentService {
-  private apiUrl = 'http://localhost:5175/api/Apartments';
-  private buildingApiUrl = 'http://localhost:5175/api/Buildings';
+  private apiUrl = `${environment.apiUrl}/Apartments`;
+  private buildingApiUrl = `${environment.apiUrl}/Buildings`;
 
   constructor(private http: HttpClient) {}
 

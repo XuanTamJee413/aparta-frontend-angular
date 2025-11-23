@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, map, catchError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> { succeeded: boolean; message: string | null; data: T; }
 export interface ApartmentMemberDto {
@@ -38,18 +39,39 @@ export interface ApartmentMemberCreateDto {
 @Injectable({ providedIn: 'root' })
 export class HouseholdService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5175/api/ApartmentMembers';
+  private apiUrl = `${environment.apiUrl}/ApartmentMembers`;
 
   getMembersByApartment(apartmentId: string): Observable<ApartmentMemberDto[]> {
     const params = new HttpParams().set('apartmentId', apartmentId);
-    return this.http.get<unknown>(this.apiUrl, { params }).pipe(
-      map((resp: any) => {
-        const arr: ApartmentMemberDto[] =
-          Array.isArray(resp) ? resp :
-          (resp && Array.isArray(resp.data) ? resp.data :
-          (resp && Array.isArray(resp?.Data) ? resp.Data :
-          (resp?.data?.items ?? resp?.Data?.Items ?? [])));
-        return arr.filter(m => String(m.apartmentId ?? '') === String(apartmentId));
+    return this.http.get<ApiResponse<ApartmentMemberDto[]>>(this.apiUrl, { params }).pipe(
+      map((resp: ApiResponse<ApartmentMemberDto[]>) => {
+        // Backend returns ApiResponse format: { succeeded: true, message: "...", data: [...] }
+        if (resp && resp.succeeded && resp.data && Array.isArray(resp.data)) {
+          // Normalize property names from PascalCase (backend) to camelCase (frontend)
+          const normalizedMembers: ApartmentMemberDto[] = resp.data.map((m: any) => ({
+            apartmentMemberId: m.apartmentMemberId || m.ApartmentMemberId || '',
+            apartmentId: m.apartmentId || m.ApartmentId || null,
+            name: m.name || m.Name || null,
+            phoneNumber: m.phoneNumber || m.PhoneNumber || null,
+            idNumber: m.idNumber || m.IdNumber || null,
+            gender: m.gender || m.Gender || null,
+            dateOfBirth: m.dateOfBirth || m.DateOfBirth || null,
+            isOwner: m.isOwner !== undefined ? m.isOwner : (m.IsOwner !== undefined ? m.IsOwner : false),
+            faceImageUrl: m.faceImageUrl || m.FaceImageUrl || null,
+            info: m.info || m.Info || null,
+            nationality: m.nationality || m.Nationality || null,
+            updatedAt: m.updatedAt || m.UpdatedAt || null,
+            familyRole: m.familyRole || m.FamilyRole || null,
+            createdAt: m.createdAt || m.CreatedAt || null,
+            status: m.status || m.Status || null
+          }));
+          // Filter by apartmentId (backend should already filter, but double-check)
+          return normalizedMembers.filter(m => String(m.apartmentId ?? '') === String(apartmentId));
+        }
+        return [];
+      }),
+      catchError((error) => {
+        return of([]);
       })
     );
   }

@@ -5,6 +5,22 @@
       <p>Danh sách hóa đơn theo tòa nhà và căn hộ</p>
     </header>
 
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'monthly'"
+        (click)="switchTab('monthly')">
+        Hóa đơn Tháng
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'one-time'"
+        (click)="switchTab('one-time')">
+        Phí phát sinh
+      </button>
+    </div>
+
     <!-- Filters -->
     <div class="filter-container">
       <div class="filter-row-single">
@@ -80,8 +96,8 @@
       </div>
     }
 
-    <!-- Table -->
-    @if (!isLoading && !error) {
+    <!-- TAB 1: Monthly Invoices -->
+    @if (activeTab === 'monthly' && !isLoading && !error) {
       <div class="table-container">
         <div class="table-wrapper">
           <table class="data-table">
@@ -129,6 +145,74 @@
         </div>
       </div>
     }
+
+    <!-- TAB 2: One-Time Invoices -->
+    @if (activeTab === 'one-time' && !isLoading && !error) {
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ngày tạo</th>
+                <th>Căn hộ</th>
+                <th>Nội dung</th>
+                <th>Số tiền</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invoice of oneTimeInvoices; track invoice.invoiceId) {
+                <tr>
+                  <td>{{ formatDate(invoice.startDate) }}</td>
+                  <td class="font-medium">{{ invoice.apartmentCode }}</td>
+                  <td>
+                    @let parsed = parseDescription(invoice.description);
+                    {{ parsed.itemDescription }}
+                  </td>
+                  <td class="font-medium">{{ formatCurrency(invoice.price) }}</td>
+                  <td>
+                    <span [class]="getStatusClass(invoice.status)">
+                      {{ getStatusLabel(invoice.status) }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <div class="action-buttons">
+                      <button class="action-view-btn" (click)="viewDetail(invoice.invoiceId)">
+                        <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Xem Chi tiết
+                      </button>
+                      <button 
+                        *ngIf="invoice.status === 'PENDING'"
+                        type="button"
+                        class="btn-delete"
+                        (click)="deleteInvoice(invoice.invoiceId)"
+                        title="Hủy">
+                        🗑️
+                      </button>
+                      <button 
+                        *ngIf="invoice.status === 'PENDING'"
+                        type="button"
+                        class="btn-mark-paid"
+                        (click)="markAsPaid(invoice.invoiceId)"
+                        title="Thu tiền mặt">
+                        💵
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="no-results">Không tìm thấy hóa đơn nào phù hợp.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
   </div>
 </div>
-

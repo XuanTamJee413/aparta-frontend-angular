@@ -1,0 +1,319 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Tạo Phiếu Thu</h1>
+          <p>Tạo hóa đơn một lần cho cư dân</p>
+        </div>
+      </div>
+    </header>
+
+    @if (error) {
+      <div class="alert-error">
+        <strong>Lỗi!</strong> {{ error }}
+        <button class="alert-close" (click)="error = null">×</button>
+      </div>
+    }
+
+    @if (successMessage) {
+      <div class="alert-success">
+        <strong>Thành công!</strong> {{ successMessage }}
+        <button class="alert-close" (click)="successMessage = null">×</button>
+      </div>
+    }
+
+    @if (isLoading) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Đang tạo hóa đơn...</p>
+      </div>
+    }
+
+    <div class="two-column-layout">
+      <!-- Left Column: Form -->
+      <div class="form-column">
+        <!-- Building Selection -->
+        <section class="info-section">
+          <div class="section-header">
+            <h2>Tòa nhà</h2>
+          </div>
+          <div class="form-group">
+            <select 
+              class="form-select"
+              [(ngModel)]="selectedBuildingId"
+              (change)="onBuildingChange()">
+              <option value="">-- Chọn tòa nhà --</option>
+              <option *ngFor="let building of buildings" [value]="building.buildingId">
+                {{ building.name || building.buildingCode }}
+              </option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Loại thu Section -->
+        <section class="info-section" *ngIf="selectedBuildingId">
+          <div class="section-header">
+            <h2>Loại thu</h2>
+          </div>
+          <div class="quotation-cards">
+            @for (quotation of priceQuotations; track quotation.priceQuotationId) {
+              <div 
+                class="quotation-card"
+                [class.selected]="selectedQuotationId === quotation.priceQuotationId"
+                (click)="onQuotationSelect(quotation.priceQuotationId)">
+                <div class="quotation-header">
+                  <span class="quotation-name">{{ quotation.feeType }}</span>
+                  <span class="quotation-price">{{ formatCurrency(quotation.unitPrice) }}</span>
+                </div>
+              </div>
+            }
+            <div 
+              class="quotation-card"
+              [class.selected]="selectedQuotationId === 'custom'"
+              (click)="selectedQuotationId = 'custom'; itemDescription = ''; amount = 0">
+              <div class="quotation-header">
+                <span class="quotation-name">Khác (Nhập tay)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Thông tin người nộp -->
+        <section class="info-section" *ngIf="selectedBuildingId">
+          <div class="section-header">
+            <h2>Thông tin người nộp</h2>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Địa chỉ căn hộ <span class="required">*</span></label>
+            <div class="autocomplete-wrapper">
+              <input
+                type="text"
+                class="form-input"
+                [class.input-error]="apartmentSearchText && !isSearchTextValid()"
+                [(ngModel)]="apartmentSearchText"
+                (input)="onApartmentSearchInput()"
+                (focus)="onApartmentInputFocus()"
+                (blur)="onApartmentInputBlur()"
+                placeholder="Nhập mã căn hộ"
+                autocomplete="off"
+                required>
+              @if (showApartmentSuggestions && filteredApartments.length > 0) {
+                <div class="autocomplete-dropdown">
+                  @for (apartment of filteredApartments; track apartment.apartmentId) {
+                    <div 
+                      class="autocomplete-item"
+                      (mousedown)="selectApartment(apartment)">
+                      {{ apartment.code }}
+                    </div>
+                  }
+                </div>
+              }
+              @if (apartmentSearchText && !isSearchTextValid()) {
+                <p class="error-message">
+                  Căn hộ không tồn tại trong hệ thống. Vui lòng chọn từ danh sách gợi ý.
+                </p>
+              }
+            </div>
+            <input type="hidden" [(ngModel)]="apartmentAddress">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Họ tên <span class="required">*</span></label>
+            <input 
+              type="text"
+              class="form-input"
+              [(ngModel)]="payerName"
+              placeholder="Tự động điền khi chọn căn hộ"
+              [readonly]="true"
+              required>
+            <p class="form-hint">Tên người sở hữu căn hộ (tự động điền)</p>
+          </div>
+        </section>
+
+        <!-- Chi tiết phiếu thu -->
+        <section class="info-section" *ngIf="selectedBuildingId">
+          <div class="section-header">
+            <h2>Chi tiết phiếu thu</h2>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Mô tả khoản thu <span class="required">*</span></label>
+            <input 
+              type="text"
+              class="form-input"
+              [(ngModel)]="itemDescription"
+              placeholder="VD: Phạt đỗ xe"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Số tiền (đ) <span class="required">*</span></label>
+            <input 
+              type="number"
+              class="form-input"
+              [(ngModel)]="amount"
+              min="0"
+              step="1000"
+              placeholder="0"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Ghi chú</label>
+            <textarea
+              class="form-textarea"
+              [(ngModel)]="note"
+              rows="3"
+              placeholder="Ghi chú chi tiết..."></textarea>
+          </div>
+
+          <!-- Image Upload -->
+          <div class="form-group">
+            <label class="form-label">Ảnh bằng chứng (Tối đa {{ MAX_IMAGES }} ảnh)</label>
+            <input 
+              type="file"
+              class="form-input"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              [multiple]="true"
+              [disabled]="selectedFiles.length >= MAX_IMAGES">
+            <p class="form-hint" *ngIf="selectedFiles.length >= MAX_IMAGES">
+              Đã đạt tối đa {{ MAX_IMAGES }} ảnh. Vui lòng xóa ảnh để thêm ảnh mới.
+            </p>
+            
+            @if (imagePreviews.length > 0) {
+              <div class="image-preview-container">
+                @for (preview of imagePreviews; track $index) {
+                  <div class="image-preview-item">
+                    <img [src]="preview" alt="Preview">
+                    <button
+                      type="button"
+                      class="remove-image-btn"
+                      (click)="removeImage($index)"
+                      title="Xóa ảnh">
+                      ×
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-actions">
+            @if (createdInvoiceId) {
+              <button 
+                type="button"
+                class="btn-primary btn-success"
+                (click)="printInvoice()">
+                <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                In Hóa Đơn
+              </button>
+              <div class="success-message-on-button">
+                <strong>Thành công!</strong> Tạo hóa đơn thành công!
+              </div>
+            } @else {
+              <button 
+                type="button"
+                class="btn-primary"
+                (click)="onSubmit()"
+                [disabled]="isLoading || !itemDescription || !amount || amount <= 0 || !apartmentAddress || !payerName">
+                @if (isLoading) {
+                  <div class="btn-spinner"></div>
+                  Đang tạo...
+                } @else {
+                  <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Tạo Phiếu Thu
+                }
+              </button>
+            }
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Preview -->
+      <div class="preview-column">
+        <div class="preview-card">
+          <div class="preview-header">
+            <div class="company-logo">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 21H21M5 21V7L12 3L19 7V21M9 9V21M15 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="company-info">
+              <h3>{{ selectedBuilding?.name || selectedBuilding?.buildingCode || 'Tòa nhà' }}</h3>
+              <p *ngIf="selectedBuilding?.buildingCode">Mã: {{ selectedBuilding?.buildingCode }}</p>
+            </div>
+          </div>
+
+          <div class="preview-title">PHIẾU THU TIỀN</div>
+
+          <div class="preview-date">
+            <p>Ngày thu: {{ getCurrentDate() }}</p>
+          </div>
+
+          <div class="preview-section">
+            <h4>Thông tin người nộp tiền</h4>
+            <div class="preview-info">
+              <p><strong>Họ tên:</strong> {{ payerName || '...' }}</p>
+              <p><strong>Địa chỉ căn hộ:</strong> {{ apartmentAddress || '...' }}</p>
+              <p><strong>Chi tiết phiếu thu:</strong></p>
+              <ul>
+                <li><strong>Loại phiếu thu:</strong> {{ itemDescription || '...' }}</li>
+                <li *ngIf="note"><strong>Ghi chú:</strong> {{ note }}</li>
+              </ul>
+            </div>
+          </div>
+
+          @if (itemDescription && amount > 0) {
+            <div class="preview-section">
+              <h4>Mô tả chi tiết</h4>
+              <table class="preview-table">
+                <thead>
+                  <tr>
+                    <th>Tên phí</th>
+                    <th>Đơn vị</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{ itemDescription }}</td>
+                    <td>1</td>
+                    <td>{{ formatNumber(amount) }} đ</td>
+                    <td>{{ formatNumber(amount) }} đ</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          }
+
+          <div class="preview-totals">
+            <p><strong>Tổng cộng:</strong> {{ formatCurrency(amount) }}</p>
+            <p><strong>Tổng thanh toán:</strong> {{ formatCurrency(amount) }}</p>
+          </div>
+
+          @if (imagePreviews.length > 0) {
+            <div class="preview-section">
+              <h4>Ảnh bằng chứng</h4>
+              <div class="preview-images">
+                @for (preview of imagePreviews; track $index) {
+                  <div class="preview-image-item">
+                    <img [src]="preview" [alt]="'Bằng chứng ' + ($index + 1)" (click)="viewEvidence(preview)">
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

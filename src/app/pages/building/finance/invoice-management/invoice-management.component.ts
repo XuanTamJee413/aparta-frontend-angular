@@ -6,6 +6,14 @@ import { InvoiceManagementService } from '../../../../services/finance/invoice-m
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
 import { InvoiceGroupDto, InvoiceDto } from '../../../../models/invoice-management.model';
 
+// Interface for parsed description
+export interface ParsedDescription {
+  itemDescription: string;
+  note?: string;
+  evidenceUrls: string[];
+  rawText: string;
+}
+
 @Component({
   selector: 'app-invoice-management',
   standalone: true,
@@ -14,13 +22,21 @@ import { InvoiceGroupDto, InvoiceDto } from '../../../../models/invoice-manageme
   styleUrls: ['./invoice-management.component.css']
 })
 export class InvoiceManagementComponent implements OnInit {
+  // Tab management
+  activeTab: 'monthly' | 'one-time' = 'monthly';
+  
+  // Common
   buildings: BuildingDto[] = [];
   selectedBuildingId: string = '';
   selectedStatus: string = 'Tất cả';
   apartmentCodeSearch: string = '';
   
+  // Monthly invoices
   invoiceGroups: InvoiceGroupDto[] = [];
   flatInvoices: InvoiceDto[] = [];
+  
+  // One-time invoices
+  oneTimeInvoices: InvoiceDto[] = [];
   
   isLoading = false;
   error: string | null = null;
@@ -51,7 +67,12 @@ export class InvoiceManagementComponent implements OnInit {
           // Auto-select building đầu tiên
           if (this.buildings.length > 0 && !this.selectedBuildingId) {
             this.selectedBuildingId = this.buildings[0].buildingId;
-            this.loadInvoices();
+            // Load invoices based on active tab
+            if (this.activeTab === 'monthly') {
+              this.loadInvoices();
+            } else {
+              this.loadOneTimeInvoices();
+            }
           }
         }
         this.isLoading = false;
@@ -63,7 +84,7 @@ export class InvoiceManagementComponent implements OnInit {
     });
   }
 
-  // Tải danh sách hóa đơn
+  // Tải danh sách hóa đơn tháng
   loadInvoices(): void {
     if (!this.selectedBuildingId) {
       return;
@@ -78,7 +99,8 @@ export class InvoiceManagementComponent implements OnInit {
     this.invoiceService.getInvoicesByBuilding(
       this.selectedBuildingId,
       status,
-      apartmentCode
+      apartmentCode,
+      'MONTHLY_BILLING'
     ).subscribe({
       next: (response) => {
         if (response.succeeded && response.data) {
@@ -100,38 +122,116 @@ export class InvoiceManagementComponent implements OnInit {
     });
   }
 
+  // Tải danh sách hóa đơn one-time
+  loadOneTimeInvoices(): void {
+    if (!this.selectedBuildingId) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.error = null;
+    
+    const status = this.selectedStatus === 'Tất cả' ? undefined : this.selectedStatus;
+    const apartmentCode = this.apartmentCodeSearch.trim() || undefined;
+
+    this.invoiceService.getInvoicesByBuilding(
+      this.selectedBuildingId,
+      status,
+      apartmentCode,
+      'ONE_TIME'
+    ).subscribe({
+      next: (response) => {
+        if (response.succeeded && response.data) {
+          // Flatten invoices from groups
+          this.oneTimeInvoices = [];
+          response.data.forEach(group => {
+            group.invoices.forEach(invoice => {
+              if (invoice.feeType === 'ONE_TIME') {
+                this.oneTimeInvoices.push({
+                  ...invoice,
+                  apartmentCode: group.apartmentCode,
+                  residentName: group.residentName
+                });
+              }
+            });
+          });
+        } else {
+          this.oneTimeInvoices = [];
+          this.error = response.message || 'Không thể tải danh sách hóa đơn';
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Không thể tải danh sách hóa đơn';
+        this.oneTimeInvoices = [];
+        this.isLoading = false;
+      }
+    });
+  }
+
   // Chuyển đổi invoiceGroups thành flat list để hiển thị trong table
   flattenInvoices(): void {
     this.flatInvoices = [];
+    
     this.invoiceGroups.forEach(group => {
       group.invoices.forEach(invoice => {
-        this.flatInvoices.push({
-          ...invoice,
-          apartmentCode: group.apartmentCode,
-          residentName: group.residentName
-        });
+        // Only show monthly invoices
+        if (invoice.feeType === 'MONTHLY_BILLING') {
+          const flatInvoice = {
+            ...invoice,
+            apartmentCode: group.apartmentCode,
+            residentName: group.residentName
+          };
+          this.flatInvoices.push(flatInvoice);
+        }
       });
     });
   }
 
+  // Tab switching
+  switchTab(tab: 'monthly' | 'one-time'): void {
+    this.activeTab = tab;
+    if (tab === 'monthly') {
+      this.loadInvoices();
+    } else {
+      this.loadOneTimeInvoices();
+    }
+  }
+
   // Xử lý khi thay đổi building
   onBuildingChange(): void {
-    this.loadInvoices();
+    if (this.activeTab === 'monthly') {
+      this.loadInvoices();
+    } else {
+      this.loadOneTimeInvoices();
+    }
   }
 
   // Xử lý khi thay đổi status
   onStatusChange(): void {
-    this.loadInvoices();
+    if (this.activeTab === 'monthly') {
+      this.loadInvoices();
+    } else {
+      this.loadOneTimeInvoices();
+    }
   }
 
   // Xử lý khi search apartment code (live search)
   onApartmentCodeSearch(): void {
-    this.loadInvoices();
+    if (this.activeTab === 'monthly') {
+      this.loadInvoices();
+    } else {
+      this.loadOneTimeInvoices();
+    }
   }
 
   // Xử lý khi click nút Search
   onSearchClick(): void {
-    this.loadInvoices();
+    if (this.activeTab === 'monthly') {
+      this.loadInvoices();
+    } else {
+      this.loadOneTimeInvoices();
+    }
   }
 
   // Navigate đến detail view
@@ -189,5 +289,103 @@ export class InvoiceManagementComponent implements OnInit {
         return status;
     }
   }
+
+  // Parse description from JSON (for one-time invoices)
+  parseDescription(description: string): ParsedDescription {
+    if (!description) {
+      return {
+        itemDescription: '',
+        note: undefined,
+        evidenceUrls: [],
+        rawText: ''
+      };
+    }
+
+    try {
+      // Try to parse as JSON first
+      const parsed = JSON.parse(description);
+      
+      return {
+        itemDescription: parsed.itemDescription || '',
+        note: parsed.note || undefined,
+        evidenceUrls: Array.isArray(parsed.evidenceUrls) ? parsed.evidenceUrls : [],
+        rawText: parsed.itemDescription + (parsed.note ? `. ${parsed.note}` : '')
+      };
+    } catch (e) {
+      // Fallback: If not JSON, try to parse old format (for backward compatibility)
+      const evidenceMatch = description.match(/\[Evidence: ([^\]]+)\]/);
+      let evidenceUrls: string[] = [];
+      let textWithoutEvidence = description;
+
+      if (evidenceMatch) {
+        const evidenceText = evidenceMatch[1];
+        evidenceUrls = evidenceText.split(';').map((url: string) => url.trim()).filter((url: string) => url);
+        textWithoutEvidence = description.replace(/\[Evidence: [^\]]+\]/, '').trim();
+      }
+
+      // Split itemDescription and note (format: "ItemDescription. Note")
+      const parts = textWithoutEvidence.split('.').map((p: string) => p.trim()).filter((p: string) => p);
+      
+      let itemDescription = parts[0] || '';
+      let note: string | undefined = undefined;
+
+      if (parts.length > 1) {
+        // Join remaining parts as note (in case note contains multiple sentences)
+        note = parts.slice(1).join('. ').trim();
+      }
+
+      return {
+        itemDescription,
+        note: note || undefined,
+        evidenceUrls,
+        rawText: textWithoutEvidence
+      };
+    }
+  }
+
+  viewEvidence(url: string): void {
+    window.open(url, '_blank');
+  }
+
+  markAsPaid(invoiceId: string): void {
+    if (!confirm('Xác nhận đánh dấu hóa đơn đã thanh toán?')) {
+      return;
+    }
+
+    this.invoiceService.markInvoiceAsPaid(invoiceId).subscribe({
+      next: (response) => {
+        if (response.succeeded) {
+          alert('Đã đánh dấu hóa đơn là đã thanh toán');
+          this.loadOneTimeInvoices();
+        } else {
+          alert(response.message || 'Có lỗi xảy ra');
+        }
+      },
+      error: (error) => {
+        alert(error.error?.message || 'Có lỗi xảy ra');
+      }
+    });
+  }
+
+  deleteInvoice(invoiceId: string): void {
+    if (!confirm('Bạn có chắc chắn muốn xóa hóa đơn này?')) {
+      return;
+    }
+
+    this.invoiceService.deleteInvoice(invoiceId).subscribe({
+      next: (response) => {
+        if (response.succeeded) {
+          alert('Đã xóa hóa đơn');
+          this.loadOneTimeInvoices();
+        } else {
+          alert(response.message || 'Có lỗi xảy ra');
+        }
+      },
+      error: (error) => {
+        alert(error.error?.message || 'Có lỗi xảy ra');
+      }
+    });
+  }
+
 }
 
