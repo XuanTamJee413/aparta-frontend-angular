@@ -79,7 +79,9 @@ export const MANAGER_ROUTES: Routes = [
     path: 'chat',
     component: ChatShellComponent,
   },
-  // --- END OPERATION  ---
+  { path: 'create-one-time-invoice', canActivate: [permissionGuard('invoice.pay.create')], loadComponent: () => import('./operation/create-one-time-invoice/create-one-time-invoice.component').then(m => m.CreateOneTimeInvoiceComponent), title: 'Tạo Phiếu Thu' },
+
+  // --- END OPERATION  ---
 
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
 ];

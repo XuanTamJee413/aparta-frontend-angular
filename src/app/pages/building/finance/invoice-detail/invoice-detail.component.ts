@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InvoiceManagementService } from '../../../../services/finance/invoice-management.service';
 import { InvoiceDetailDto, InvoiceItemDto } from '../../../../models/invoice-management.model';
+import { ParsedDescription } from '../invoice-management/invoice-management.component';
 
 @Component({
   selector: 'app-invoice-detail',
@@ -121,6 +122,63 @@ export class InvoiceDetailComponent implements OnInit {
       default:
         return status;
     }
+  }
+
+  // Parse description from JSON (for one-time invoices)
+  parseDescription(description: string): ParsedDescription {
+    if (!description) {
+      return {
+        itemDescription: '',
+        note: undefined,
+        evidenceUrls: [],
+        rawText: ''
+      };
+    }
+
+    try {
+      // Try to parse as JSON first
+      const parsed = JSON.parse(description);
+      
+      return {
+        itemDescription: parsed.itemDescription || '',
+        note: parsed.note || undefined,
+        evidenceUrls: Array.isArray(parsed.evidenceUrls) ? parsed.evidenceUrls : [],
+        rawText: parsed.itemDescription + (parsed.note ? `. ${parsed.note}` : '')
+      };
+    } catch (e) {
+      // Fallback: If not JSON, try to parse old format (for backward compatibility)
+      const evidenceMatch = description.match(/\[Evidence: ([^\]]+)\]/);
+      let evidenceUrls: string[] = [];
+      let textWithoutEvidence = description;
+
+      if (evidenceMatch) {
+        const evidenceText = evidenceMatch[1];
+        evidenceUrls = evidenceText.split(';').map((url: string) => url.trim()).filter((url: string) => url);
+        textWithoutEvidence = description.replace(/\[Evidence: [^\]]+\]/, '').trim();
+      }
+
+      // Split itemDescription and note (format: "ItemDescription. Note")
+      const parts = textWithoutEvidence.split('.').map((p: string) => p.trim()).filter((p: string) => p);
+      
+      let itemDescription = parts[0] || '';
+      let note: string | undefined = undefined;
+
+      if (parts.length > 1) {
+        // Join remaining parts as note (in case note contains multiple sentences)
+        note = parts.slice(1).join('. ').trim();
+      }
+
+      return {
+        itemDescription,
+        note: note || undefined,
+        evidenceUrls,
+        rawText: textWithoutEvidence
+      };
+    }
+  }
+
+  viewEvidence(url: string): void {
+    window.open(url, '_blank');
   }
 }
 
