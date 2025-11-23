@@ -22,6 +22,7 @@ import { CreateContract } from './management/contract-management/create-contract
 import { ContractDetail } from './management/contract-management/contract-detail/contract-detail.component';
 import { UpdateContract } from './management/contract-management/update-contract/update-contract';
 
+import { StaffAssignmentListComponent } from './management/staff-assignment/staff-assignment-list/staff-assignment-list.component';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
@@ -32,7 +33,7 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-contract', component: ContractList },
   { path: 'manage-contract/create', component: CreateContract },
   { path: 'manage-contract/detail/:id', component: ContractDetail },
-   { path: 'manage-contract/update/:id', component: UpdateContract },
+  { path: 'manage-contract/update/:id', component: UpdateContract },
   { path: 'manage-asset', component: AssetList },
   { path: 'manage-asset/create', component: CreateAsset },
   { path: 'manage-asset/edit/:id', component: EditAsset },
@@ -42,6 +43,12 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-quotation', canActivate: [permissionGuard('visitor.read')], component: PriceQuotationListComponent },
   { path: 'manage-quotation/new', component: PriceQuotationFormComponent },
   { path: 'manage-quotation/edit/:id', component: PriceQuotationFormComponent },
+  { 
+    path: 'manage-staff-assignment', 
+    canActivate: [permissionGuard('staffassignment.read')], 
+    component: StaffAssignmentListComponent,
+    title: 'Quản lý Phân công Nhân viên'
+  },
 
   // --- END MANAGEMENT ---
 
