@@ -43,13 +43,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/common/forbidden/forbidden').then(m => m.Forbidden)
   },
   
-  {
-    path: 'admin',
-    component: AdminLayout, 
-    canActivate: [authCanActivate, roleCanActivate(['admin','custom'])],
-    loadChildren: () => import('./pages/admin/admin.routes')
-      .then(m => m.ADMIN_ROUTES)
-  },
+  // {
+  //   path: 'admin',
+  //   component: AdminLayout, 
+  //   canActivate: [authCanActivate, roleCanActivate(['admin','custom'])],
+  //   loadChildren: () => import('./pages/admin/admin.routes')
+  //     .then(m => m.ADMIN_ROUTES)
+  // },
 
   {
     path: 'manager',
