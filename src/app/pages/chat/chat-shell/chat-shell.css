@@ -2,7 +2,6 @@
 
 .chat-container {
     display: flex;
-    /* --- SỬA CHỮA ĐỂ CHIẾM TOÀN BỘ KHU VỰC CHÍNH --- */
     width: 100%; 
     height: 100%;
     max-width: 100%; 
@@ -10,7 +9,6 @@
     border: none; 
     border-radius: 0; 
     box-shadow: none; 
-    /* ---------------------------------------------------- */
     overflow: hidden;
     background-color: #f7f7f7;
 }
@@ -27,8 +25,19 @@
 .chat-header {
     padding: 15px;
     border-bottom: 1px solid #eee;
-    background-color: #f8f8f8;
+    background-color: #fff; /* Đã sửa màu nền để khớp với combobox */
 }
+
+/* --- KHU VỰC COMBOBOX --- */
+.new-chat-dropdown-area {
+    padding: 0 15px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.partner-select-field {
+    width: 100%;
+}
+/* ------------------------ */
 
 .chat-header h3 {
     margin: 0;
@@ -124,19 +133,20 @@
     flex-grow: 1;
     padding: 20px 15px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column-reverse; 
+    /* KHÔNG DÙNG COLUMN-REVERSE */
+    display: flex; 
+    flex-direction: column; 
     height: 100%;
 }
 
 .message-bubble-wrapper {
     display: flex;
     margin-bottom: 10px;
-    justify-content: flex-start; /* Tin nhắn của người khác */
+    justify-content: flex-start; 
 }
 
 .message-bubble-wrapper.self-sent {
-    justify-content: flex-end; /* Tin nhắn của chính mình */
+    justify-content: flex-end; 
 }
 
 .message-bubble {
@@ -149,13 +159,13 @@
 }
 
 .message-bubble-wrapper:not(.self-sent) .message-bubble {
-    background-color: #ffffff; /* Màu nền tin nhắn đối tác */
+    background-color: #ffffff; 
     color: #333;
     border-bottom-left-radius: 2px;
 }
 
 .message-bubble-wrapper.self-sent .message-bubble {
-    background-color: #007bff; /* Màu nền tin nhắn của mình */
+    background-color: #007bff; 
     color: white;
     border-bottom-right-radius: 2px;
 }

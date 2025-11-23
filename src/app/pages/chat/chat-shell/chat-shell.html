@@ -1,8 +1,19 @@
 <div class="chat-container">
     <div class="chat-list-column">
         <header class="chat-header">
-            <h3>💬 Hộp thư</h3>
+            <h3>Danh sách đoạn chat</h3>
         </header>
+        <div class="new-chat-dropdown-area">
+            <mat-form-field appearance="outline" class="partner-select-field">
+                <mat-label>Bắt đầu chat với...</mat-label>
+                <mat-select [(ngModel)]="selectedPartnerId" (selectionChange)="onPartnerSelect($event.value)">
+                    <mat-option [value]="null">Chọn đối tác...</mat-option>
+                    <mat-option *ngFor="let partner of partnersToChat" [value]="partner.userId">
+                        {{ partner.fullName }} ({{ partner.role }})
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
         <div class="interaction-list">
             <p *ngIf="interactionList.length === 0 && !isLoadingList" class="empty-state">
                 Chưa có cuộc hội thoại nào.
@@ -28,7 +39,7 @@
                     </div>
                     <div class="bottom-row">
                         <p class="last-message">
-                            {{ interaction.lastMessageContent || 'Bắt đầu cuộc trò chuyện...' }}
+                            {{ truncateMessage(interaction.lastMessageContent, 40) || 'Bắt đầu cuộc trò chuyện...' }}
                         </p>
 
                         <span *ngIf="interaction.unreadCount > 0" class="unread-badge">
@@ -54,7 +65,7 @@
             <div class="messages-container" #messagesContainer (scroll)="onScroll($event)">
 
                 <div *ngIf="isLoadingMessages" class="loading-more">Đang tải tin nhắn cũ...</div>
-                <div *ngIf="!hasMoreMessages && !isLoadingMessages" class="end-of-chat">--- Bắt đầu cuộc trò chuyện ---
+                <div *ngIf="!hasMoreMessages && !isLoadingMessages" class="end-of-chat">không có cuộc trò chuyện cũ hơn
                 </div>
 
                 <div *ngFor="let message of messages" class="message-bubble-wrapper"
@@ -70,7 +81,7 @@
             <footer class="message-input-area">
                 <input type="text" placeholder="Nhập tin nhắn..." [(ngModel)]="newMessageContent"
                     (keyup.enter)="sendMessage(newMessageContent)" />
-                <button (click)="sendMessage(newMessageContent)" [disabled]="!newMessageContent?.trim()">
+                <button (click)="sendMessage(newMessageContent)" [disabled]="!newMessageContent.trim()">
                     <i class="fas fa-paper-plane"></i> Gửi
                 </button>
             </footer>

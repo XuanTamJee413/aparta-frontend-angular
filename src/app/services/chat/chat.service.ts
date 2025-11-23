@@ -5,12 +5,20 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 
+export interface PartnerDto {
+    userId: string;
+    fullName: string;
+    avatarUrl: string | null;
+    role: string;
+}
 export interface InitiateInteractionDto {
     interactionId: string;
     partnerId: string;
     partnerName: string;
 }
-
+export interface CreateAdHocInteractionDto {
+    partnerId: string;
+}
 export interface InteractionListDto {
     interactionId: string;
     partnerId: string;
@@ -28,7 +36,7 @@ export interface MessageDetailDto {
     sentAt: Date;
     isRead: boolean;
     // Bổ sung: để phân biệt tin nhắn đến từ SignalR có đúng interaction không
-    interactionId: string; 
+    interactionId: string;
 }
 
 export interface SendMessageDto {
@@ -41,11 +49,11 @@ export interface SendMessageDto {
 })
 export class ChatService {
     // Sử dụng đường dẫn tương đối hoặc base URL từ environment
-    private readonly apiUrl = '/api/Chat'; 
+    private readonly apiUrl = '/api/Chat';
     private hubConnection: signalR.HubConnection | undefined;
-    
-    private hubUrl: string = 'http://localhost:5175/chathub'; 
-    
+
+    private hubUrl: string = 'http://localhost:5175/chathub';
+
     public messageReceived = new Subject<MessageDetailDto>();
     public chatListUpdated = new Subject<void>();
 
@@ -60,9 +68,9 @@ export class ChatService {
 
         this.hubConnection = new signalR.HubConnectionBuilder()
             .withUrl(this.hubUrl, {
-                accessTokenFactory: () => token 
+                accessTokenFactory: () => token
             })
-            .withAutomaticReconnect() 
+            .withAutomaticReconnect()
             .build();
 
         this.hubConnection
@@ -79,18 +87,24 @@ export class ChatService {
 
     private addTransferDataListeners = () => {
         this.hubConnection?.on('ReceiveMessage', (message: MessageDetailDto) => {
-            this.messageReceived.next(message); 
+            this.messageReceived.next(message);
         });
 
         this.hubConnection?.on('UpdateChatList', () => {
-            this.chatListUpdated.next(); 
+            this.chatListUpdated.next();
         });
     }
 
     // ================== REST API CALLS ==================
-
-    initiateInteraction(): Observable<InitiateInteractionDto> {
-        return this.http.post<InitiateInteractionDto>(`${this.apiUrl}/initiate-interaction`, {});
+    /**
+     * GET: Tìm kiếm Staff hoặc Resident dựa trên Building ID.
+     * @param buildingId ID của tòa nhà liên quan đến người dùng hiện tại.
+     */
+    searchPartners(): Observable<PartnerDto[]> {
+        return this.http.get<PartnerDto[]>(`${this.apiUrl}/search-partners`);
+    }
+    createAdHocInteraction(dto: CreateAdHocInteractionDto): Observable<InitiateInteractionDto> { // <--- BỔ SUNG
+        return this.http.post<InitiateInteractionDto>(`${this.apiUrl}/create-interaction`, dto);
     }
 
     getInteractionList(): Observable<InteractionListDto[]> {
@@ -98,17 +112,17 @@ export class ChatService {
     }
 
     getMessages(
-        interactionId: string, 
-        pageNumber: number = 1, 
+        interactionId: string,
+        pageNumber: number = 1,
         pageSize: number = 10
     ): Observable<MessageDetailDto[]> {
-        
+
         let params = new HttpParams()
             .set('pageNumber', pageNumber.toString())
             .set('pageSize', pageSize.toString());
-            
+
         return this.http.get<MessageDetailDto[]>(
-            `${this.apiUrl}/interactions/${interactionId}/messages`, 
+            `${this.apiUrl}/interactions/${interactionId}/messages`,
             { params }
         );
     }

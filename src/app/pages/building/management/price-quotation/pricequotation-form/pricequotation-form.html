@@ -1,113 +1,121 @@
 <mat-card>
-  <mat-card-header>
-    <mat-card-title>
-      {{ isEditMode ? 'Cập nhật Đơn giá' : 'Thêm Đơn giá mới' }}
-    </mat-card-title>
-  </mat-card-header>
+<mat-card-header>
+<mat-card-title>
+{{ isEditMode ? 'Cập nhật Đơn giá' : 'Thêm Đơn giá mới' }}
+</mat-card-title>
+</mat-card-header>
 
-  <mat-card-content *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <form class="quotation-form">
-      
-      <!-- Hàng 1: Tên Phí & Tòa nhà -->
-      <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field-half">
-          <mat-label>Tên Phí (FeeType)</mat-label>
-          <input matInput formControlName="feeType" required placeholder="Ví dụ: Phí quản lý">
-          <mat-error *ngIf="form.get('feeType')?.hasError('required')">Tên phí là bắt buộc</mat-error>
-        </mat-form-field>
+<mat-card-content *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
+<form class="quotation-form">
 
-        <mat-form-field appearance="outline" class="form-field-half">
-          <mat-label>Tòa nhà (Building)</mat-label>
-          <mat-select formControlName="buildingId" required [disabled]="isEditMode">
-            <mat-option *ngFor="let building of buildings" [value]="building.buildingId">
-              {{ building.buildingCode }} - {{ building.name }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="form.get('buildingId')?.hasError('required')">Tòa nhà là bắt buộc</mat-error>
-        </mat-form-field>
-      </div>
+<div class="form-row">
+<mat-form-field appearance="outline" class="form-field-half">
+<mat-label>Tên Phí (FeeType)</mat-label>
+<input matInput formControlName="feeType" required placeholder="Ví dụ: Phí quản lý">
+<mat-error *ngIf="form.get('feeType')?.hasError('required')">Tên phí là bắt buộc</mat-error>
+</mat-form-field>
 
-      <!-- Hàng 2: Phương thức tính -->
-      <mat-form-field appearance="outline">
-        <mat-label>Phương thức tính (Calculation Method)</mat-label>
-        <mat-select formControlName="calculationMethod" required>
-          <mat-option *ngFor="let method of calcMethods" [value]="method.value">
-            <strong>{{ method.name }}</strong>
-            <span class="method-description"> - {{ method.description }}</span>
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="form.get('calculationMethod')?.hasError('required')">Phương thức tính là bắt buộc</mat-error>
-      </mat-form-field>
+<mat-form-field appearance="outline" class="form-field-half">
+<mat-label>Tòa nhà (Building)</mat-label>
+<mat-select formControlName="buildingId" required [disabled]="isEditMode">
+<mat-option *ngFor="let building of buildings" [value]="building.buildingId">
+{{ building.buildingCode }} - {{ building.name }}
+</mat-option>
+</mat-select>
+<mat-error *ngIf="form.get('buildingId')?.hasError('required')">Tòa nhà là bắt buộc</mat-error>
+</mat-form-field>
+</div>
 
-      <!-- Hàng 3: Đơn giá & Đơn vị (Ẩn khi là TIERED) -->
-      <div class="form-row" *ngIf="form.get('calculationMethod')?.value !== ECalcMethod.TIERED">
-        <mat-form-field appearance="outline" class="form-field-half">
-          <mat-label>Đơn giá (Unit Price)</mat-label>
-          <input matInput formControlName="unitPrice" type="number" required>
-          <mat-error *ngIf="form.get('unitPrice')?.hasError('required')">Đơn giá là bắt buộc</mat-error>
-          <mat-error *ngIf="form.get('unitPrice')?.hasError('min')">Đơn giá phải >= 0</mat-error>
-        </mat-form-field>
+<mat-form-field appearance="outline">
+<mat-label>Phương thức tính (Calculation Method)</mat-label>
+<mat-select formControlName="calculationMethod" required>
+<mat-option *ngFor="let method of calcMethods" [value]="method.value">
+<strong>{{ method.name }}</strong>
+<span class="method-description"> - {{ method.description }}</span>
+</mat-option>
+</mat-select>
+<mat-error *ngIf="form.get('calculationMethod')?.hasError('required')">Phương thức tính là bắt buộc</mat-error>
+</mat-form-field>
 
-        <mat-form-field appearance="outline" class="form-field-half">
-          <mat-label>Đơn vị (Unit)</mat-label>
-          <input matInput formControlName="unit" placeholder="Ví dụ: VND/m2, VND/kWh...">
-        </mat-form-field>
-      </div>
+<div class="form-row" *ngIf="form.get('calculationMethod')?.value !== ECalcMethod.TIERED">
+<mat-form-field appearance="outline" class="form-field-half">
+<mat-label>Đơn giá (Unit Price)</mat-label>
+<input matInput formControlName="unitPrice" type="number" required>
+<mat-error *ngIf="form.get('unitPrice')?.hasError('required')">Đơn giá là bắt buộc</mat-error>
+<mat-error *ngIf="form.get('unitPrice')?.hasError('min')">Đơn giá phải >= 0</mat-error>
+</mat-form-field>
 
-      <!-- Hàng 4: KHU VỰC LŨY TIẾN (Chỉ hiện khi là TIERED) -->
-      <div *ngIf="form.get('calculationMethod')?.value === ECalcMethod.TIERED" class="tiered-section">
-        <h4 class="tiered-title">Định nghĩa Bậc thang Lũy tiến</h4>
-        <div formArrayName="tiers">
-          <!-- Hàng tiêu đề -->
-          <div class="tier-row header">
-            <div class="tier-input">Từ (Số)</div>
-            <div class="tier-input">Đến (Số)</div>
-            <div class="tier-input">Đơn giá (VND)</div>
-            <div class="tier-action"></div>
-          </div>
-          <!-- Lặp qua các bậc giá -->
-          <div *ngFor="let tier of tiers.controls; let i=index" [formGroupName]="i" class="tier-row">
-            <!-- Từ -->
-            <mat-form-field appearance="outline" class="tier-input">
-              <input matInput formControlName="fromValue" type="number" required>
-            </mat-form-field>
-            <!-- Đến (null = vô cùng) -->
-            <mat-form-field appearance="outline" class="tier-input">
-              <input matInput formControlName="toValue" type="number" placeholder="Bỏ trống = vô cùng">
-            </mat-form-field>
-            <!-- Đơn giá -->
-            <mat-form-field appearance="outline" class="tier-input">
-              <input matInput formControlName="unitPrice" type="number" required>
-            </mat-form-field>
-            <!-- Nút Xóa -->
-            <div class="tier-action">
-              <button mat-icon-button color="warn" type="button" (click)="removeTier(i)" matTooltip="Xóa bậc">
-                <mat-icon>remove_circle_outline</mat-icon>
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- Nút Thêm bậc -->
-        <button mat-stroked-button color="primary" type="button" (click)="addTier()">
-          <mat-icon>add</mat-icon>
-          Thêm Bậc
-        </button>
-      </div>
+<mat-form-field appearance="outline" class="form-field-half">
+<mat-label>Đơn vị (Unit)</mat-label>
+<input matInput formControlName="unit" placeholder="Ví dụ: VND/m2, VND/kWh...">
+</mat-form-field>
+</div>
 
-    </form>
-  </mat-card-content>
+<mat-form-field appearance="outline" *ngIf="form.get('calculationMethod')?.value !== ECalcMethod.TIERED">
+<mat-label>Ghi chú (Note)</mat-label>
+<textarea matInput formControlName="noteText" rows="3" placeholder="Ghi chú thêm về đơn giá..."></textarea>
+</mat-form-field>
 
-  <!-- Trạng thái Loading (khi tải dữ liệu Edit) -->
-  <div *ngIf="isLoading" class="loading-spinner">
-    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
-  </div>
+<div *ngIf="form.get('calculationMethod')?.value === ECalcMethod.TIERED" class="tiered-section">
+<h4 class="tiered-title">Định nghĩa Bậc thang Lũy tiến</h4>
 
-  <!-- Nút bấm (Footer) -->
-  <mat-card-actions align="end" *ngIf="!isLoading">
-    <button mat-button type="button" (click)="goBack()">Hủy</button>
-    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="form.invalid || isSaving">
-      <span *ngIf="!isSaving">{{ isEditMode ? 'Lưu Cập nhật' : 'Tạo Đơn giá' }}</span>
-      <mat-progress-spinner *ngIf="isSaving" mode="indeterminate" diameter="20"></mat-progress-spinner>
-    </button>
-  </mat-card-actions>
+<mat-error *ngIf="tiers.errors?.['invalidTierStructure']" class="tier-error-main">
+Lỗi cấu trúc:
+<span *ngIf="tiers.errors?.['lastTierMustBeInfinite']">Bậc cuối cùng phải có giá trị 'Đến' là trống.</span>
+<span *ngIf="tiers.errors?.['discontinuity']">Cấu trúc bậc thang bị chồng chéo hoặc gián đoạn.</span>
+</mat-error>
+
+<div formArrayName="tiers">
+<div class="tier-row header">
+<div class="tier-input">Từ (Số)</div>
+<div class="tier-input">Đến (Số)</div>
+<div class="tier-input">Đơn giá (VND)</div>
+<div class="tier-action"></div>
+</div>
+<div *ngFor="let tier of tiers.controls; let i=index" [formGroupName]="i" class="tier-row">
+<mat-form-field appearance="outline" class="tier-input">
+<input matInput formControlName="fromValue" type="number" required>
+<mat-error *ngIf="tier.get('fromValue')?.hasError('required')">Bắt buộc</mat-error>
+<mat-error *ngIf="tier.get('fromValue')?.errors?.['discontinuity']">
+Phải lớn hơn {{ tier.get('fromValue')?.errors?.['requiredMin'] - 1 }}
+</mat-error>
+</mat-form-field>
+<mat-form-field appearance="outline" class="tier-input">
+<input matInput formControlName="toValue" type="number" placeholder="Bỏ trống = vô cùng">
+<mat-error *ngIf="tier.get('toValue')?.hasError('invalidRange')">
+Phải lớn hơn giá trị 'Từ' ở cùng bậc.
+</mat-error>
+</mat-form-field>
+<mat-form-field appearance="outline" class="tier-input">
+<input matInput formControlName="unitPrice" type="number" required>
+<mat-error *ngIf="tier.get('unitPrice')?.hasError('required')">Bắt buộc</mat-error>
+<mat-error *ngIf="tier.get('unitPrice')?.hasError('min')">Giá >= 0</mat-error>
+</mat-form-field>
+<div class="tier-action">
+<button mat-icon-button color="warn" type="button" (click)="removeTier(i)" matTooltip="Xóa bậc" [disabled]="tiers.length === 1">
+<mat-icon>remove_circle_outline</mat-icon>
+</button>
+</div>
+</div>
+</div>
+<button mat-stroked-button color="primary" type="button" (click)="addTier()">
+<mat-icon>add</mat-icon>
+Thêm Bậc
+</button>
+</div>
+
+</form>
+</mat-card-content>
+
+<div *ngIf="isLoading" class="loading-spinner">
+<mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+</div>
+
+<mat-card-actions align="end" *ngIf="!isLoading">
+<button mat-button type="button" (click)="goBack()">Hủy</button>
+<button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="form.invalid || isSaving">
+<span *ngIf="!isSaving">{{ isEditMode ? 'Lưu Cập nhật' : 'Tạo Đơn giá' }}</span>
+<mat-progress-spinner *ngIf="isSaving" mode="indeterminate" diameter="20"></mat-progress-spinner>
+</button>
+</mat-card-actions>
 </mat-card>
