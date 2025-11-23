@@ -38,6 +38,17 @@ export interface Apartment {
   code: string;
 }
 
+export interface ApartmentMemberUpdateDto {
+  name?: string | null;
+  phoneNumber?: string | null;
+  idNumber?: string | null;
+  dateOfBirth?: string | null;
+  gender?: string | null;
+  status?: string | null;
+  nationality?: string | null;
+  familyRole?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -70,12 +81,15 @@ export class ResidentManagementService {
     return this.http.get<ApiResponse<ApartmentMember[]>>(this.apiUrl, { params });
   }
 
-   getApartments(): Observable<ApiResponse<Apartment[]>> {
+  getApartments(): Observable<ApiResponse<Apartment[]>> {
+    return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
+  }
 
-      return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
-    }
-   getApartmentById(id: string): Observable<Apartment> {
+  getApartmentById(id: string): Observable<Apartment> {
     return this.http.get<Apartment>(`${this.apartmentApiUrl}/${id}`);
   }
 
+  updateMember(id: string, payload: ApartmentMemberUpdateDto): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, payload);
+  }
 }

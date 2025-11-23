@@ -54,6 +54,14 @@ header p { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
 .status-badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
 .status-rented { background-color: #dbeafe; color: #1e40af; }
 .status-available { background-color: #d1fae5; color: #065f46; }
+.status-maintenance {
+  background-color: #fff7e6;
+  color: #ad6800;
+}
+.status-closed {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
 .status-dot { height: 0.5rem; width: 0.5rem; margin-right: 0.375rem; margin-left: -0.125rem; }
 .status-rented .status-dot { color: #60a5fa; }
 .status-available .status-dot { color: #34d399; }

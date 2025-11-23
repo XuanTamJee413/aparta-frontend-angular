@@ -1,0 +1,97 @@
+<div class="contract-detail-wrapper">
+  <div class="breadcrumb">
+    <a routerLink="/manager/manage-contract">Danh sách hợp đồng</a>
+    <span>/</span>
+    <span>Chi tiết hợp đồng</span>
+  </div>
+
+  <div *ngIf="isLoading()" class="state state-loading">
+    Đang tải thông tin hợp đồng...
+  </div>
+
+  <div *ngIf="!isLoading() && errorMessage()" class="state state-error">
+    {{ errorMessage() }}
+  </div>
+
+  <div
+    *ngIf="!isLoading() && !errorMessage() && contract() as c"
+    class="card"
+  >
+    <div class="card-header">
+      <div>
+        <h1>Hợp đồng thuê căn hộ</h1>
+        <p class="subtitle">
+          Mã hợp đồng:
+          <strong>{{ c.contractId }}</strong>
+        </p>
+        <p class="subtitle">
+          Căn hộ:
+          <strong>{{ c.apartmentCode || c.apartmentId }}</strong>
+        </p>
+      </div>
+
+      <div class="actions">
+        <a
+          *ngIf="pdfUrl()"
+          [href]="pdfUrl()!"
+          target="_blank"
+          rel="noopener"
+          class="btn btn-outline"
+        >
+          Tải PDF
+        </a>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="section-title">Thông tin người thuê</div>
+
+      <div class="row">
+        <div class="label">Người thuê (Chủ hộ)</div>
+        <div class="value">{{ c.ownerName || '—' }}</div>
+      </div>
+
+      <div class="row">
+        <div class="label">Số điện thoại</div>
+        <div class="value">{{ c.ownerPhoneNumber || '—' }}</div>
+      </div>
+
+      <div class="row">
+        <div class="label">Email</div>
+        <div class="value">{{ c.ownerEmail || '—' }}</div>
+      </div>
+
+      <div class="section-title">Thời hạn hợp đồng</div>
+
+      <div class="row">
+        <div class="label">Ngày bắt đầu</div>
+        <div class="value">
+          {{ formatDate(c.startDate) }}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Ngày kết thúc</div>
+        <div class="value">
+          {{ c.endDate ? formatDate(c.endDate) : 'Không xác định' }}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Ngày tạo hợp đồng</div>
+        <div class="value">
+          {{ c.createdAt ? formatDate(c.createdAt) : '—' }}
+        </div>
+      </div>
+
+      <div class="row" *ngIf="c.image">
+        <div class="label">Tệp đính kèm</div>
+        <div class="value">
+          <a [href]="c.image!" target="_blank" rel="noopener">
+            Xem hợp đồng
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
