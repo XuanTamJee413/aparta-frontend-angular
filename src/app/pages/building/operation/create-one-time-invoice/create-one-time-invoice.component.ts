@@ -7,11 +7,12 @@ import { PriceQuotationService, PriceQuotationDto, ECalculationMethod } from '..
 import { ApartmentService, Apartment } from '../../../../services/building/apartment.service';
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
 import { UserService } from '../../../../services/user.service';
+import { ReceiptPreviewComponent } from './receipt-preview/receipt-preview.component';
 
 @Component({
   selector: 'app-create-one-time-invoice',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReceiptPreviewComponent],
   templateUrl: './create-one-time-invoice.component.html',
   styleUrls: ['./create-one-time-invoice.component.css']
 })
@@ -344,13 +345,5 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
       return false;
     }
     return this.apartments.some(a => a.code.toLowerCase() === this.apartmentSearchText.toLowerCase());
-  }
-
-  getCurrentDate(): string {
-    return new Date().toLocaleDateString('vi-VN');
-  }
-
-  viewEvidence(url: string): void {
-    window.open(url, '_blank');
   }
 }

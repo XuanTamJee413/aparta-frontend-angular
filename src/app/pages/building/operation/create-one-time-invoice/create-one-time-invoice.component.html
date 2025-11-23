@@ -239,80 +239,15 @@
 
       <!-- Right Column: Preview -->
       <div class="preview-column">
-        <div class="preview-card">
-          <div class="preview-header">
-            <div class="company-logo">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 21H21M5 21V7L12 3L19 7V21M9 9V21M15 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="company-info">
-              <h3>{{ selectedBuilding?.name || selectedBuilding?.buildingCode || 'Tòa nhà' }}</h3>
-              <p *ngIf="selectedBuilding?.buildingCode">Mã: {{ selectedBuilding?.buildingCode }}</p>
-            </div>
-          </div>
-
-          <div class="preview-title">PHIẾU THU TIỀN</div>
-
-          <div class="preview-date">
-            <p>Ngày thu: {{ getCurrentDate() }}</p>
-          </div>
-
-          <div class="preview-section">
-            <h4>Thông tin người nộp tiền</h4>
-            <div class="preview-info">
-              <p><strong>Họ tên:</strong> {{ payerName || '...' }}</p>
-              <p><strong>Địa chỉ căn hộ:</strong> {{ apartmentAddress || '...' }}</p>
-              <p><strong>Chi tiết phiếu thu:</strong></p>
-              <ul>
-                <li><strong>Loại phiếu thu:</strong> {{ itemDescription || '...' }}</li>
-                <li *ngIf="note"><strong>Ghi chú:</strong> {{ note }}</li>
-              </ul>
-            </div>
-          </div>
-
-          @if (itemDescription && amount > 0) {
-            <div class="preview-section">
-              <h4>Mô tả chi tiết</h4>
-              <table class="preview-table">
-                <thead>
-                  <tr>
-                    <th>Tên phí</th>
-                    <th>Đơn vị</th>
-                    <th>Đơn giá</th>
-                    <th>Thành tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{{ itemDescription }}</td>
-                    <td>1</td>
-                    <td>{{ formatNumber(amount) }} đ</td>
-                    <td>{{ formatNumber(amount) }} đ</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          }
-
-          <div class="preview-totals">
-            <p><strong>Tổng cộng:</strong> {{ formatCurrency(amount) }}</p>
-            <p><strong>Tổng thanh toán:</strong> {{ formatCurrency(amount) }}</p>
-          </div>
-
-          @if (imagePreviews.length > 0) {
-            <div class="preview-section">
-              <h4>Ảnh bằng chứng</h4>
-              <div class="preview-images">
-                @for (preview of imagePreviews; track $index) {
-                  <div class="preview-image-item">
-                    <img [src]="preview" [alt]="'Bằng chứng ' + ($index + 1)" (click)="viewEvidence(preview)">
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
+        <app-receipt-preview
+          [selectedBuilding]="selectedBuilding"
+          [payerName]="payerName"
+          [apartmentAddress]="apartmentAddress"
+          [itemDescription]="itemDescription"
+          [amount]="amount"
+          [note]="note"
+          [imagePreviews]="imagePreviews">
+        </app-receipt-preview>
       </div>
     </div>
   </div>
