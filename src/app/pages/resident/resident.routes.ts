@@ -5,6 +5,8 @@ import { InvoiceComponent } from './invoice/invoice.component';
 import { ChatComponent } from './chat/chat.component';
 import { BookServiceComponent } from './service/book-service.component/book-service.component';
 import { MyBookingsComponent } from './service/my-bookings.component/my-bookings.component';
+import { BookUtilityComponent } from './utility/book-utility.component/book-utility.component';
+import { MyUtilityBookingsComponent } from './utility/my-utility-bookings.component/my-utility-bookings.component';
 import { NewsListComponent } from './news/news.list.component/news.list.component';
 import { FacilityComponent } from './facility/facility.component';
 import { AnnouncementComponent } from './announcement/announcement.component';
@@ -38,6 +40,14 @@ export const RESIDENT_ROUTES: Routes = [
   {
     path: 'my-booking-service',
     component: MyBookingsComponent
+  },
+    {
+    path: 'booking-utility',
+    component: BookUtilityComponent
+  },
+  {
+    path: 'my-booking-utility',
+    component: MyUtilityBookingsComponent
   },
   {
     path: 'news',

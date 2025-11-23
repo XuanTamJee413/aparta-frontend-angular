@@ -151,26 +151,52 @@ export class TaskListComponent implements OnInit {
   }
 
   // Create Task
-  saveNewTask(): void {
+saveNewTask(): void {
     this.resetMessages();
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
       return;
     }
 
-    const dto: TaskCreateDto = {
-      serviceBookingId: null,
-      type: this.createForm.value.type,
-      description: this.createForm.value.description,
-      startDate: this.createForm.value.startDate || null,
-      endDate: this.createForm.value.endDate || null
+    const formVal = this.createForm.value;
+    
+    // --- LOGIC VALIDATE THỜI GIAN ---
+    const now = new Date();
+    const startDate = formVal.startDate ? new Date(formVal.startDate) : null;
+    const endDate = formVal.endDate ? new Date(formVal.endDate) : null;
+
+    // 1. Kiểm tra ngày bắt đầu không được trong quá khứ
+    if (startDate && startDate < now) {
+      this.dialogErrorMessage = "Ngày bắt đầu không thể ở trong quá khứ.";
+      return;
+    }
+
+    // 2. Kiểm tra ngày kết thúc không được trong quá khứ
+    if (endDate && endDate < now) {
+      this.dialogErrorMessage = "Ngày kết thúc không thể ở trong quá khứ.";
+      return;
+    }
+
+    // 3. Kiểm tra ngày bắt đầu phải trước ngày kết thúc
+    if (startDate && endDate && startDate >= endDate) {
+      this.dialogErrorMessage = "Ngày bắt đầu phải trước ngày kết thúc.";
+      return;
+    }
+    // -------------------------------
+
+    const createDto: TaskCreateDto = {
+      serviceBookingId: null, 
+      type: formVal.type,
+      description: formVal.description,
+      startDate: formVal.startDate || null,
+      endDate: formVal.endDate || null
     };
 
-    this.taskService.createTask(dto).subscribe({
+    this.taskService.createTask(createDto).subscribe({
       next: () => {
         this.loadTasks();
-        this.closeDialogs();
-        this.setSuccessMessage('Tạo công việc thành công!');
+        this.createDialog.nativeElement.close();
+        this.setSuccessMessage('Tạo công việc mới thành công!');
       },
       error: (err: HttpErrorResponse) => {
         this.dialogErrorMessage = err.error?.message || 'Lỗi khi tạo task.';

@@ -1,0 +1,120 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Quản lý Đặt Tiện Ích</h3>
+  </div>
+
+  <div *ngIf="pageSuccessMessage" class="alert alert-success">
+    {{ pageSuccessMessage }}
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="search">Tìm kiếm:</label>
+      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Tên cư dân, tiện ích...">
+    </div>
+
+    <div class="filter-group">
+      <label for="status">Trạng thái:</label>
+      <select id="status" [formControl]="statusFilterControl" (change)="onFilterChange()">
+        <option *ngFor="let o of statusOptions" [value]="o.value">{{ o.label }}</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" (click)="onSearch()">Tìm kiếm</button>
+  </div>
+
+  <div class="card-body">
+    <div class="loading" *ngIf="isLoading">Đang tải dữ liệu...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tiện Ích</th>
+          <th>Cư Dân</th>
+          <th>Bắt đầu</th>
+          <th>Kết Thúc</th>
+          <th>Trạng Thái</th>
+          <th>Ghi Chú Cư Dân</th>
+          <th>Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of bookings">
+          <td><strong>{{ b.utilityName }}</strong></td>
+          <td>{{ b.residentName }}</td>
+          <td>
+            {{ b.bookingDate | date:'dd/MM HH:mm' }}
+            <span class="text-danger" *ngIf="isExpired(b.bookingDate)"> (Hết hạn)</span>
+          </td>
+          <td>{{ b.bookedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="status-badge status-{{ b.status | lowercase }}">
+              {{ getStatusLabel(b.status) }}
+            </span>
+          </td>
+          <td class="note-cell">{{ b.residentNote || '—' }}</td>
+          <td class="action-cell">
+            <button class="btn btn-edit" (click)="openEditModal(b)"
+                    [disabled]="b.status === 'Cancelled' || b.status === 'Rejected'">
+              Cập nhật
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="!isLoading && bookings.length === 0" class="empty-row">
+          <td colspan="7">Không có đơn đặt tiện ích nào.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PHÂN TRANG ĐẸP -->
+  <div class="card-footer" *ngIf="totalPages > 1">
+    <div class="pagination-summary">
+      Hiển thị {{ bookings.length }} / {{ totalCount }} đơn
+    </div>
+    <div class="pagination-controls">
+      <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(1)">«</button>
+      <button class="btn-page" [disabled]="!hasPreviousPage" (click)="onPageChange(currentPage - 1)">‹</button>
+      <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+      <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">›</button>
+      <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(totalPages)">»</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIALOG CẬP NHẬT -->
+<dialog #bookingDialog class="modern-dialog" (close)="closeDialog()">
+  <form [formGroup]="bookingForm" (ngSubmit)="saveBooking()" class="dialog-form">
+    <div class="form-header">
+      <h3>Cập nhật trạng thái đặt chỗ</h3>
+      <button type="button" class="btn-close" (click)="closeDialog()">×</button>
+    </div>
+
+    <div class="form-body">
+      <div class="form-group">
+        <label>Trạng thái</label>
+        <select formControlName="status">
+          <option *ngFor="let o of dialogStatusOptions" [value]="o.value">
+            {{ o.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Ghi chú của nhân viên (gửi cư dân)</label>
+        <textarea formControlName="staffNote" rows="4" placeholder="VD: Đã xác nhận, vui lòng đến quầy lễ tân nhận thẻ..."></textarea>
+      </div>
+    </div>
+
+    <div *ngIf="dialogErrorMessage" class="form-error-summary">
+      {{ dialogErrorMessage }}
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-cancel" (click)="closeDialog()">Hủy</button>
+      <button type="submit" class="btn btn-save" [disabled]="bookingForm.invalid">
+        Lưu thay đổi
+      </button>
+    </div>
+  </form>
+</dialog>
