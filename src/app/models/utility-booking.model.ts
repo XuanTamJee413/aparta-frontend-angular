@@ -44,3 +44,8 @@ export interface UtilityBookingUpdateDto {
   status: string;
   staffNote?: string | null;
 }
+
+export interface BookedSlotDto {
+  start: string;
+  end: string;
+}

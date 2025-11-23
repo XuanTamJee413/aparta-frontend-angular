@@ -48,7 +48,11 @@ export class UtilityBookingManagementComponent implements OnInit {
   ];
 
   // Các trạng thái Staff có thể chọn trong Dialog
-  dialogStatusOptions = this.statusOptions.filter(o => o.value !== '');
+ dialogStatusOptions = this.statusOptions.filter(o => 
+  o.value !== '' && 
+  o.value !== 'Pending' && 
+  o.value !== 'Cancelled' // <-- Thêm dòng này nếu muốn chặn Staff chọn Hủy
+);
 
   // Messages
   pageSuccessMessage: string | null = null;
@@ -107,6 +111,15 @@ export class UtilityBookingManagementComponent implements OnInit {
 
   // --- Update Status ---
   openEditModal(booking: UtilityBookingDto): void {
+    if (booking.status === 'Cancelled') {
+      alert('Đơn này đã bị hủy, không thể cập nhật.');
+      return;
+    }
+
+    if (this.isExpired(booking.bookingDate)) {
+      alert('Đơn này đã quá thời gian bắt đầu, không thể cập nhật.');
+      return;
+    }
     this.resetMessages();
     this.currentBookingId = booking.utilityBookingId;
     

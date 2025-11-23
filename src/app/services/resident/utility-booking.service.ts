@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { UtilityBookingCreateDto, UtilityBookingDto } from '../../models/utility-booking.model';
+import { BookedSlotDto, UtilityBookingCreateDto, UtilityBookingDto } from '../../models/utility-booking.model';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +25,12 @@ export class UtilityBookingService {
     return this.http.get<UtilityBookingDto[]>(`${this.apiUrl}/my`);
   }
   
- cancelBooking(id: string): Observable<void> {
+  cancelBooking(id: string): Observable<void> {
   return this.http.put<void>(`${this.apiUrl}/${id}/cancel`, {});
-}
+  }
+
+  getBookedSlots(utilityId: string, date: string): Observable<BookedSlotDto[]> {
+  // date format: YYYY-MM-DD
+  return this.http.get<BookedSlotDto[]>(`${this.apiUrl}/slots?utilityId=${utilityId}&date=${date}`);
+  }
 }

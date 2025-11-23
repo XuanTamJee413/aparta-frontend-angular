@@ -27,11 +27,25 @@
     </div>
 
     <div class="form-body">
+      
       <div class="form-group">
         <label>Thời gian bắt đầu</label>
-        <input type="datetime-local" formControlName="bookingDate">
+        <input type="datetime-local" 
+               formControlName="bookingDate" 
+               #startDateInput
+               (change)="onDateChange(startDateInput.value)">
       </div>
 
+      <div class="busy-slots-container" *ngIf="bookedSlots.length > 0">
+        <label class="text-danger">⚠️ Các khung giờ đã bị đặt trong ngày {{ selectedDate }}:</label>
+        <ul class="busy-list">
+          <li *ngFor="let slot of bookedSlots">
+            {{ slot.start | date:'HH:mm' }} - {{ slot.end | date:'HH:mm' }}
+          </li>
+        </ul>
+        <small class="text-muted">Vui lòng tránh các khung giờ trên.</small>
+      </div>
+      
       <div class="form-group">
         <label>Thời gian kết thúc</label>
         <input type="datetime-local" formControlName="bookedAt">
@@ -74,4 +88,32 @@
   .form-footer { display: flex; justify-content: flex-end; gap: 10px; }
   .btn-save { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
   .btn-cancel { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+  .busy-slots-container {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.busy-list {
+  margin: 5px 0;
+  padding-left: 20px;
+  font-weight: bold;
+  color: #856404;
+}
+
+.text-danger {
+  color: #dc3545;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.text-muted {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9em;
+}
 </style>

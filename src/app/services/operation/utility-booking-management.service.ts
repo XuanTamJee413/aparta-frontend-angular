@@ -37,7 +37,6 @@ export class UtilityBookingManagementService {
     return this.http.put<UtilityBookingDto>(`${this.apiUrl}/${id}`, dto);
   }
 
-  cancelBooking(id: string): Observable<void> {
-  return this.http.put<void>(`${this.apiUrl}/${id}/cancel`, {});
-} 
+  // (Optional) Xóa booking nếu cần thiết
+  // deleteBooking(...) 
 }

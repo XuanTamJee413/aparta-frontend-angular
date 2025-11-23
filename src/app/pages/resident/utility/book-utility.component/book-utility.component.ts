@@ -5,13 +5,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 // Import Models
 import { UtilityDto } from '../../../../models/utility.model';
-import { UtilityBookingCreateDto, UtilityQueryParameters } from '../../../../models/utility-booking.model';
-
-import { UtilityService } from '../../../../services/operation/utility.service';
-import { UtilityBookingService } from '../../../../services/resident/utility-booking.service';
+import { BookedSlotDto, UtilityBookingCreateDto, UtilityQueryParameters } from '../../../../models/utility-booking.model';
 
 // Import Services
-
+import { UtilityService } from '../../../../services/operation/utility.service';
+import { UtilityBookingService } from '../../../../services/resident/utility-booking.service'; 
 
 @Component({
   selector: 'app-book-utility',
@@ -32,14 +30,18 @@ export class BookUtilityComponent implements OnInit {
   pageSuccessMessage: string | null = null;
   dialogErrorMessage: string | null = null;
 
+  // Thêm biến cho logic hiển thị slot bận
+  bookedSlots: BookedSlotDto[] = []; 
+  selectedDate: string = '';
+
   constructor(
     private utilityService: UtilityService,
     private bookingService: UtilityBookingService,
     private fb: FormBuilder
   ) {
     this.bookingForm = this.fb.group({
-      bookingDate: ['', Validators.required], // Giờ bắt đầu
-      bookedAt: ['', Validators.required],    // Giờ kết thúc
+      bookingDate: ['', Validators.required], 
+      bookedAt: ['', Validators.required],    
       residentNote: ['']
     });
   }
@@ -49,7 +51,6 @@ export class BookUtilityComponent implements OnInit {
   }
 
   loadAvailableUtilities(): void {
-    // Lấy tất cả tiện ích đang "Available"
     const params: UtilityQueryParameters = {
       pageNumber: 1,
       pageSize: 100,
@@ -68,21 +69,45 @@ export class BookUtilityComponent implements OnInit {
     this.selectedUtility = utility;
     this.dialogErrorMessage = null;
     this.pageSuccessMessage = null;
+    this.bookedSlots = []; // Reset slot cũ
     
-    // Reset form, đặt giờ mặc định là hiện tại
     const nowStr = this.getLocalIsoString(new Date());
+    // Lấy phần ngày (YYYY-MM-DD) để load slot bận ngay lập tức
+    const todayStr = nowStr.split('T')[0]; 
+    
     this.bookingForm.reset({
       bookingDate: nowStr,
       bookedAt: nowStr,
       residentNote: ''
     });
     
+    // Load slot bận cho ngày hôm nay
+    this.onDateChange(nowStr);
+
     this.dialog.nativeElement.showModal();
   }
 
   closeDialog(): void {
     this.dialog.nativeElement.close();
     this.selectedUtility = null;
+  }
+
+  // --- LOGIC MỚI: Lấy danh sách giờ bận khi chọn ngày ---
+  onDateChange(dateInput: string): void {
+    if (!dateInput || !this.selectedUtility) return;
+
+    // dateInput có dạng "2025-11-24T08:00" -> Lấy "2025-11-24"
+    const dateStr = dateInput.split('T')[0];
+
+    // Chỉ gọi API nếu ngày thay đổi
+    if (dateStr !== this.selectedDate) {
+      this.selectedDate = dateStr;
+      this.bookingService.getBookedSlots(this.selectedUtility.utilityId, dateStr)
+        .subscribe({
+          next: (slots) => this.bookedSlots = slots,
+          error: () => this.bookedSlots = []
+        });
+    }
   }
 
   submitBooking(): void {
@@ -95,7 +120,6 @@ export class BookUtilityComponent implements OnInit {
 
     const val = this.bookingForm.value;
     
-    // Validate cơ bản ở frontend: Kết thúc phải sau Bắt đầu
     if (new Date(val.bookedAt) <= new Date(val.bookingDate)) {
       this.dialogErrorMessage = "Thời gian kết thúc phải sau thời gian bắt đầu.";
       return;
@@ -103,10 +127,13 @@ export class BookUtilityComponent implements OnInit {
 
     this.isLoading = true;
 
+    // 1. LƯU TÊN TIỆN ÍCH RA BIẾN TẠM (SỬA LỖI undefined)
+    const utilityName = this.selectedUtility.name;
+
     const dto: UtilityBookingCreateDto = {
       utilityId: this.selectedUtility.utilityId,
-      bookingDate: new Date(val.bookingDate).toISOString(),
-      bookedAt: new Date(val.bookedAt).toISOString(),
+      bookingDate: this.toLocalISOString(val.bookingDate),
+      bookedAt: this.toLocalISOString(val.bookedAt),
       residentNote: val.residentNote
     };
 
@@ -114,21 +141,27 @@ export class BookUtilityComponent implements OnInit {
       next: () => {
         this.isLoading = false;
         this.closeDialog();
-        this.pageSuccessMessage = `Đã gửi yêu cầu đặt "${this.selectedUtility?.name}" thành công!`;
+        // 2. DÙNG BIẾN TẠM
+        this.pageSuccessMessage = `Đã gửi yêu cầu đặt ${utilityName} thành công!`;
         setTimeout(() => this.pageSuccessMessage = null, 3000);
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
-        // Hiển thị lỗi từ Backend (ví dụ: trùng giờ, quá thời gian quy định...)
         this.dialogErrorMessage = err.error?.message || 'Lỗi khi đặt tiện ích.';
       }
     });
   }
 
-  // Helper: Lấy chuỗi ISO local để gán vào input type="datetime-local"
   private getLocalIsoString(date: Date): string {
-    const offset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+    const offset = date.getTimezoneOffset() * 60000; 
     const localISOTime = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
     return localISOTime;
+  }
+
+  private toLocalISOString(dateInput: string): string {
+    const date = new Date(dateInput);
+    const tzOffset = date.getTimezoneOffset() * 60000; 
+    const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString();
+    return localISOTime.slice(0, -1); 
   }
 }
