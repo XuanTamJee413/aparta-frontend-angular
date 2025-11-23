@@ -1,8 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { News, NewsService } from '../../../../services/building/news.service';
-
 
 @Component({
   selector: 'app-news-list',
@@ -13,13 +11,13 @@ import { News, NewsService } from '../../../../services/building/news.service';
 })
 export class NewsListComponent implements OnInit {
 
+  @ViewChild('newsDialog') dialog!: ElementRef<HTMLDialogElement>;
+
   newsList: News[] = [];
   loading = true;
+  selectedNews: News | null = null;
 
-  constructor(
-    private newsService: NewsService,
-    private router: Router
-  ) {}
+  constructor(private newsService: NewsService) {}
 
   ngOnInit(): void {
     this.loadNews();
@@ -37,12 +35,33 @@ export class NewsListComponent implements OnInit {
     });
   }
 
-  getPriority(status: string | null): string {
-    if (!status) return 'medium';
-    return status.toLowerCase(); // high/medium/low
+  // Cắt nội dung ngắn gọn
+  truncateContent(content: string | null | undefined, length: number = 50): string {
+    if (!content) return 'Không có nội dung';
+    return content.length > length ? content.substring(0, length) + '...' : content;
   }
 
-  viewDetail(id: string) {
-    this.router.navigate(['/news', id]);
+  // Mở dialog chi tiết
+  openDetail(news: News): void {
+    this.selectedNews = news;
+    this.dialog.nativeElement.showModal();
   }
+
+  // Đóng dialog
+  closeDialog(): void {
+    this.dialog.nativeElement.close();
+    this.selectedNews = null;
+  }
+
+formatDate(date: string | Date | null | undefined): string {
+  if (!date) return 'Chưa có ngày';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return 'Ngày không hợp lệ';
+  
+  return d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+}
 }

@@ -1,0 +1,119 @@
+<div class="container">
+  <h2>Đăng Ký Tiện Ích</h2>
+
+  <div *ngIf="pageSuccessMessage" class="alert alert-success">
+    {{ pageSuccessMessage }}
+  </div>
+
+  <div class="utility-grid">
+    <div *ngFor="let u of utilities" class="utility-card">
+      <h3>{{ u.name }}</h3>
+      <p><strong>Vị trí:</strong> {{ u.location }}</p>
+      <p><strong>Thời gian tối đa:</strong> {{ u.periodTime }} giờ/lần</p>
+      <button class="btn-book" (click)="openBookingModal(u)">Đặt Ngay</button>
+    </div>
+    
+    <div *ngIf="utilities.length === 0" class="empty-msg">
+      Không có tiện ích nào đang hoạt động.
+    </div>
+  </div>
+</div>
+
+<dialog #bookingDialog (close)="closeDialog()">
+  <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()">
+    <div class="form-header">
+      <h3>Đặt: {{ selectedUtility?.name }}</h3>
+      <button type="button" class="btn-close" (click)="closeDialog()">×</button>
+    </div>
+
+    <div class="form-body">
+      
+      <div class="form-group">
+        <label>Thời gian bắt đầu</label>
+        <input type="datetime-local" 
+               formControlName="bookingDate" 
+               #startDateInput
+               (change)="onDateChange(startDateInput.value)">
+      </div>
+
+      <div class="busy-slots-container" *ngIf="bookedSlots.length > 0">
+        <label class="text-danger">⚠️ Các khung giờ đã bị đặt trong ngày {{ selectedDate }}:</label>
+        <ul class="busy-list">
+          <li *ngFor="let slot of bookedSlots">
+            {{ slot.start | date:'HH:mm' }} - {{ slot.end | date:'HH:mm' }}
+          </li>
+        </ul>
+        <small class="text-muted">Vui lòng tránh các khung giờ trên.</small>
+      </div>
+      
+      <div class="form-group">
+        <label>Thời gian kết thúc</label>
+        <input type="datetime-local" formControlName="bookedAt">
+      </div>
+
+      <div class="form-group">
+        <label>Ghi chú (Mục đích sử dụng)</label>
+        <textarea formControlName="residentNote" rows="3" placeholder="Ví dụ: Tổ chức sinh nhật..."></textarea>
+      </div>
+    </div>
+
+    <div *ngIf="dialogErrorMessage" class="form-error">
+      {{ dialogErrorMessage }}
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn-cancel" (click)="closeDialog()">Hủy</button>
+      <button type="submit" class="btn-save" [disabled]="isLoading || bookingForm.invalid">
+        {{ isLoading ? 'Đang gửi...' : 'Xác nhận Đặt' }}
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+  /* CSS Đơn giản */
+  .utility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+  .utility-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .utility-card h3 { margin-top: 0; color: #333; }
+  .btn-book { background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+  .btn-book:hover { background-color: #0056b3; }
+  
+  dialog { border: none; border-radius: 8px; padding: 20px; width: 90%; max-width: 500px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  dialog::backdrop { background: rgba(0,0,0,0.5); }
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+  .form-group input, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+  .form-error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+  .alert-success { color: #155724; background-color: #d4edda; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+  .form-footer { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-save { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+  .btn-cancel { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+  .busy-slots-container {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.busy-list {
+  margin: 5px 0;
+  padding-left: 20px;
+  font-weight: bold;
+  color: #856404;
+}
+
+.text-danger {
+  color: #dc3545;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.text-muted {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9em;
+}
+</style>

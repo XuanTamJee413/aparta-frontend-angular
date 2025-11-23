@@ -66,6 +66,12 @@ export const MANAGER_ROUTES: Routes = [
       .then(m => m.BookingManagementComponent),
     title: 'Quản lý Đặt Dịch Vụ'
   },
+    {
+    path: 'utility-bookings', 
+    loadComponent: () => import('./operation/utility-booking-management.component/utility-booking-management.component') 
+      .then(m => m.UtilityBookingManagementComponent),
+    title: 'Quản lý Đặt Tiện Ích'
+  },
   {
     path: 'manage-task',
     loadComponent: () => import('./operation/task-list.component/task-list.component')
