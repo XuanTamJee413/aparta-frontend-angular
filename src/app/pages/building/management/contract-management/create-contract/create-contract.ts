@@ -138,6 +138,9 @@ export class CreateContract implements OnInit {
   }
 
   onSubmit(): void {
+     if (this.isSubmitting()) {
+    return;
+  }
   if (this.contractForm.invalid) {
     this.contractForm.markAllAsTouched();
     return;
