@@ -21,6 +21,7 @@ import { ContractList } from './management/contract-management/contract-list/con
 import { CreateContract } from './management/contract-management/create-contract/create-contract';
 import { ContractDetail } from './management/contract-management/contract-detail/contract-detail.component';
 import { UpdateContract } from './management/contract-management/update-contract/update-contract';
+import { ChatShellComponent } from '../chat/chat-shell/chat-shell';
 
 
 export const MANAGER_ROUTES: Routes = [
@@ -32,7 +33,7 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-contract', component: ContractList },
   { path: 'manage-contract/create', component: CreateContract },
   { path: 'manage-contract/detail/:id', component: ContractDetail },
-   { path: 'manage-contract/update/:id', component: UpdateContract },
+  { path: 'manage-contract/update/:id', component: UpdateContract },
   { path: 'manage-asset', component: AssetList },
   { path: 'manage-asset/create', component: CreateAsset },
   { path: 'manage-asset/edit/:id', component: EditAsset },
@@ -61,8 +62,8 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-service', loadComponent: () => import('./operation/service-list.component/service-list.component').then(m => m.ServiceListComponent), title: 'Quản lý Dịch vụ' },
   { path: 'manage-utility', loadComponent: () => import('./operation/utility-list.component/utility-list.component').then(m => m.UtilityListComponent), title: 'Quản lý Tiện ích' },
   {
-    path: 'service-bookings', 
-    loadComponent: () => import('./operation/booking-management.component/booking-management.component') 
+    path: 'service-bookings',
+    loadComponent: () => import('./operation/booking-management.component/booking-management.component')
       .then(m => m.BookingManagementComponent),
     title: 'Quản lý Đặt Dịch Vụ'
   },
@@ -74,7 +75,10 @@ export const MANAGER_ROUTES: Routes = [
   },
   { path: 'meter-reading-form', canActivate: [permissionGuard(['meterreading.read', 'meterreading.create'])], loadComponent: () => import('./operation/meter-reading-form/meter-reading-form.component').then(m => m.MeterReadingFormComponent), title: 'Nhập chỉ số điện nước' },
   { path: 'meter-reading-status', canActivate: [permissionGuard(['meterreading.read.status'])], loadComponent: () => import('./operation/meter-reading-status/meter-reading-status.component').then(m => m.MeterReadingStatusComponent), title: 'Báo cáo Tình trạng Ghi chỉ số' },
-
+  {
+    path: 'chat',
+    component: ChatShellComponent,
+  },
   // --- END OPERATION  ---
 
   { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }

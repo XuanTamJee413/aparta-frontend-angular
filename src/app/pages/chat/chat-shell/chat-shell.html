@@ -1,0 +1,86 @@
+<div class="chat-container">
+    <div class="chat-list-column">
+        <header class="chat-header">
+            <h3>💬 Hộp thư</h3>
+        </header>
+        <div class="interaction-list">
+            <p *ngIf="interactionList.length === 0 && !isLoadingList" class="empty-state">
+                Chưa có cuộc hội thoại nào.
+            </p>
+            <p *ngIf="isLoadingList" class="empty-state">
+                Đang tải danh sách...
+            </p>
+
+            <div *ngFor="let interaction of interactionList" class="interaction-item"
+                [class.active]="interaction.interactionId === selectedInteraction?.interactionId"
+                (click)="selectInteraction(interaction)">
+
+                <div class="avatar-sm"
+                    [style.background-image]="'url(' + (interaction.partnerAvatarUrl || 'assets/default-avatar.png') + ')'">
+                </div>
+
+                <div class="interaction-info">
+                    <div class="top-row">
+                        <span class="partner-name">{{ interaction.partnerName }}</span>
+                        <span class="timestamp">
+                            {{ interaction.lastMessageSentAt | date:'shortTime' }}
+                        </span>
+                    </div>
+                    <div class="bottom-row">
+                        <p class="last-message">
+                            {{ interaction.lastMessageContent || 'Bắt đầu cuộc trò chuyện...' }}
+                        </p>
+
+                        <span *ngIf="interaction.unreadCount > 0" class="unread-badge">
+                            {{ interaction.unreadCount }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-window-column">
+        <ng-container *ngIf="selectedInteraction; else noChatSelected">
+            <header class="chat-header chat-header-details">
+                <div class="partner-info">
+                    <div class="avatar-sm partner-avatar"
+                        [style.background-image]="'url(' + (selectedInteraction.partnerAvatarUrl || 'assets/default-avatar.png') + ')'">
+                    </div>
+                    <h4>{{ selectedInteraction.partnerName }}</h4>
+                </div>
+            </header>
+
+            <div class="messages-container" #messagesContainer (scroll)="onScroll($event)">
+
+                <div *ngIf="isLoadingMessages" class="loading-more">Đang tải tin nhắn cũ...</div>
+                <div *ngIf="!hasMoreMessages && !isLoadingMessages" class="end-of-chat">--- Bắt đầu cuộc trò chuyện ---
+                </div>
+
+                <div *ngFor="let message of messages" class="message-bubble-wrapper"
+                    [class.self-sent]="message.senderId === currentUserId">
+
+                    <div class="message-bubble">
+                        <p class="message-content">{{ message.content }}</p>
+                        <span class="message-time">{{ message.sentAt | date:'HH:mm' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="message-input-area">
+                <input type="text" placeholder="Nhập tin nhắn..." [(ngModel)]="newMessageContent"
+                    (keyup.enter)="sendMessage(newMessageContent)" />
+                <button (click)="sendMessage(newMessageContent)" [disabled]="!newMessageContent?.trim()">
+                    <i class="fas fa-paper-plane"></i> Gửi
+                </button>
+            </footer>
+        </ng-container>
+
+        <ng-template #noChatSelected>
+            <div class="empty-chat-state">
+                Chọn một cuộc hội thoại từ danh sách để bắt đầu chat.
+            </div>
+        </ng-template>
+
+    </div>
+</div>

@@ -15,6 +15,7 @@ import { RegisterVehicle } from './vehicle/register-vehicle/register-vehicle.com
 import { MyInvoiceDetailComponent } from './invoice/my-invoice-detail/my-invoice-detail.component';
 import { permissionGuard } from '../../guards/permission.guard';
 import { authCanActivate } from '../../guards/auth.guard';
+import { ChatShellComponent } from '../chat/chat-shell/chat-shell';
 
 export const RESIDENT_ROUTES: Routes = [
     {
@@ -60,16 +61,16 @@ export const RESIDENT_ROUTES: Routes = [
     component: FacilityComponent
   },
   {
-    path: 'chat',
-    component: ChatComponent
-  },
-  {
     path: 'profile',
     component: ProfileComponent
   },
   {
     path: 'editprofile',
     component: EditProfileComponent
+  },
+  {
+    path: 'chat',
+    component: ChatShellComponent
   },
   {
     path: '',

@@ -15,60 +15,65 @@ export const routes: Routes = [
     pathMatch: 'full',
     redirectTo: 'login'
   },
-  
+
   {
     path: 'login',
     component: LoginComponent,
     canActivate: [authCanActivate],
   },
-  
+
   {
     path: 'auth/forgot-password',
     component: ForgotPasswordComponent,
   },
-  
+
   {
     path: 'auth/login',
     component: LoginComponent,
     canActivate: [authCanActivate],
   },
-  
+
   {
     path: 'reset-password',
     component: ResetPasswordComponent,
   },
-  
+
   {
     path: 'forbidden',
     loadComponent: () => import('./pages/common/forbidden/forbidden').then(m => m.Forbidden)
   },
-  
+
   {
     path: 'admin',
-    component: AdminLayout, 
-    canActivate: [authCanActivate, roleCanActivate(['admin','custom'])],
+    component: AdminLayout,
+    canActivate: [authCanActivate, roleCanActivate(['admin', 'custom'])],
     loadChildren: () => import('./pages/admin/admin.routes')
       .then(m => m.ADMIN_ROUTES)
   },
 
   {
     path: 'manager',
-    component: ManagerLayout, 
-    canActivate: [authCanActivate, roleCanActivate(['staff','admin','custom'])],
+    component: ManagerLayout,
+    canActivate: [authCanActivate, roleCanActivate(['staff', 'admin', 'custom'])],
     loadChildren: () => import('./pages/building/building.routes')
       .then(m => m.MANAGER_ROUTES)
   },
-  
+  // {
+  //   path: 'chat',
+  //   //canActivate: [authCanActivate, roleCanActivate(['resident', 'staff', 'admin', 'custom'])],
+  //   loadChildren: () => import('./pages/chat/chat.routes')
+  //     .then(m => m.CHAT_ROUTES)
+  // },
   {
-    path: '', 
-    component: ResidentLayoutComponent, 
-    canActivate: [authCanActivate, roleCanActivate(['resident','admin','custom'])],
+    path: '',
+    component: ResidentLayoutComponent,
+    canActivate: [authCanActivate, roleCanActivate(['resident', 'admin', 'custom'])],
     loadChildren: () => import('./pages/resident/resident.routes')
       .then(m => m.RESIDENT_ROUTES)
   },
-  
+
   {
-    path: '**', 
+    path: '**',
     component: NotFound,
     pathMatch: 'full'
   }
