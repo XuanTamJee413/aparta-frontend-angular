@@ -11,61 +11,52 @@
       <div class="form-grid">
         <div class="form-group full-width">
           <label for="apartmentId">Căn hộ</label>
-          <select
-            id="apartmentId"
-            formControlName="apartmentId"
-            [class.is-invalid]="isInvalid('apartmentId')"
-          >
+          <select id="apartmentId" formControlName="apartmentId" [class.is-invalid]="isInvalid('apartmentId')">
             <option [ngValue]="null" disabled>
               {{ apartmentsLoading() ? 'Đang tải...' : '--- Chọn căn hộ ---' }}
             </option>
 
             @if (apartmentsError()) {
-              <option [ngValue]="null" disabled>{{ apartmentsError() }}</option>
+            <option [ngValue]="null" disabled>{{ apartmentsError() }}</option>
             } @else {
-              @for (apt of availableApartments(); track apt.apartmentId) {
-                <option [value]="apt.apartmentId">{{ apt.code }}</option>
-              }
+            @for (apt of availableApartments(); track apt.apartmentId) {
+            <option [value]="apt.apartmentId">{{ apt.code }}</option>
+            }
             }
           </select>
           @if (isInvalid('apartmentId')) {
-            <div class="invalid-feedback">Vui lòng chọn căn hộ.</div>
+          <div class="invalid-feedback">Vui lòng chọn căn hộ.</div>
           }
 
           @if (!apartmentsLoading() && !apartmentsError() && availableApartments().length === 0) {
-            <div class="help-text">Hiện không còn căn hộ nào trống.</div>
+          <div class="help-text">Hiện không còn căn hộ nào trống.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="startDate">Ngày bắt đầu</label>
-          <input
-            type="date"
-            id="startDate"
-            formControlName="startDate"
-            [class.is-invalid]="isInvalid('startDate')"
-          >
-          @if (contractForm.get('startDate')?.errors?.['required'] && (contractForm.get('startDate')?.dirty || contractForm.get('startDate')?.touched)) {
-            <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
+          <input type="date" id="startDate" formControlName="startDate" [class.is-invalid]="isInvalid('startDate')">
+          @if (contractForm.get('startDate')?.errors?.['required'] && (contractForm.get('startDate')?.dirty ||
+          contractForm.get('startDate')?.touched)) {
+          <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
           }
-          @if (contractForm.get('startDate')?.errors?.['notFutureDate'] && (contractForm.get('startDate')?.dirty || contractForm.get('startDate')?.touched)) {
-            <div class="invalid-feedback">Ngày bắt đầu phải lớn hơn ngày hiện tại.</div>
+          @if (contractForm.get('startDate')?.errors?.['notFutureDate'] && (contractForm.get('startDate')?.dirty ||
+          contractForm.get('startDate')?.touched)) {
+          <div class="invalid-feedback">Ngày bắt đầu phải lớn hơn ngày hiện tại.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="endDate">Ngày kết thúc</label>
-          <input
-            type="date"
-            id="endDate"
-            formControlName="endDate"
-            [class.is-invalid]="isInvalid('endDate') || contractForm.errors?.['endBeforeOrEqualStart']"
-          >
-          @if (contractForm.get('endDate')?.errors?.['required'] && (contractForm.get('endDate')?.dirty || contractForm.get('endDate')?.touched)) {
-            <div class="invalid-feedback">Vui lòng chọn ngày kết thúc.</div>
+          <input type="date" id="endDate" formControlName="endDate"
+            [class.is-invalid]="isInvalid('endDate') || contractForm.errors?.['endBeforeOrEqualStart']">
+          @if (contractForm.get('endDate')?.errors?.['required'] && (contractForm.get('endDate')?.dirty ||
+          contractForm.get('endDate')?.touched)) {
+          <div class="invalid-feedback">Vui lòng chọn ngày kết thúc.</div>
           }
-          @if (contractForm.errors?.['endBeforeOrEqualStart'] && (contractForm.get('endDate')?.dirty || contractForm.get('endDate')?.touched)) {
-            <div class="invalid-feedback">Ngày kết thúc phải lớn hơn ngày bắt đầu.</div>
+          @if (contractForm.errors?.['endBeforeOrEqualStart'] && (contractForm.get('endDate')?.dirty ||
+          contractForm.get('endDate')?.touched)) {
+          <div class="invalid-feedback">Ngày kết thúc phải lớn hơn ngày bắt đầu.</div>
           }
         </div>
       </div>
@@ -74,126 +65,96 @@
       <div class="form-grid">
         <div class="form-group">
           <label for="ownerName">Họ và tên</label>
-          <input
-            type="text"
-            id="ownerName"
-            formControlName="ownerName"
-            [class.is-invalid]="isInvalid('ownerName')"
-          >
+          <input type="text" id="ownerName" formControlName="ownerName" [class.is-invalid]="isInvalid('ownerName')">
           @if (isInvalid('ownerName')) {
-            <div class="invalid-feedback">Vui lòng nhập họ tên.</div>
+          <div class="invalid-feedback">Vui lòng nhập họ tên.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="ownerEmail">Email</label>
-          <input
-            type="email"
-            id="ownerEmail"
-            formControlName="ownerEmail"
-            [class.is-invalid]="isInvalid('ownerEmail')"
-          >
+          <input type="email" id="ownerEmail" formControlName="ownerEmail" [class.is-invalid]="isInvalid('ownerEmail')">
           @if (isInvalid('ownerEmail')) {
-            <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+          <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="ownerPhoneNumber">Số điện thoại</label>
-          <input
-            type="text"
-            id="ownerPhoneNumber"
-            formControlName="ownerPhoneNumber"
-            [class.is-invalid]="isInvalid('ownerPhoneNumber')"
-          >
+          <input type="text" id="ownerPhoneNumber" formControlName="ownerPhoneNumber"
+            [class.is-invalid]="isInvalid('ownerPhoneNumber')">
           @if (isInvalid('ownerPhoneNumber')) {
-            <div class="invalid-feedback">Vui lòng nhập SĐT hợp lệ.</div>
+          <div class="invalid-feedback">Vui lòng nhập SĐT hợp lệ.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="ownerIdNumber">Số CMND/CCCD</label>
-          <input
-            type="text"
-            id="ownerIdNumber"
-            formControlName="ownerIdNumber"
-            [class.is-invalid]="isInvalid('ownerIdNumber')"
-          >
-          @if (contractForm.get('ownerIdNumber')?.errors?.['required'] && (contractForm.get('ownerIdNumber')?.dirty || contractForm.get('ownerIdNumber')?.touched)) {
-            <div class="invalid-feedback">Vui lòng nhập số CMND/CCCD.</div>
+          <input type="text" id="ownerIdNumber" formControlName="ownerIdNumber"
+            [class.is-invalid]="isInvalid('ownerIdNumber')">
+          @if (contractForm.get('ownerIdNumber')?.errors?.['required'] && (contractForm.get('ownerIdNumber')?.dirty ||
+          contractForm.get('ownerIdNumber')?.touched)) {
+          <div class="invalid-feedback">Vui lòng nhập số CMND/CCCD.</div>
           }
-          @if (contractForm.get('ownerIdNumber')?.errors?.['pattern'] && (contractForm.get('ownerIdNumber')?.dirty || contractForm.get('ownerIdNumber')?.touched)) {
-            <div class="invalid-feedback">Số CMND/CCCD chỉ được chứa chữ số.</div>
+          @if (contractForm.get('ownerIdNumber')?.errors?.['pattern'] && (contractForm.get('ownerIdNumber')?.dirty ||
+          contractForm.get('ownerIdNumber')?.touched)) {
+          <div class="invalid-feedback">Số CMND/CCCD chỉ được chứa chữ số.</div>
+          }
+          @if (contractForm.get('ownerIdNumber')?.errors?.['duplicateIdNumber'] &&
+          (contractForm.get('ownerIdNumber')?.dirty || contractForm.get('ownerIdNumber')?.touched)) {
+          <div class="invalid-feedback">
+            Số CMND/CCCD này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.
+          </div>
           }
         </div>
 
+
         <div class="form-group">
           <label for="ownerGender">Giới tính</label>
-          <select
-            id="ownerGender"
-            formControlName="ownerGender"
-            [class.is-invalid]="isInvalid('ownerGender')"
-          >
+          <select id="ownerGender" formControlName="ownerGender" [class.is-invalid]="isInvalid('ownerGender')">
             <option value="Nam">Nam</option>
             <option value="Nữ">Nữ</option>
             <option value="Khác">Khác</option>
           </select>
           @if (isInvalid('ownerGender')) {
-            <div class="invalid-feedback">Vui lòng chọn giới tính.</div>
+          <div class="invalid-feedback">Vui lòng chọn giới tính.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="ownerDateOfBirth">Ngày sinh</label>
-          <input
-            type="date"
-            id="ownerDateOfBirth"
-            formControlName="ownerDateOfBirth"
-            [class.is-invalid]="isInvalid('ownerDateOfBirth')"
-          >
+          <input type="date" id="ownerDateOfBirth" formControlName="ownerDateOfBirth"
+            [class.is-invalid]="isInvalid('ownerDateOfBirth')">
           @if (isInvalid('ownerDateOfBirth')) {
-            <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
+          <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
           }
         </div>
 
         <div class="form-group">
           <label for="ownerNationality">Quốc tịch</label>
-          <input
-            type="text"
-            id="ownerNationality"
-            formControlName="ownerNationality"
-            [class.is-invalid]="isInvalid('ownerNationality')"
-          >
+          <input type="text" id="ownerNationality" formControlName="ownerNationality"
+            [class.is-invalid]="isInvalid('ownerNationality')">
           @if (isInvalid('ownerNationality')) {
-            <div class="invalid-feedback">Vui lòng nhập quốc tịch.</div>
+          <div class="invalid-feedback">Vui lòng nhập quốc tịch.</div>
           }
         </div>
       </div>
 
       @if (submitError()) {
-        <div class="alert alert-danger">
-          {{ submitError() }}
-        </div>
+      <div class="alert alert-danger">
+        {{ submitError() }}
+      </div>
       }
 
       <div class="form-actions">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="onCancel()"
-          [disabled]="isSubmitting()"
-        >
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSubmitting()">
           Hủy
         </button>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="isSubmitting() || apartmentsLoading()"
-        >
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || apartmentsLoading()">
           @if (isSubmitting()) {
-            <span>Đang lưu...</span>
+          <span>Đang lưu...</span>
           } @else {
-            <span>Lưu hợp đồng</span>
+          <span>Lưu hợp đồng</span>
           }
         </button>
       </div>
