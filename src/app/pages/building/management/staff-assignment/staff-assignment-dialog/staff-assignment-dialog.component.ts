@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, inject } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -70,13 +70,34 @@ export class StaffAssignmentDialogComponent implements OnInit {
       startDate: [this.data.assignment?.startDate?.split('T')[0] || new Date().toISOString().split('T')[0], [Validators.required]],
       endDate: [this.data.assignment?.endDate?.split('T')[0] || null],
       isActive: [this.data.assignment?.isActive ?? true]
-    });
+    }, { validators: this._endDateAfterStartValidator });
 
     if (this.isEditMode) {
       this.form.get('userId')?.disable();
       this.form.get('buildingId')?.disable();
       this.form.get('startDate')?.disable();
     }
+  }
+
+  // Validator: nếu có endDate thì phải lớn hơn startDate
+  private _endDateAfterStartValidator = (group: AbstractControl): ValidationErrors | null => {
+    const start = group.get('startDate')?.value;
+    const end = group.get('endDate')?.value;
+
+    if (!end) return null; // không bắt buộc phải có endDate
+
+    // Chuẩn hóa ngày (nếu đang ở dạng YYYY-MM-DD strings)
+    const startDate = start ? new Date(start) : null;
+    const endDate = new Date(end);
+
+    if (!startDate) return null; // nếu không có start thì không validate ở đây
+
+    // So sánh: end phải strictly after start
+    if (endDate <= startDate) {
+      return { endBeforeStart: true };
+    }
+
+    return null;
   }
 
   ngOnInit(): void {

@@ -101,6 +101,7 @@
       <div class="form-group half">
         <label>Ngày kết thúc</label>
         <input type="date" class="form-control" formControlName="endDate">
+        <small class="error-text" *ngIf="form.hasError('endBeforeStart') && (form.get('endDate')?.touched || form.get('endDate')?.dirty)">Ngày kết thúc phải sau ngày bắt đầu</small>
       </div>
     </div>
 

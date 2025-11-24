@@ -9,83 +9,82 @@
     </mat-toolbar>
 
     <mat-nav-list (click)="closeSidenavOnMobile()">
+      <h3 mat-subheader class="list-subheader">Quản lý</h3>
+      <a mat-list-item routerLink="manage-apartment" routerLinkActive="active-link">
+          <mat-icon>apartment</mat-icon>
+          <span>Quản lý Căn hộ</span>
+      </a>
+      <a mat-list-item routerLink="manage-asset" routerLinkActive="active-link">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Quản lý Tài sản</span>
+      </a>
+      <a mat-list-item routerLink="manage-contract" routerLinkActive="active-link">
+          <mat-icon>description</mat-icon>
+          <span>Quản lý Hợp đồng</span>
+      </a>
+      <a mat-list-item routerLink="news/list" routerLinkActive="active-link">
+          <mat-icon>article</mat-icon>
+          <span>Quản lý Tin tức chung</span>
+      </a>
+      <a mat-list-item routerLink="manage-quotation" routerLinkActive="active-link">
+          <mat-icon>request_quote</mat-icon>
+          <span>Quản lý Đơn giá</span>
+      </a>
+      <a mat-list-item routerLink="manage-staff-assignment" routerLinkActive="active-link">
+          <mat-icon>group_add</mat-icon>
+          <span>Quản lý Phân công</span>
+      </a>
+      <mat-divider></mat-divider>
 
-        <h3 mat-subheader class="list-subheader">Quản lý</h3>
-        <a mat-list-item routerLink="manage-apartment" routerLinkActive="active-link">
-            <mat-icon>apartment</mat-icon>
-            <span>Quản lý Căn hộ</span>
-        </a>
-        <a mat-list-item routerLink="manage-asset" routerLinkActive="active-link">
-            <mat-icon>inventory_2</mat-icon>
-            <span>Quản lý Tài sản</span>
-        </a>
-        <a mat-list-item routerLink="manage-contract" routerLinkActive="active-link">
-            <mat-icon>description</mat-icon>
-            <span>Quản lý Hợp đồng</span>
-        </a>
-        <a mat-list-item routerLink="news/list" routerLinkActive="active-link">
-            <mat-icon>article</mat-icon>
-            <span>Quản lý Tin tức chung</span>
-        </a>
-        <a mat-list-item routerLink="manage-quotation" routerLinkActive="active-link">
-            <mat-icon>request_quote</mat-icon>
-            <span>Quản lý Đơn giá</span>
-        </a>
-        <a mat-list-item routerLink="manage-staff-assignment" routerLinkActive="active-link">
-            <mat-icon>group_add</mat-icon>
-            <span>Quản lý Phân công</span>
-        </a>
-        <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Tài chính</h3>
+      <a mat-list-item routerLink="payment-receipt" routerLinkActive="active-link">
+          <mat-icon>money</mat-icon>
+          <span>Xem biên lai</span>
+      </a>
+      <a mat-list-item routerLink="invoice-management" routerLinkActive="active-link">
+          <mat-icon>attach_money</mat-icon>
+          <span>Quản lý Hóa đơn</span>
+      </a>
+      <a mat-list-item routerLink="meter-reading-status" routerLinkActive="active-link">
+          <mat-icon>assessment</mat-icon>
+          <span>Báo cáo Chỉ số ghi</span>
+      </a>
 
-        <h3 mat-subheader class="list-subheader">Tài chính</h3>
-        <a mat-list-item routerLink="payment-receipt" routerLinkActive="active-link">
-            <mat-icon>money</mat-icon>
-            <span>Xem biên lai</span>
-        </a>
-        <a mat-list-item routerLink="invoice-management" routerLinkActive="active-link">
-            <mat-icon>attach_money</mat-icon>
-            <span>Quản lý Hóa đơn</span>
-        </a>
-        <a mat-list-item routerLink="meter-reading-status" routerLinkActive="active-link">
-            <mat-icon>assessment</mat-icon>
-            <span>Báo cáo Tình trạng Ghi chỉ số</span>
-        </a>
+      <mat-divider></mat-divider>
+      <h3 mat-subheader class="list-subheader">Vận hành</h3>
+      <a mat-list-item routerLink="resident-list" routerLinkActive="active-link">
+          <mat-icon>people</mat-icon>
+          <span>Quản lý Cư dân</span>
+      </a>
 
-        <mat-divider></mat-divider>
-        <h3 mat-subheader class="list-subheader">Vận hành</h3>
-        <a mat-list-item routerLink="resident-list" routerLinkActive="active-link">
-            <mat-icon>people</mat-icon>
-            <span>Quản lý Cư dân</span>
-        </a>
-
-        <a mat-list-item routerLink="manage-service" routerLinkActive="active-link">
-            <mat-icon>cleaning_services</mat-icon>
-            <span>Quản lý Dịch vụ</span>
-        </a>
-        <a mat-list-item routerLink="service-bookings" routerLinkActive="active-link">
-            <mat-icon>event_available</mat-icon>
-            <span>Quản lý Duyệt Dịch vụ</span>
-        </a>
-        <a mat-list-item routerLink="manage-utility" routerLinkActive="active-link">
-            <mat-icon>pool</mat-icon>
-            <span>Quản lý Tiện ích</span>
-        </a>
+      <a mat-list-item routerLink="manage-service" routerLinkActive="active-link">
+          <mat-icon>cleaning_services</mat-icon>
+          <span>Quản lý Dịch vụ</span>
+      </a>
+      <a mat-list-item routerLink="service-bookings" routerLinkActive="active-link">
+          <mat-icon>event_available</mat-icon>
+          <span>Quản lý Đặt lịch Dịch vụ</span>
+      </a>
+      <a mat-list-item routerLink="manage-utility" routerLinkActive="active-link">
+          <mat-icon>pool</mat-icon>
+          <span>Quản lý Tiện ích</span>
+      </a>
       <a mat-list-item routerLink="utility-bookings" routerLinkActive="active-link">
         <mat-icon>assignment_ind</mat-icon>
-        <span>Danh sách Đặt Tiện Ích</span>
+        <span>Quản lý Đặt Tiện ích</span>
       </a>
-        <a mat-list-item routerLink="manage-task" routerLinkActive="active-link">
-            <mat-icon>rule</mat-icon>
-            <span>Quản lý Duyệt Tiện ích</span>
-        </a>
+      <a mat-list-item routerLink="manage-task" routerLinkActive="active-link">
+          <mat-icon>rule</mat-icon>
+          <span>Quản lý Công việc</span>
+      </a>
 
       <a mat-list-item routerLink="visitor-list" routerLinkActive="active-link">
-        <mat-icon>assignment_ind</mat-icon>
-        <span>Khách thăm</span>
+          <mat-icon>badge</mat-icon>
+          <span>Quản lý Khách thăm</span>
       </a>
       <a mat-list-item routerLink="vehicle-list" routerLinkActive="active-link">
-        <mat-icon>assignment_ind</mat-icon>
-        <span>Danh sách Ph.Tiện</span>
+          <mat-icon>directions_car</mat-icon>
+          <span>Quản lý Phương Tiện</span>
       </a>
       <a mat-list-item routerLink="chat" routerLinkActive="active-link">
         <mat-icon>chat</mat-icon> <span>Chat với Cư dân</span></a>
@@ -110,29 +109,6 @@
         <mat-icon>settings_outline</mat-icon>
         <span>Cài đặt</span>
       </a>
-        <a mat-list-item routerLink="visitor-list" routerLinkActive="active-link">
-            <mat-icon>badge</mat-icon>
-            <span>Quản lý Khách thăm</span>
-        </a>
-        <a mat-list-item routerLink="vehicle-list" routerLinkActive="active-link">
-            <mat-icon>directions_car</mat-icon>
-            <span>Quản lý Phương Tiện</span>
-        </a>
-        <a mat-list-item routerLink="meter-reading-form" routerLinkActive="active-link">
-            <mat-icon>speed</mat-icon>
-            <span>Nhập chỉ số điện nước</span>
-        </a>
-
-        <mat-divider></mat-divider>
-        <h3 mat-subheader class="list-subheader">Tài khoản</h3>
-        <a mat-list-item routerLink="profile" routerLinkActive="active-link">
-            <mat-icon>person_outline</mat-icon>
-            <span>Hồ sơ cá nhân</span>
-        </a>
-        <a mat-list-item routerLink="settings" routerLinkActive="active-link">
-            <mat-icon>settings_outline</mat-icon>
-            <span>Cài đặt</span>
-        </a>
     </mat-nav-list>
   </mat-sidenav>
 
