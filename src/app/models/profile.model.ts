@@ -7,6 +7,15 @@ export interface UserProfileDto {
   role: string;
   apartmentInfo?: string | null;
   managedBuildingNames: string[];
+  currentAssignments?: UserAssignmentProfileDto[];
+}
+
+export interface UserAssignmentProfileDto {
+  buildingId: string;
+  buildingName: string;
+  position: string;
+  scopeOfWork?: string;
+  startDate: string;
 }
 
 export interface ChangePasswordDto {

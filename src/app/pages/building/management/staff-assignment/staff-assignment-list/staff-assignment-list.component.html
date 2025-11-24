@@ -1,0 +1,123 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Phân công Nhân viên</h1>
+          <p>Quản lý vị trí làm việc của nhân viên tại các tòa nhà</p>
+        </div>
+        <button class="btn-primary" (click)="openCreateModal()">
+          <mat-icon>person_add</mat-icon>
+          Gán nhân viên
+        </button>
+      </div>
+    </header>
+
+    <div class="filter-container">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <mat-icon>search</mat-icon>
+        </div>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Tìm theo tên NV, mã NV, vị trí..." 
+          [ngModel]="searchTerm" 
+          (ngModelChange)="onSearchTermChange($event)"
+        >
+      </div>
+
+      <div class="filter-wrapper building-wrapper">
+        <select class="filter-select" [(ngModel)]="filterBuildingId" (change)="onFilterChange()">
+          <option value="">Tất cả tòa nhà</option>
+          <option *ngFor="let b of buildings" [value]="b.buildingId">
+            {{ b.name || b.buildingCode }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-wrapper status-wrapper">
+        <select class="filter-select" [(ngModel)]="filterStatus" (change)="onFilterChange()">
+          <option [ngValue]="null">Tất cả trạng thái</option>
+          <option [ngValue]="true">Active (Đang làm)</option>
+          <option [ngValue]="false">Inactive (Đã nghỉ)</option>
+        </select>
+      </div>
+
+      <div class="filter-wrapper" style="flex: 0;">
+        <button class="btn-secondary btn-icon-only" (click)="loadAssignments()" title="Làm mới">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nhân viên</th>
+            <th>Vai trò</th>
+            <th>Tòa nhà</th>
+            <th>Phạm vi công tác</th>
+            <th>Thời gian</th>
+            <th>Trạng thái</th>
+            <th class="text-right">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of assignments">
+            <td>
+              <div class="staff-info">
+                <span class="staff-name">{{ item.staffName }}</span>
+                <span class="staff-code">{{ item.staffCode }}</span>
+              </div>
+            </td>
+            <td class="font-medium">{{ item.position }}</td>
+            <td>{{ item.buildingName }}</td>
+            <td class="scope-cell" [title]="item.scopeOfWork || ''">
+              {{ item.scopeOfWork || '-' }}
+            </td>
+            <td>
+              <div class="date-info">
+                <span>Bắt đầu: {{ item.startDate | date:'dd/MM/yyyy' }}</span>
+                <span *ngIf="item.endDate" class="text-muted">Kết thúc: {{ item.endDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge"
+                [class.status-active]="item.isActive"
+                [class.status-inactive]="!item.isActive">
+                {{ item.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="actions text-right">
+              <button class="action-btn edit-btn" (click)="openEditModal(item)" title="Chỉnh sửa">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="action-btn delete-btn" (click)="deleteAssignment(item)" title="Xóa/Kết thúc">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="assignments.length === 0">
+            <td colspan="7" class="no-results">Không tìm thấy dữ liệu nào.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="totalCount"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex - 1"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>

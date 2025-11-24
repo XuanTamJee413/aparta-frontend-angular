@@ -23,6 +23,7 @@ import { ContractDetail } from './management/contract-management/contract-detail
 import { UpdateContract } from './management/contract-management/update-contract/update-contract';
 import { ChatShellComponent } from '../chat/chat-shell/chat-shell';
 
+import { StaffAssignmentListComponent } from './management/staff-assignment/staff-assignment-list/staff-assignment-list.component';
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
@@ -43,6 +44,12 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'manage-quotation', canActivate: [permissionGuard('visitor.read')], component: PriceQuotationListComponent },
   { path: 'manage-quotation/new', component: PriceQuotationFormComponent },
   { path: 'manage-quotation/edit/:id', component: PriceQuotationFormComponent },
+  { 
+    path: 'manage-staff-assignment', 
+    canActivate: [permissionGuard('staffassignment.read')], 
+    component: StaffAssignmentListComponent,
+    title: 'Quản lý Phân công Nhân viên'
+  },
 
   // --- END MANAGEMENT ---
 
