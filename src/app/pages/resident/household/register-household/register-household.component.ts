@@ -24,16 +24,25 @@ export class RegisterHousehold implements OnInit {
   private fb = inject(FormBuilder);
   private householdService = inject(HouseholdService);
   private auth = inject(AuthService);
-
+  selectedFile: File | null = null;
   memberForm!: FormGroup;
   isSubmitting = signal(false);
   submitError = signal<string | null>(null);
-
+  submitSuccess = signal<string | null>(null);
   members = signal<ApartmentMemberDto[]>([]);
   isLoading = signal(true);
   loadError = signal<string | null>(null);
 
   confirmingDeleteId = signal<string | null>(null);
+
+   onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    } else {
+      this.selectedFile = null;
+    }
+  }
 
   private getApartmentId(): string | null {
     const payload = this.auth.user();
@@ -43,7 +52,13 @@ export class RegisterHousehold implements OnInit {
 
   ngOnInit(): void {
     this.memberForm = this.fb.group({
-      name: ['', Validators.required],
+      name: [
+      '',
+      [
+        Validators.required,
+        Validators.pattern(/^[\p{L}\s]+$/u)
+      ]
+    ],
       familyRole: [null, Validators.required],
       dateOfBirth: [''],
       gender: [null],
@@ -106,18 +121,20 @@ export class RegisterHousehold implements OnInit {
     return !!control && control.invalid && (control.dirty || control.touched);
   }
 
-  onSubmit(): void {
+     onSubmit(): void {
     this.memberForm.markAllAsTouched();
     if (this.memberForm.invalid || this.memberForm.pending) return;
 
     const apartmentId = this.getApartmentId();
     if (!apartmentId) {
       this.submitError.set('Không tìm thấy apartmentId trong phiên đăng nhập.');
+      this.submitSuccess.set(null);
       return;
     }
 
     this.isSubmitting.set(true);
     this.submitError.set(null);
+    this.submitSuccess.set(null);
 
     const v = this.memberForm.value;
     const createDto: ApartmentMemberCreateDto = {
@@ -135,14 +152,20 @@ export class RegisterHousehold implements OnInit {
       info: null
     };
 
-    this.householdService.addHouseholdMember(createDto).subscribe({
-      next: () => {
+    this.householdService.addHouseholdMember(createDto, this.selectedFile).subscribe({
+      next: (created) => {
+        console.log('Thêm thành viên thành công:', created);
         this.isSubmitting.set(false);
         this.memberForm.reset({ nationality: 'Việt Nam' });
+        this.selectedFile = null;
+        this.submitError.set(null);
+        this.submitSuccess.set('Thêm thành viên thành công.');
         this.loadMembers();
       },
       error: (err) => {
         this.isSubmitting.set(false);
+        this.submitSuccess.set(null);
+
         let msg = 'Vui lòng kiểm tra lại thông tin.';
 
         if (err.status === 500) {
@@ -164,4 +187,6 @@ export class RegisterHousehold implements OnInit {
       }
     });
   }
+
+
 }

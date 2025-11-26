@@ -25,6 +25,7 @@ export interface Apartment {
   status: string;
   area: number;
   createdAt: string;
+
 }
 
 export interface ApartmentCreateDto {
@@ -33,6 +34,7 @@ export interface ApartmentCreateDto {
   type: string;
   area: number;
   status: string;
+  floor: number;
 }
 
 export interface ApartmentUpdateDto {
@@ -46,11 +48,25 @@ export interface BuildingOption {
   buildingId: string;
   name: string;
 }
+
 export interface PaginatedResult<T> {
   items: T[];
   pageNumber: number;
   totalPages: number;
   totalCount: number;
+}
+
+export interface ApartmentBulkRoomConfig {
+  roomIndex: number;
+  type: string;
+  area: number;
+}
+
+export interface ApartmentBulkCreateDto {
+  buildingId: string;
+  startFloor: number;
+  endFloor: number;
+  rooms: ApartmentBulkRoomConfig[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -81,6 +97,10 @@ export class ApartmentService {
 
   updateApartment(id: string, dto: ApartmentUpdateDto): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, dto);
+  }
+
+  generateApartments(dto: ApartmentBulkCreateDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk`, dto);
   }
 
   getBuildings(): Observable<BuildingOption[]> {

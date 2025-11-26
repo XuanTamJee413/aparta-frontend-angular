@@ -86,7 +86,7 @@ export class RegisterVehicle implements OnInit {
 
     const payload: VehicleCreateDto = {
       apartmentId: this.apartmentId,
-      vehicleNumber: this.form.value.vehicleNumber!,
+      vehicleNumber: this.form.value.vehicleNumber!.trim(),
       info: this.form.value.info!,
       status: 'Chờ duyệt'
     };
@@ -94,16 +94,26 @@ export class RegisterVehicle implements OnInit {
     this.vehicleService.createVehicle(payload).subscribe({
       next: () => {
         this.submitting.set(false);
-        this.success.set('Đăng ký phương tiện thành công! Trạng thái: Chờ duyệt.');
+        this.success.set('Đăng ký phương tiện thành công! Vui lòng chờ duyệt.');
         this.form.reset({ info: '' });
         this.loadMyVehicles();
       },
       error: (err) => {
         this.submitting.set(false);
-        this.error.set(err?.error?.message || 'Trùng Biển Số Xe, vui lòng nhập lại!');
+        const backendMessage = err?.error?.message as string | undefined;
+
+        if (err.status === 409) {
+          this.error.set(backendMessage || 'Biển số xe đã tồn tại, vui lòng nhập lại!');
+        } else {
+          this.error.set(
+            backendMessage || 'Đã xảy ra lỗi khi đăng ký phương tiện. Vui lòng thử lại sau.'
+          );
+        }
+
         this.success.set(null);
         console.error('Lỗi khi đăng ký xe:', err);
       }
+
     });
   }
 }
