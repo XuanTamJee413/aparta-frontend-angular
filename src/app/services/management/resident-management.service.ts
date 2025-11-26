@@ -92,4 +92,14 @@ export class ResidentManagementService {
   updateMember(id: string, payload: ApartmentMemberUpdateDto): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}`, payload);
   }
+    updateMemberAvatar(id: string, file: File): Observable<ApiResponse<string>> {
+    const formData = new FormData();
+    formData.append('faceImageFile', file);
+
+    return this.http.put<ApiResponse<string>>(
+      `${this.apiUrl}/${id}/avatar`,
+      formData
+    );
+  }
+
 }

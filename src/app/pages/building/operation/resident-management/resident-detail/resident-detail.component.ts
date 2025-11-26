@@ -26,6 +26,9 @@ export class ResidentDetail implements OnInit {
   isSaving = false;
   saveError: string | null = null;
   saveSuccess: string | null = null;
+  isChangingAvatar = false;
+  avatarError: string | null = null;
+  avatarSuccess: string | null = null;
 
   editModel: {
     name: string;
@@ -95,6 +98,53 @@ export class ResidentDetail implements OnInit {
       }
     });
   }
+    onAvatarFileSelected(event: Event): void {
+    if (!this.member) return;
+
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    this.isChangingAvatar = true;
+    this.avatarError = null;
+    this.avatarSuccess = null;
+
+    this.residentService
+      .updateMemberAvatar(this.member.apartmentMemberId, file)
+      .subscribe({
+        next: (res) => {
+          this.isChangingAvatar = false;
+
+          const newUrl = (res && res.data) ? res.data : this.member!.faceImageUrl;
+          this.member = {
+            ...this.member!,
+            faceImageUrl: newUrl,
+            updatedAt: new Date().toISOString()
+          };
+
+          this.avatarSuccess = 'Đổi ảnh thành công.';
+          this.avatarError = null;
+
+          input.value = '';
+        },
+        error: (err) => {
+          console.error('Lỗi đổi ảnh thành viên:', err);
+          this.isChangingAvatar = false;
+          input.value = '';
+
+          if (err.error?.message) {
+            this.avatarError = err.error.message;
+          } else {
+            this.avatarError = 'Đổi ảnh thất bại. Vui lòng thử lại.';
+          }
+          this.avatarSuccess = null;
+        }
+      });
+  }
+
 
   startEdit(): void {
     if (!this.member) return;

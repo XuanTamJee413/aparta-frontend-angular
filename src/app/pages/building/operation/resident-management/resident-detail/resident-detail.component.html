@@ -10,27 +10,62 @@
   } @else if (member) {
   <header class="profile-header">
     <div class="profile-summary">
-      @if (member.faceImageUrl) {
+  <div class="avatar-wrapper">
+    @if (member.faceImageUrl) {
       <img [src]="member.faceImageUrl" alt="Avatar" class="avatar-img" />
-      } @else {
+    } @else {
       <div class="avatar">{{ getInitials(member.name) }}</div>
-      }
+    }
 
-      <div class="info">
-        <h1>{{ member.name }}</h1>
-        <div class="contact-details">
-          <span>
-            <span class="status-badge" [ngClass]="
-                  member.status === 'Đang thuê' || member.status === 'Đang cư trú'
-                    ? 'status-active'
-                    : 'status-inactive'
-                ">
-              {{ member.status }}
-            </span>
-          </span>
-        </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm change-avatar-btn"
+      (click)="avatarInput.click()"
+      [disabled]="isChangingAvatar"
+    >
+      {{ isChangingAvatar ? 'Đang đổi ảnh...' : 'Đổi ảnh' }}
+    </button>
+
+    <input
+      type="file"
+      #avatarInput
+      accept="image/*"
+      hidden
+      (change)="onAvatarFileSelected($event)"
+    />
+
+    @if (avatarError) {
+      <div class="avatar-message avatar-error">
+        {{ avatarError }}
       </div>
+    }
+
+    @if (avatarSuccess) {
+      <div class="avatar-message avatar-success">
+        {{ avatarSuccess }}
+      </div>
+    }
+  </div>
+
+  <div class="info">
+    <h1>{{ member.name }}</h1>
+    <div class="contact-details">
+      <span>
+        <span
+          class="status-badge"
+          [ngClass]="
+            member.status === 'Đang thuê' || member.status === 'Đang cư trú'
+              ? 'status-active'
+              : 'status-inactive'
+          "
+        >
+          {{ member.status }}
+        </span>
+      </span>
     </div>
+  </div>
+</div>
+
 
     <div class="profile-actions">
       @if (!isEditing) {
