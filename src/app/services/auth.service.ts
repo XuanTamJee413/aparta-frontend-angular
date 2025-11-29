@@ -71,9 +71,6 @@ export class AuthService {
     const normalized = this.normalizeRole(payload.role);
     if (!normalized) return false;
     const expectedSet = roles.map(r => r.toLowerCase());
-    if (normalized === 'custom' && expectedSet.includes('admin')) {
-      return true;
-    }
     return expectedSet.includes(normalized as UserRole);
   }
 

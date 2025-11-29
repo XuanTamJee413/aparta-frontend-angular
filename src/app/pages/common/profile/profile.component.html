@@ -196,14 +196,32 @@
       </section>
 
       <!-- Managed Buildings (for Manager) -->
-      <section class="info-section" *ngIf="profile.managedBuildingNames && profile.managedBuildingNames.length > 0">
+      <section class="info-section" *ngIf="profile.currentAssignments && profile.currentAssignments.length > 0">
         <div class="section-header">
-          <h2>Tòa nhà phụ trách</h2>
+          <h2>Thông tin công tác</h2>
         </div>
-        <div class="building-grid">
-          <div class="building-item" *ngFor="let buildingName of profile.managedBuildingNames">
-            <strong>{{ buildingName }}</strong>
-          </div>
+        
+        <div class="table-responsive">
+          <table class="assignment-table">
+            <thead>
+              <tr>
+                <th>Tòa nhà</th>
+                <th>Vị trí</th>
+                <th>Phạm vi</th>
+                <th>Ngày bắt đầu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of profile.currentAssignments">
+                <td class="building-name">{{ item.buildingName }}</td>
+                <td>
+                  <span class="role-badge">{{ item.position }}</span>
+                </td>
+                <td>{{ item.scopeOfWork || 'Toàn bộ' }}</td>
+                <td>{{ item.startDate | date:'dd/MM/yyyy' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 

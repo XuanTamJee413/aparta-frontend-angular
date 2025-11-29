@@ -45,9 +45,7 @@ export class HouseholdService {
     const params = new HttpParams().set('apartmentId', apartmentId);
     return this.http.get<ApiResponse<ApartmentMemberDto[]>>(this.apiUrl, { params }).pipe(
       map((resp: ApiResponse<ApartmentMemberDto[]>) => {
-        // Backend returns ApiResponse format: { succeeded: true, message: "...", data: [...] }
         if (resp && resp.succeeded && resp.data && Array.isArray(resp.data)) {
-          // Normalize property names from PascalCase (backend) to camelCase (frontend)
           const normalizedMembers: ApartmentMemberDto[] = resp.data.map((m: any) => ({
             apartmentMemberId: m.apartmentMemberId || m.ApartmentMemberId || '',
             apartmentId: m.apartmentId || m.ApartmentId || null,
@@ -65,7 +63,6 @@ export class HouseholdService {
             createdAt: m.createdAt || m.CreatedAt || null,
             status: m.status || m.Status || null
           }));
-          // Filter by apartmentId (backend should already filter, but double-check)
           return normalizedMembers.filter(m => String(m.apartmentId ?? '') === String(apartmentId));
         }
         return [];
@@ -76,9 +73,30 @@ export class HouseholdService {
     );
   }
 
-  addHouseholdMember(memberDto: ApartmentMemberCreateDto): Observable<ApartmentMemberDto> {
-    return this.http.post<ApartmentMemberDto>(this.apiUrl, memberDto);
+  addHouseholdMember(memberDto: ApartmentMemberCreateDto, faceImageFile?: File | null): Observable<ApartmentMemberDto> {
+  const formData = new FormData();
+
+  formData.append('apartmentId', memberDto.apartmentId);
+  formData.append('name', memberDto.name);
+  if (memberDto.familyRole != null) formData.append('familyRole', memberDto.familyRole);
+  if (memberDto.dateOfBirth != null) formData.append('dateOfBirth', memberDto.dateOfBirth);
+  if (memberDto.gender != null) formData.append('gender', memberDto.gender);
+  if (memberDto.idNumber != null) formData.append('idNumber', memberDto.idNumber);
+  if (memberDto.phoneNumber != null) formData.append('phoneNumber', memberDto.phoneNumber);
+  if (memberDto.nationality != null) formData.append('nationality', memberDto.nationality);
+  if (memberDto.status != null) formData.append('status', memberDto.status);
+  if (memberDto.info != null) formData.append('info', memberDto.info);
+  if (memberDto.faceImageUrl != null) formData.append('faceImageUrl', memberDto.faceImageUrl);
+
+  formData.append('isOwner', String(memberDto.isOwner ?? false));
+
+  if (faceImageFile) {
+    formData.append('faceImageFile', faceImageFile);
   }
+
+  return this.http.post<ApartmentMemberDto>(this.apiUrl, formData);
+}
+
 
   deleteHouseholdMember(memberId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${memberId}`);

@@ -32,6 +32,29 @@
         </div>
 
         <div class="form-group">
+          <label for="floor" class="form-label">Tầng</label>
+          <input
+            id="floor"
+            type="number"
+            class="form-control"
+            formControlName="floor"
+            min="1"
+            step="1"
+          />
+          @if (form.controls.floor.invalid && (form.controls.floor.dirty || form.controls.floor.touched)) {
+            @if (form.controls.floor.errors?.['required']) {
+              <div class="form-error">Tầng là bắt buộc.</div>
+            }
+            @if (form.controls.floor.errors?.['min']) {
+              <div class="form-error">Tầng phải lớn hơn 0.</div>
+            }
+          }
+          <div class="form-hint">
+            Tầng phải nằm trong khoảng hợp lệ của tòa nhà (ví dụ: 1 → số tầng tối đa).
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="code" class="form-label">Mã Căn hộ (Code)</label>
           <input id="code" type="text" class="form-control" formControlName="code" />
           @if (form.controls.code.pending) {
@@ -45,6 +68,8 @@
               <div class="form-error">Mã căn hộ đã tồn tại trong cùng tòa nhà. Vui lòng chọn mã khác.</div>
             }
           }
+          <div class="form-hint">
+          </div>
         </div>
 
         <div class="form-group">

@@ -1,0 +1,186 @@
+/* Tiêu đề Dialog */
+h2[mat-dialog-title] {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Nội dung Dialog */
+mat-dialog-content {
+  padding: 1.5rem !important;
+  max-height: 75vh;
+}
+
+.assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Alert Box */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.alert-danger {
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+.alert mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Form Groups */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.required {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+/* Inputs & Selects */
+.form-control {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box; /* Quan trọng để padding không làm vỡ layout */
+}
+
+.form-control:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Disabled state */
+.form-control:disabled, 
+.form-control[readonly] {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Layout 2 cột (Form Row) */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .half {
+  flex: 1;
+}
+
+/* Info Box (Readonly mode) */
+.info-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-box p {
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.info-box strong {
+  color: #1e293b;
+  min-width: 80px;
+  display: inline-block;
+}
+
+/* Error & Hint Text */
+.error-text {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
+}
+
+.text-hint {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Footer Actions */
+mat-dialog-actions {
+  padding: 1rem 1.5rem !important;
+  border-top: 1px solid #e5e7eb;
+  margin: 0 !important; /* Override mặc định của Material */
+  background-color: #f9fafb;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+button[mat-raised-button] {
+  background-color: #4f46e5 !important;
+  color: white !important;
+}
+
+button[mat-raised-button]:disabled {
+  background-color: #a5b4fc !important; /* Màu nhạt hơn khi disabled */
+  color: #e0e7ff !important;
+}
+
+/* Header Dialog */
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.dialog-header h2 { margin: 0; font-size: 1.25rem; }
+.close-btn { color: #6b7280; }
+
+/* Search Input trong Mat-Select */
+.select-search-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eee;
+}
+.select-search-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+.select-search-input:focus { border-color: #4f46e5; }
+.no-data-option { padding: 16px; color: #999; font-style: italic; text-align: center; }
