@@ -1,97 +1,97 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Chỉnh sửa tòa nhà</mat-card-title>
-    <mat-card-subtitle>Cập nhật thông tin tòa nhà</mat-card-subtitle>
-  </mat-card-header>
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Cập nhật Tòa nhà</h1>
+      <p>Chỉnh sửa thông tin cấu trúc và vận hành</p>
+    </header>
 
-  <mat-card-content>
-    <!-- Loading State -->
-    <div *ngIf="loadingProject" class="loading-container">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>Đang tải thông tin tòa nhà...</p>
+    <div *ngIf="isLoading" class="text-center mt-4">
+      <p class="text-primary">Đang tải dữ liệu...</p>
     </div>
 
-    <!-- Building Info -->
-    <div *ngIf="currentBuilding && !loadingProject" class="building-info">
-      <div class="info-row">
-        <span class="info-label">Mã tòa nhà:</span>
-        <span class="building-code">{{ currentBuilding.buildingCode }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Mã dự án:</span>
-        <span class="building-id">{{ getProjectCode(currentBuilding.projectId) }}</span>
-      </div>
-    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
 
-    <!-- Edit Form -->
-    <form [formGroup]="buildingForm" (ngSubmit)="onSubmit()" class="building-form" *ngIf="!loadingProject">
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading && currentBuilding" class="mt-4">
       
-      <!-- Building Name -->
-      <mat-form-field appearance="outline">
-        <mat-label>Tên tòa nhà *</mat-label>
-        <input matInput 
-               formControlName="name" 
-               placeholder="VD: Tòa A, Tòa B"
-               maxlength="100">
-        <mat-icon matSuffix>home</mat-icon>
-        <mat-error *ngIf="isFieldInvalid('name')">
-          {{ getErrorMessage('name') }}
-        </mat-error>
-      </mat-form-field>
-
-      <!-- Read-only Information -->
-      <div class="form-row">
-        <!-- Number of Apartments (Read-only) -->
-        <mat-form-field appearance="outline" class="form-field-half">
-          <mat-label>Số căn hộ</mat-label>
-          <input matInput 
-                 type="number"
-                 [value]="currentBuilding?.numApartments || 0"
-                 readonly>
-          <mat-icon matSuffix>apartment</mat-icon>
-        </mat-form-field>
-
-        <!-- Number of Residents (Read-only) -->
-        <mat-form-field appearance="outline" class="form-field-half">
-          <mat-label>Số cư dân</mat-label>
-          <input matInput 
-                 type="number"
-                 [value]="currentBuilding?.numResidents || 0"
-                 readonly>
-          <mat-icon matSuffix>people</mat-icon>
-        </mat-form-field>
+      <h5 class="mb-3 text-primary border-bottom pb-2">Thông tin chung</h5>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Dự án</label>
+          <input type="text" class="form-control" [value]="currentBuilding.projectId" readonly style="background-color: #f3f4f6;">
+          <small class="text-muted" style="font-size: 0.75rem;">Không thể thay đổi dự án</small>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Mã tòa nhà</label>
+          <input type="text" class="form-control" formControlName="buildingCode">
+          <small class="text-muted" style="font-size: 0.75rem;">Mã định danh là duy nhất</small>
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label fw-bold">Tên hiển thị <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="name" placeholder="VD: Tòa Park 1">
+          
+          <div *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" class="text-danger small mt-1">
+            Tên tòa nhà là bắt buộc.
+          </div>
+        </div>
       </div>
 
-      <!-- Status -->
-      <mat-form-field appearance="outline">
-        <mat-label>Trạng thái</mat-label>
-        <mat-select formControlName="isActive">
-          <mat-option [value]="true">Hoạt động</mat-option>
-          <mat-option [value]="false">Không hoạt động</mat-option>
-        </mat-select>
-        <mat-icon matSuffix>toggle_on</mat-icon>
-      </mat-form-field>
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Cấu trúc & Kỹ thuật</h5>
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Số tầng nổi <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="totalFloors" min="1">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Số tầng hầm <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="totalBasements" min="0">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Tổng diện tích (m²)</label>
+          <input type="number" class="form-control" formControlName="totalArea">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Ngày bàn giao</label>
+          <input type="date" class="form-control" formControlName="handoverDate">
+        </div>
+      </div>
 
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Vận hành</h5>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Hotline Sảnh Lễ tân</label>
+          <input type="text" class="form-control" formControlName="receptionPhone" placeholder="VD: 024...">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Ngày chốt số (Từ) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="readingWindowStart" min="1" max="31">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Đến ngày <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="readingWindowEnd" min="1" max="31">
+        </div>
+        
+        <div class="col-12 mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="activeSwitch" formControlName="isActive" style="width: 1.2rem; height: 1.2rem;">
+                <label class="form-check-label fw-bold cursor-pointer" for="activeSwitch" style="margin-left: 0.5rem;">
+                    Đang hoạt động (Active)
+                </label>
+            </div>
+        </div>
+
+        <div class="col-12 mb-3">
+          <label class="form-label">Mô tả / Ghi chú</label>
+          <textarea class="form-control" formControlName="description" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <a routerLink="/admin/building/list" class="btn btn-secondary">Quay lại</a>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || editForm.invalid">
+          {{ isSubmitting ? 'Đang cập nhật...' : 'Lưu Thay Đổi' }}
+        </button>
+      </div>
     </form>
-  </mat-card-content>
-
-  <mat-card-actions align="end" *ngIf="!loadingProject">
-    <button mat-button 
-            type="button" 
-            (click)="onCancel()"
-            [disabled]="isSubmitting">
-      <mat-icon>arrow_back</mat-icon>
-      Quay lại
-    </button>
-    
-    <button mat-raised-button 
-            color="primary" 
-            type="submit"
-            (click)="onSubmit()"
-            [disabled]="buildingForm.invalid || isSubmitting">
-      <mat-icon *ngIf="!isSubmitting">save</mat-icon>
-      <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
-      {{ isSubmitting ? 'Đang cập nhật...' : 'Cập nhật tòa nhà' }}
-    </button>
-  </mat-card-actions>
-</mat-card>
+  </div>
+</div>

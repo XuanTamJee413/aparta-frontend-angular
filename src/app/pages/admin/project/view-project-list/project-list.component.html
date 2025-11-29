@@ -1,131 +1,93 @@
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h3 class="card-title mb-0">Quản lý Dự án</h3>
-          <button mat-raised-button color="primary" (click)="onCreateProject()">
-            <mat-icon>add</mat-icon> Thêm mới
-          </button>
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Quản lý Dự án</h1>
+      <p>Danh sách dự án và cấu hình tài chính</p>
+    </header>
+
+    <div class="filter-container">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
         </div>
-        
-        <div class="card-body">
-          <!-- Filter Section -->
-          <div class="filter-section">
-            <div class="row g-3 align-items-end">
-              <div class="col-md-4">
-                <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
-                  <mat-label>Tìm kiếm</mat-label>
-                  <input matInput 
-                         [(ngModel)]="searchTerm" 
-                         (ngModelChange)="onFilterChange()"
-                         placeholder="Tên dự án hoặc mã dự án">
-                  <mat-icon matSuffix>search</mat-icon>
-                </mat-form-field>
-              </div>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm theo Mã hoặc Tên dự án..."
+          [ngModel]="searchTerm"
+          (input)="onSearchInput($event)"
+        />
+      </div>
 
-              <div class="col-md-2">
-                <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
-                  <mat-label>Trạng thái</mat-label>
-                  <mat-select [(ngModel)]="isActiveFilter" (ngModelChange)="onFilterChange()">
-                    <mat-option [value]="null">Tất cả</mat-option>
-                    <mat-option [value]="true">Hoạt động</mat-option>
-                    <mat-option [value]="false">Không hoạt động</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+      <div style="flex-grow: 1;"></div>
+      
+      <a routerLink="/admin/project/create" class="btn-add-new">
+        + Thêm Dự Án
+      </a>
+    </div>
 
-              <div class="col-md-2">
-                <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
-                  <mat-label>Sắp xếp</mat-label>
-                  <mat-select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()">
-                    <mat-option value="">Mặc định</mat-option>
-                    <mat-option value="numApartments">Số căn hộ</mat-option>
-                    <mat-option value="numBuildings">Số tòa nhà</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+    <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
+      <p>Đang tải dữ liệu...</p>
+    </div>
 
-              <div class="col-md-2" *ngIf="sortBy">
-                <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
-                  <mat-label>Thứ tự</mat-label>
-                  <mat-select [(ngModel)]="sortOrder" (ngModelChange)="onFilterChange()">
-                    <mat-option value="asc">Tăng dần</mat-option>
-                    <mat-option value="desc">Giảm dần</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-
-              <div class="col-md-2" [class.offset-md-2]="!sortBy">
-                <button mat-stroked-button (click)="onClearFilters()" class="clear-btn">
-                  <mat-icon>clear</mat-icon> Xóa lọc
+    <div *ngIf="!isLoading" class="table-container">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th (click)="onSort('projectCode')" class="sortable">
+                Mã Dự Án <span class="sort-icon">{{ getSortIcon('projectCode') }}</span>
+              </th>
+              <th (click)="onSort('name')" class="sortable">
+                Tên Dự Án <span class="sort-icon">{{ getSortIcon('name') }}</span>
+              </th>
+              <th>Địa chỉ</th>
+              <th>Quy mô</th>
+              <th>Trạng thái</th>
+              <th (click)="onSort('createdAt')" class="sortable">
+                Ngày tạo <span class="sort-icon">{{ getSortIcon('createdAt') }}</span>
+              </th>
+              <th (click)="onSort('updatedAt')" class="sortable">
+                Cập nhật <span class="sort-icon">{{ getSortIcon('updatedAt') }}</span>
+              </th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredProjects">
+              <td class="font-medium text-primary fw-bold">{{ p.projectCode }}</td>
+              <td>
+                <div class="fw-bold">{{ p.name }}</div>
+              </td>
+              <td>
+                <div class="text-truncate" style="max-width: 200px;" title="{{ p.address }} {{ p.city }}">
+                  {{ p.address ? p.address + ', ' : '' }}{{ p.city || '-' }}
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info text-dark">{{ p.numBuildings }} Tòa</span>
+                <span class="badge bg-secondary ms-1">{{ p.numApartments }} Căn</span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="p.isActive ? 'status-available' : 'status-unavailable'">
+                  {{ p.isActive ? 'Hoạt động' : 'Ngừng hoạt động' }}
+                </span>
+              </td>
+              <td class="small text-muted">{{ p.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="small text-muted">{{ p.updatedAt | date:'dd/MM/yyyy' }}</td>
+              <td class="actions">
+                <button class="btn-edit" [routerLink]="['/admin/project/edit', p.projectId]">
+                  Sửa
                 </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Loading State -->
-          <div *ngIf="isLoading" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Đang tải...</span>
-            </div>
-            <p class="mt-2">Đang tải danh sách dự án...</p>
-          </div>
-
-          <!-- Projects Table -->
-          <div *ngIf="!isLoading" class="table-responsive">
-            <table class="table table-striped table-hover">
-              <thead class="table-dark">
-                <tr>
-                  <th style="width: 50px;">STT</th>
-                  <th>Mã dự án</th>
-                  <th>Tên dự án</th>
-                  <th style="width: 120px;">Số căn hộ</th>
-                  <th style="width: 120px;">Số tòa nhà</th>
-                  <th style="width: 120px;">Trạng thái</th>
-                  <th>Ngày tạo</th>
-                  <th style="width: 100px;">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let project of filteredProjects; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td><code>{{ project.projectCode || '-' }}</code></td>
-                  <td>{{ project.name || '-' }}</td>
-                  <td class="text-center">
-                    <span class="badge bg-secondary">{{ project.numApartments || 0 }}</span>
-                  </td>
-                  <td class="text-center">
-                    <span class="badge bg-secondary">{{ project.numBuildings || 0 }}</span>
-                  </td>
-                  <td>
-                    <span [class]="project.isActive ? 'badge bg-success' : 'badge bg-danger'">
-                      {{ getStatusText(project.isActive) }}
-                    </span>
-                  </td>
-                  <td>
-                    <small class="text-muted">{{ formatDate(project.createdAt) }}</small>
-                  </td>
-                  <td>
-                    <button mat-icon-button color="primary" (click)="onEditProject(project)" title="Chỉnh sửa">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Empty State -->
-            <div *ngIf="filteredProjects.length === 0" class="empty-state">
-              <mat-icon class="empty-icon">inbox</mat-icon>
-              <h5 class="text-muted">Không tìm thấy dự án nào</h5>
-              <p class="text-muted">Hãy thử điều chỉnh tiêu chí tìm kiếm hoặc tạo dự án mới.</p>
-              <button mat-raised-button color="primary" (click)="onCreateProject()">
-                <mat-icon>add</mat-icon> Tạo dự án đầu tiên
-              </button>
-            </div>
-          </div>
-        </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredProjects.length === 0">
+              <td colspan="8" class="no-results">Không tìm thấy dự án nào.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

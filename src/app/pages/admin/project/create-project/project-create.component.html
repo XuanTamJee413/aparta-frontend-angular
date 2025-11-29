@@ -1,58 +1,74 @@
-<mat-card class="compact-form">
-  <mat-card-header>
-    <mat-card-title>Tạo dự án mới</mat-card-title>
-    <mat-card-subtitle>Nhập thông tin cơ bản để tạo dự án</mat-card-subtitle>
-  </mat-card-header>
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Thêm mới Dự án</h1>
+      <p>Nhập thông tin dự án, địa chỉ và tài khoản nhận thanh toán</p>
+    </header>
 
-  <mat-card-content>
-    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="project-form">
+    <form [formGroup]="createForm" (ngSubmit)="onSubmit()" class="mt-4">
       
-      <!-- Project Code -->
-      <mat-form-field appearance="outline">
-        <mat-label>Mã dự án *</mat-label>
-        <input matInput 
-               formControlName="projectCode" 
-               placeholder="VD: PRJ001, APARTA_A"
-               maxlength="20">
-        <mat-icon matSuffix>code</mat-icon>
-        <mat-error *ngIf="isFieldInvalid('projectCode')">
-          {{ getErrorMessage('projectCode') }}
-        </mat-error>
-      </mat-form-field>
+      <h5 class="mb-3 text-primary border-bottom pb-2">Thông tin chung</h5>
+      <div class="row">
+        <div class="col-md-8 mb-3">
+          <label class="form-label fw-bold">Tên dự án <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="name" placeholder="VD: Chung cư Times City">
+          <div *ngIf="createForm.get('name')?.invalid && createForm.get('name')?.touched" class="text-danger small mt-1">
+            Tên dự án là bắt buộc (tối thiểu 3 ký tự).
+          </div>
+        </div>
 
-      <!-- Project Name -->
-      <mat-form-field appearance="outline">
-        <mat-label>Tên dự án *</mat-label>
-        <input matInput 
-               formControlName="name" 
-               placeholder="VD: Chung cư Aparta Tower"
-               maxlength="100">
-        <mat-icon matSuffix>business</mat-icon>
-        <mat-error *ngIf="isFieldInvalid('name')">
-          {{ getErrorMessage('name') }}
-        </mat-error>
-      </mat-form-field>
+        <div class="col-md-4 mb-3">
+          <label class="form-label fw-bold">Mã dự án <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="projectCode" placeholder="VD: CCTC2024">
+          <div class="form-text text-muted small">Tự động sinh theo tên (Có thể sửa)</div>
+          <div *ngIf="createForm.get('projectCode')?.invalid && createForm.get('projectCode')?.touched" class="text-danger small mt-1">
+            Mã không hợp lệ (Chỉ A-Z, 0-9, _).
+          </div>
+        </div>
+      </div>
 
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Địa chỉ hành chính</h5>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Số nhà / Đường</label>
+          <input type="text" class="form-control" formControlName="address" placeholder="458 Minh Khai">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phường / Xã</label>
+          <input type="text" class="form-control" formControlName="ward" placeholder="Vĩnh Tuy">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Quận / Huyện</label>
+          <input type="text" class="form-control" formControlName="district" placeholder="Hai Bà Trưng">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Tỉnh / Thành phố</label>
+          <input type="text" class="form-control" formControlName="city" placeholder="Hà Nội">
+        </div>
+      </div>
+
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Tài khoản nhận thanh toán (Tùy chọn)</h5>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Ngân hàng</label>
+          <input type="text" class="form-control" formControlName="bankName" placeholder="Techcombank">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Số tài khoản</label>
+          <input type="text" class="form-control" formControlName="bankAccountNumber" placeholder="1903...">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Tên chủ tài khoản</label>
+          <input type="text" class="form-control" formControlName="bankAccountName" placeholder="CONG TY CP...">
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+        <a routerLink="/admin/project/list" class="btn btn-secondary">Hủy bỏ</a>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || createForm.invalid">
+          {{ isSubmitting ? 'Đang lưu...' : 'Lưu Dự án' }}
+        </button>
+      </div>
     </form>
-  </mat-card-content>
-
-  <mat-card-actions align="end">
-    <button type="button" 
-            mat-button 
-            (click)="onCancel()"
-            [disabled]="isLoading">
-      <mat-icon>arrow_back</mat-icon>
-      Quay lại
-    </button>
-    
-    <button type="submit" 
-            mat-raised-button 
-            color="primary"
-            (click)="onSubmit()"
-            [disabled]="isLoading || projectForm.invalid">
-      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
-      <mat-icon *ngIf="!isLoading">save</mat-icon>
-      {{ isLoading ? 'Đang tạo...' : 'Tạo dự án' }}
-    </button>
-  </mat-card-actions>
-</mat-card>
+  </div>
+</div>
