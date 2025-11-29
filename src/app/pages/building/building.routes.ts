@@ -22,12 +22,15 @@ import { CreateContract } from './management/contract-management/create-contract
 import { ContractDetail } from './management/contract-management/contract-detail/contract-detail.component';
 import { UpdateContract } from './management/contract-management/update-contract/update-contract';
 import { ChatShellComponent } from '../chat/chat-shell/chat-shell';
+import { StaffProposalComponent } from './operation/proposal/staff-proposal.component';
+import { UserManagementComponent } from './management/user-management/user-management.component';
 
 
 export const MANAGER_ROUTES: Routes = [
   // --- MANAGEMENT ---
   { path: 'manage-resident', component: ResidentList },
   { path: 'manage-apartment', component: ApartmentList },
+  { path: 'user-management', component: UserManagementComponent, title: 'Quản Lý Tài Khoản' },
   { path: 'manage-apartment/create', component: CreateApartment },
   { path: 'manage-apartment/edit/:id', component: EditApartment },
   { path: 'manage-contract', component: ContractList },
@@ -84,6 +87,10 @@ export const MANAGER_ROUTES: Routes = [
   {
     path: 'chat',
     component: ChatShellComponent,
+  },
+  {
+    path: 'staff-proposal',
+    component: StaffProposalComponent,
   },
   { path: 'create-one-time-invoice', canActivate: [permissionGuard('invoice.pay.create')], loadComponent: () => import('./operation/create-one-time-invoice/create-one-time-invoice.component').then(m => m.CreateOneTimeInvoiceComponent), title: 'Tạo Phiếu Thu' },
 

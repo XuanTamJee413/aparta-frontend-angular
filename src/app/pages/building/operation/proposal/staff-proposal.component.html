@@ -1,0 +1,137 @@
+<div class="proposal-management-container">
+    <mat-card class="list-card">
+        <mat-card-header>
+            <mat-card-title>Danh sách Đề xuất Cư dân</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            
+            <div class="filter-controls">
+                <mat-form-field appearance="outline" class="search-field">
+                    <mat-label>Tìm kiếm (Cư dân/Nội dung)</mat-label>
+                    <input matInput [formControl]="searchControl">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="status-field">
+                    <mat-label>Trạng thái</mat-label>
+                    <mat-select [formControl]="statusFilterControl">
+                        <mat-option value="Pending">Chờ xử lý</mat-option>
+                        <mat-option value="Completed">Đã hoàn thành</mat-option>
+                        <mat-option value="">Tất cả</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="mat-elevation-z2 table-container">
+                <table mat-table [dataSource]="dataSource" matSort [matSortActive]="'createdAt'" matSortDirection="desc">
+
+                    <ng-container matColumnDef="residentName">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Cư dân </th>
+                        <td mat-cell *matCellDef="let proposal"> {{ proposal.residentName }} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="contentPreview">
+                        <th mat-header-cell *matHeaderCellDef> Nội dung </th>
+                        <td mat-cell *matCellDef="let proposal"> {{ truncateContent(proposal.content) }} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Trạng thái </th>
+                        <td mat-cell *matCellDef="let proposal">
+                            <span class="proposal-status" [ngClass]="getStatusClass(proposal.status)">
+                                {{ proposal.status }}
+                            </span>
+                        </td>
+                    </ng-container>
+                    
+                    <ng-container matColumnDef="createdAt">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Ngày gửi </th>
+                        <td mat-cell *matCellDef="let proposal"> {{ proposal.createdAt | date:'short' }} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef> Thao tác </th>
+                        <td mat-cell *matCellDef="let proposal">
+                            <button mat-icon-button color="primary" (click)="openDetails(proposal)">
+                                <mat-icon>visibility</mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                    
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="5">Không tìm thấy đề xuất nào phù hợp.</td>
+                    </tr>
+                </table>
+                
+                <mat-paginator [length]="resultsLength" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]">
+                </mat-paginator>
+            </div>
+            
+            <div *ngIf="isLoadingResults" class="loading-shade">
+                <mat-spinner></mat-spinner>
+            </div>
+            
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="selectedProposal" class="detail-card">
+        <mat-card-header>
+            <mat-card-title>Chi tiết Đề xuất: {{ selectedProposal.residentName }}</mat-card-title>
+            <span class="spacer"></span>
+            <button mat-icon-button (click)="closeDetails()"><mat-icon>close</mat-icon></button>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="proposal-detail-content">
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Ngày gửi</label>
+                        <span>{{ selectedProposal.createdAt | date:'medium' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Trạng thái</label>
+                        <span class="proposal-status" [ngClass]="getStatusClass(selectedProposal.status)">
+                            {{ selectedProposal.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="question-box">
+                    <h4><mat-icon style="font-size: 18px; height: 18px; vertical-align: middle;">person</mat-icon> Nội dung từ Cư dân:</h4>
+                    <p>{{ selectedProposal.content }}</p>
+                </div>
+                
+                <div class="reply-section">
+                    <h4><mat-icon>support_agent</mat-icon> Phản hồi từ Staff</h4>
+
+                    <div *ngIf="selectedProposal.reply" class="reply-box-readonly">
+                        <p>{{ selectedProposal.reply }}</p>
+                    </div>
+
+                    <div *ngIf="!selectedProposal.reply && selectedProposal.status.toLowerCase() !== 'pending'" class="no-reply-yet">
+                        Chưa có phản hồi được ghi nhận.
+                    </div>
+                    
+                    <div *ngIf="selectedProposal.status.toLowerCase() === 'pending'" class="reply-form">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Nhập nội dung giải quyết...</mat-label>
+                            <textarea matInput [formControl]="replyControl" rows="6" placeholder="VD: Chào bạn, chúng tôi sẽ cử kỹ thuật viên lên kiểm tra..."></textarea>
+                            <mat-error *ngIf="replyControl.hasError('required')">Nội dung trả lời là bắt buộc.</mat-error>
+                        </mat-form-field>
+                        
+                        <button mat-flat-button color="primary" (click)="submitReply()" [disabled]="replyControl.invalid || isReplying">
+                            <span *ngIf="!isReplying">Gửi Phản hồi & Hoàn thành</span>
+                            <div *ngIf="isReplying" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <mat-spinner diameter="20" color="accent"></mat-spinner> Đang gửi...
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </mat-card-content>
+    </mat-card>
+</div>

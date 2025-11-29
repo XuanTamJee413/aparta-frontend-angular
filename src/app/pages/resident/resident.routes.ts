@@ -18,9 +18,10 @@ import { MyInvoiceDetailComponent } from './invoice/my-invoice-detail/my-invoice
 import { permissionGuard } from '../../guards/permission.guard';
 import { authCanActivate } from '../../guards/auth.guard';
 import { ChatShellComponent } from '../chat/chat-shell/chat-shell';
+import { ResidentProposalComponent } from './proposal/proposal.component';
 
 export const RESIDENT_ROUTES: Routes = [
-    {
+  {
     path: 'home',
     component: HomepageComponent
   },
@@ -42,7 +43,7 @@ export const RESIDENT_ROUTES: Routes = [
     path: 'my-booking-service',
     component: MyBookingsComponent
   },
-    {
+  {
     path: 'booking-utility',
     component: BookUtilityComponent
   },
@@ -60,11 +61,11 @@ export const RESIDENT_ROUTES: Routes = [
   },
   {
     path: 'household',
-    component:RegisterHousehold
+    component: RegisterHousehold
   },
-   {
+  {
     path: 'vehicle',
-    component:RegisterVehicle
+    component: RegisterVehicle
   },
   {
     path: 'facility',
@@ -81,6 +82,10 @@ export const RESIDENT_ROUTES: Routes = [
   {
     path: 'chat',
     component: ChatShellComponent
+  },
+  {
+    path: 'send-proposal',
+    component: ResidentProposalComponent
   },
   {
     path: '',
