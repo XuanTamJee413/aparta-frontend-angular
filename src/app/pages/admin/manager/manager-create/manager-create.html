@@ -110,10 +110,12 @@
               required
               placeholder="VD: MGR001"
               [disabled]="submitting"
-              pattern="^[A-Z0-9]+$"
+              pattern="^[A-Z0-9]{5}$"
+              maxlength="5"
               [ngClass]="{'input-error': staffCodeCtrl.invalid && (staffCodeCtrl.touched || managerForm.submitted)}" />
             <p class="error-message" *ngIf="staffCodeCtrl.invalid && (staffCodeCtrl.touched || managerForm.submitted)">
-              Mã nhân viên chỉ được dùng chữ in hoa (A-Z) và số.
+              <span *ngIf="staffCodeCtrl.errors?.['required']">Mã nhân viên là bắt buộc.</span>
+              <span *ngIf="staffCodeCtrl.errors?.['pattern']">Mã nhân viên phải gồm đúng 5 ký tự chữ in hoa và số.</span>
             </p>
           </div>
           <div class="form-group">
@@ -142,14 +144,20 @@
               id="phone"
               name="phone"
               class="form-input"
-              [(ngModel)]="manager.phone"
+              [ngModel]="manager.phone"
+              (ngModelChange)="onPhoneInput($event)"
               #phoneCtrl="ngModel"
               required
+              inputmode="numeric"
+              autocomplete="tel"
+              pattern="^[0-9]{10}$"
+              maxlength="10"
               placeholder="0987654321"
               [disabled]="submitting"
               [ngClass]="{'input-error': phoneCtrl.invalid && (phoneCtrl.touched || managerForm.submitted)}" />
             <p class="error-message" *ngIf="phoneCtrl.invalid && (phoneCtrl.touched || managerForm.submitted)">
-              Số điện thoại là bắt buộc.
+              <span *ngIf="phoneCtrl.errors?.['required']">Số điện thoại là bắt buộc.</span>
+              <span *ngIf="phoneCtrl.errors?.['pattern']">Số điện thoại phải có đúng 10 chữ số.</span>
             </p>
           </div>
         </div>
