@@ -42,7 +42,7 @@ export class ProjectEditComponent implements OnInit {
       district: [''],
       city: [''],
       
-      bankName: [''],
+      bankName: ['PayOS'],
       bankAccountNumber: ['', [Validators.pattern('^[0-9]+$')]],
       bankAccountName: [''],
       

@@ -3,12 +3,6 @@ import { roleCanActivate } from '../../guards/role.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
-    path: 'dashboard', // URL: /admin/dashboard
-    loadComponent: () => import('./dashboard.component')
-      .then(m => m.DashboardComponent),
-    title: 'Admin Dashboard'
-  },
-  {
     path: 'project',
     loadChildren: () => import('./project/project.routes').then(m => m.PROJECT_ROUTES)
   },
@@ -45,7 +39,7 @@ export const ADMIN_ROUTES: Routes = [
 
   {
     path: '', 
-    redirectTo: 'dashboard', 
+    redirectTo: 'project/list', 
     pathMatch: 'full'
   }
 ];

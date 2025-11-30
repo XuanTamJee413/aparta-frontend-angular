@@ -39,7 +39,7 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
       city: [''],
       
       // 3. Ngân hàng
-      bankName: [''],
+      bankName: ['PayOS'],
       bankAccountNumber: ['', [Validators.pattern('^[0-9]+$')]],
       bankAccountName: [''],
       
