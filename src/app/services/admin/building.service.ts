@@ -12,7 +12,6 @@ import {
   BuildingBasicResponse 
 } from '../../models/building.model';
 
-// --- QUAN TRỌNG: Re-export để các file cũ không bị lỗi import ---
 export * from '../../models/building.model'; 
 
 @Injectable({
