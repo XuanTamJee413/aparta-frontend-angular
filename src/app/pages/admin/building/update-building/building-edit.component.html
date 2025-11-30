@@ -62,14 +62,6 @@
           <label class="form-label">Hotline Sảnh Lễ tân</label>
           <input type="text" class="form-control" formControlName="receptionPhone" placeholder="VD: 024...">
         </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Ngày chốt số (Từ) <span class="text-danger">*</span></label>
-          <input type="number" class="form-control" formControlName="readingWindowStart" min="1" max="31">
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Đến ngày <span class="text-danger">*</span></label>
-          <input type="number" class="form-control" formControlName="readingWindowEnd" min="1" max="31">
-        </div>
         
         <div class="col-12 mb-3">
             <div class="form-check">
@@ -83,6 +75,60 @@
         <div class="col-12 mb-3">
           <label class="form-label">Mô tả / Ghi chú</label>
           <textarea class="form-control" formControlName="description" rows="3"></textarea>
+        </div>
+      </div>
+
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">
+        📅 Cấu hình Hóa đơn Hàng tháng
+      </h5>
+      <div class="info-box mb-3">
+        <div class="info-content">
+          <div class="info-title">
+            <strong>💡 Cách hoạt động:</strong>
+          </div>
+          <ul class="info-list">
+            <li>
+              Hệ thống sẽ tự động tạo hóa đơn hàng tháng cho tất cả căn hộ trong tòa nhà
+            </li>
+            <li>
+              <strong>Ngày kết thúc chốt số:</strong> Mặc định = Ngày bắt đầu + 2, nhưng có thể chỉnh sửa tự do
+            </li>
+            <li>
+              <strong>Ngày tạo hóa đơn = Ngày kết thúc chốt số + 1</strong>
+            </li>
+            <li>
+              <strong>Ví dụ 1:</strong> Bắt đầu <strong>1</strong>, Kết thúc <strong>3</strong> → Tạo hóa đơn ngày <strong>4</strong> hàng tháng
+            </li>
+            <li>
+              <strong>Ví dụ 2:</strong> Bắt đầu <strong>31</strong>, Kết thúc <strong>1</strong> (tháng sau) → Tạo hóa đơn ngày <strong>2</strong> hàng tháng
+            </li>
+            <li>
+              <strong>Kỳ hóa đơn:</strong> Sẽ là tháng trước đó 
+              (ví dụ: tạo vào ngày 6/2 thì kỳ hóa đơn là tháng 1/2024)
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            Ngày bắt đầu chốt số <span class="text-danger">*</span>
+            <span class="text-muted" style="font-size: 0.75rem; font-weight: normal;">(1-31)</span>
+          </label>
+          <input type="number" class="form-control" formControlName="readingWindowStart" min="1" max="31" placeholder="VD: 1">
+          <div *ngIf="hasInvalidDayWarning.start" class="text-warning small mt-1" style="color: #f59e0b;">
+            Lưu ý: Tháng hiện tại chỉ có {{ getDaysInCurrentMonth() }} ngày. Nếu chọn ngày {{ editForm.get('readingWindowStart')?.value }}, hệ thống sẽ hiểu là ngày cuối cùng của tháng (ngày {{ getDaysInCurrentMonth() }}).
+          </div>
+          <div *ngIf="editForm.get('readingWindowStart')?.invalid && editForm.get('readingWindowStart')?.touched" class="text-danger small mt-1">
+            Ngày bắt đầu phải từ 1 đến 31.
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            Ngày kết thúc chốt số <span class="text-danger">*</span>
+            <span class="text-muted" style="font-size: 0.75rem; font-weight: normal;">(Tự động = Bắt đầu + 2)</span>
+          </label>
+          <input type="number" class="form-control" formControlName="readingWindowEnd" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
         </div>
       </div>
 

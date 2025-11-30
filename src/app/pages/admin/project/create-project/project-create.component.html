@@ -47,19 +47,91 @@
         </div>
       </div>
 
-      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Tài khoản nhận thanh toán (Tùy chọn)</h5>
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">
+        Cấu hình PayOS (Tùy chọn)
+      </h5>
+      <div class="info-box mb-3">
+        <div class="info-content">
+          <div class="info-title">
+            <strong>Lưu ý:</strong>
+          </div>
+          <ul class="info-list">
+            <li>
+              Nếu không cấu hình PayOS, hệ thống sẽ sử dụng tài khoản PayOS mặc định từ cấu hình hệ thống
+            </li>
+            <li>
+              Mỗi project có thể có tài khoản PayOS riêng để quản lý thanh toán độc lập
+            </li>
+            <li>
+              <strong>Bắt buộc:</strong> Phải kiểm tra và xác thực tài khoản PayOS trước khi tạo dự án
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">
+            PayOS Client ID
+            <span class="text-muted" style="font-size: 0.75rem; font-weight: normal;">(Tùy chọn)</span>
+          </label>
+          <input type="text" class="form-control" formControlName="payOSClientId" 
+                 placeholder="Nhập Client ID"
+                 (input)="resetPayOSValidation()">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">
+            PayOS API Key
+            <span class="text-muted" style="font-size: 0.75rem; font-weight: normal;">(Tùy chọn)</span>
+          </label>
+          <input type="password" class="form-control" formControlName="payOSApiKey" 
+                 placeholder="Nhập API Key"
+                 (input)="resetPayOSValidation()">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">
+            PayOS Checksum Key
+            <span class="text-muted" style="font-size: 0.75rem; font-weight: normal;">(Tùy chọn)</span>
+          </label>
+          <input type="password" class="form-control" formControlName="payOSChecksumKey" 
+                 placeholder="Nhập Checksum Key"
+                 (input)="resetPayOSValidation()">
+        </div>
+        <div class="col-12 mb-3">
+          <button type="button" class="btn btn-outline-primary" 
+                  (click)="validatePayOS()" 
+                  [disabled]="isValidatingPayOS || !createForm.get('payOSClientId')?.value || !createForm.get('payOSApiKey')?.value || !createForm.get('payOSChecksumKey')?.value">
+            <span *ngIf="isValidatingPayOS">Đang kiểm tra...</span>
+            <span *ngIf="!isValidatingPayOS">Kiểm tra tài khoản PayOS</span>
+          </button>
+          <div *ngIf="payOSValidationMessage" 
+               class="mt-2" 
+               [ngClass]="{
+                 'text-success': payOSValidationStatus === 'valid',
+                 'text-danger': payOSValidationStatus === 'invalid',
+                 'text-info': payOSValidationStatus === 'idle'
+               }">
+            {{ payOSValidationMessage }}
+          </div>
+        </div>
+      </div>
+
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Tài khoản nhận thanh toán</h5>
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Ngân hàng</label>
-          <input type="text" class="form-control" formControlName="bankName" placeholder="Techcombank">
+          <input type="text" class="form-control" formControlName="bankName" value="PayOS" readonly>
         </div>
         <div class="col-md-4 mb-3">
           <label class="form-label">Số tài khoản</label>
-          <input type="text" class="form-control" formControlName="bankAccountNumber" placeholder="1903...">
+          <input type="text" class="form-control" formControlName="bankAccountNumber" 
+                 placeholder="Sẽ tự động điền sau khi kiểm tra PayOS"
+                 [readonly]="payOSValidationStatus === 'valid'">
         </div>
         <div class="col-md-4 mb-3">
           <label class="form-label">Tên chủ tài khoản</label>
-          <input type="text" class="form-control" formControlName="bankAccountName" placeholder="CONG TY CP...">
+          <input type="text" class="form-control" formControlName="bankAccountName" 
+                 placeholder="Sẽ tự động điền sau khi kiểm tra PayOS"
+                 [readonly]="payOSValidationStatus === 'valid'">
         </div>
       </div>
 

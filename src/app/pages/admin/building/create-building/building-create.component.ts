@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { BuildingService, BuildingDetailResponse } from '../../../../services/admin/building.service';
 import { ProjectService, ProjectDto } from '../../../../services/admin/project.service';
@@ -36,7 +36,20 @@ export class BuildingCreateComponent implements OnInit {
       description: [''],
       receptionPhone: [''],
       readingWindowStart: [1, [Validators.required, Validators.min(1), Validators.max(31)]],
-      readingWindowEnd: [5, [Validators.required, Validators.min(1), Validators.max(31)]]
+      readingWindowEnd: [{value: 3, disabled: true}, [Validators.required]]
+    });
+    
+    // Tự động tính readingWindowEnd = readingWindowStart + 2 (bắt buộc)
+    this.createForm.get('readingWindowStart')?.valueChanges.subscribe(startValue => {
+      if (startValue != null && startValue >= 1 && startValue <= 31) {
+        const endControl = this.createForm.get('readingWindowEnd');
+        let endValue = startValue + 2;
+        // Nếu vượt quá 31, cho phép sang tháng sau (set = 1)
+        if (endValue > 31) {
+          endValue = 1; // Sang tháng sau
+        }
+        endControl?.setValue(endValue, { emitEvent: false });
+      }
     });
   }
 
@@ -59,7 +72,15 @@ export class BuildingCreateComponent implements OnInit {
     this.isSubmitting = true;
     this.errorMessage = '';
     
-    this.buildingService.createBuilding(this.createForm.value).subscribe({
+    const formValue = this.createForm.getRawValue();
+    const buildingData = {
+      ...formValue,
+      readingWindowEnd: formValue.readingWindowStart + 2 > 31 
+        ? 1 
+        : formValue.readingWindowStart + 2
+    };
+    
+    this.buildingService.createBuilding(buildingData).subscribe({
       next: (res: BuildingDetailResponse) => {
         this.isSubmitting = false;
         if (res.succeeded) {
@@ -74,5 +95,69 @@ export class BuildingCreateComponent implements OnInit {
         this.errorMessage = err.error?.message || 'Đã xảy ra lỗi hệ thống.';
       }
     });
+  }
+
+  // Getter để hiển thị ngày tạo invoice động
+  get invoiceGenerationDay(): string {
+    const endDay = this.createForm.get('readingWindowEnd')?.value;
+    const startDay = this.createForm.get('readingWindowStart')?.value;
+    
+    if (!endDay || !startDay) return '0';
+    
+    // Nếu end < start, nghĩa là sang tháng sau
+    if (endDay < startDay) {
+      return `${endDay + 1} (tháng sau)`;
+    } else {
+      const invoiceDay = endDay + 1;
+      // Nếu vượt quá 31, cũng là tháng sau
+      if (invoiceDay > 31) {
+        return `${invoiceDay - 31} (tháng sau)`;
+      }
+      return invoiceDay.toString();
+    }
+  }
+
+  // Getter để hiển thị ngày kết thúc chốt số
+  get calculatedEndDay(): number {
+    const endDay = this.createForm.get('readingWindowEnd')?.value;
+    return endDay || 0;
+  }
+
+  // Helper để kiểm tra ngày có hợp lệ với tháng hiện tại không
+  getDaysInCurrentMonth(): number {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  }
+
+  // Getter để kiểm tra cảnh báo ngày không tồn tại trong tháng
+  get hasInvalidDayWarning(): { start: boolean, end: boolean } {
+    const daysInMonth = this.getDaysInCurrentMonth();
+    const startDay = this.createForm.get('readingWindowStart')?.value;
+    const endDay = this.createForm.get('readingWindowEnd')?.value;
+    
+    return {
+      start: startDay != null && startDay > daysInMonth,
+      end: endDay != null && endDay > daysInMonth && endDay >= this.createForm.get('readingWindowStart')?.value
+    };
+  }
+
+  // Custom validator để đảm bảo logic hợp lệ
+  private readingWindowValidator(control: AbstractControl): ValidationErrors | null {
+    const formGroup = control as FormGroup;
+    const start = formGroup.get('readingWindowStart')?.value;
+    const end = formGroup.get('readingWindowEnd')?.value;
+    
+    if (start == null || end == null) {
+      return null; // Để các validator khác xử lý required
+    }
+    
+    // Cho phép end < start (sang tháng sau) hoặc end > start (cùng tháng)
+    // Chỉ không cho phép end == start
+    if (start === end) {
+      formGroup.get('readingWindowEnd')?.setErrors({ sameAsStart: true });
+      return { sameAsStart: true };
+    }
+    
+    return null;
   }
 }

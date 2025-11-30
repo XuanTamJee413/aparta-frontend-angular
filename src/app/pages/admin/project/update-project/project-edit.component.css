@@ -16,3 +16,88 @@ header p { margin-top: 0.25rem; color: #6b7280; font-size: 0.875rem; }
 .alert { padding: 1rem; border-radius: 0.375rem; }
 .alert-danger { background-color: #fee2e2; color: #991b1b; }
 .alert-success { background-color: #d1fae5; color: #065f46; }
+
+/* Info box cho phần cấu hình PayOS */
+.info-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #93c5fd;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.info-content {
+  color: #1e40af;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.info-title {
+  margin-bottom: 0.75rem;
+  font-size: 0.9375rem;
+  color: #1e3a8a;
+}
+
+.info-title strong {
+  font-weight: 600;
+}
+
+.info-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+  color: #1e40af;
+}
+
+.info-list li {
+  margin-bottom: 0.625rem;
+  line-height: 1.7;
+  padding-left: 0.25rem;
+  word-wrap: break-word;
+}
+
+.info-list li:last-child {
+  margin-bottom: 0;
+}
+
+.info-list li strong {
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  border: 1px solid #4f46e5;
+  color: #4f46e5;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.btn-outline-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.text-success {
+  color: #059669;
+  font-weight: 500;
+}
+
+.text-danger {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.text-info {
+  color: #0284c7;
+  font-weight: 500;
+}
