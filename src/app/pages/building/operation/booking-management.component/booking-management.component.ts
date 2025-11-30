@@ -1,8 +1,8 @@
-// src/app/pages/operation/booking-management/booking-management.component.ts
-
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+// THÊM HttpErrorResponse
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { ServiceBookingDto, ServiceBookingUpdateDto, PagedList, ServiceQueryParameters } from '../../../../models/service-booking.model';
 import { BookingManagementService } from '../../../../services/operation/booking-management.service';
@@ -23,33 +23,36 @@ export class BookingManagementComponent implements OnInit {
   bookingForm: FormGroup;
   isLoading = false;
 
-  // Phân trang
+  // Pagination
   currentPage = 1;
   pageSize = 10;
   totalCount = 0;
   totalPages = 0;
 
-  // Lọc
+  // Filter
   searchControl = new FormControl('');
-  statusFilterControl = new FormControl('Pending'); // Mặc định: Chờ duyệt
+  statusFilterControl = new FormControl('Pending'); 
 
   statusOptions = [
     { label: 'Tất cả', value: '' },
     { label: 'Chờ duyệt', value: 'Pending' },
-    { label: 'Đã duyệt', value: 'Approve' },
+    { label: 'Đã duyệt (Tạo Task)', value: 'Approved' }, // Update label cho rõ nghĩa
     { label: 'Hoàn thành', value: 'Completed' },
     { label: 'Đã hủy', value: 'Cancelled' }
   ];
 
-  // Chỉ cho phép staff chọn các trạng thái này
   dialogStatusOptions = this.statusOptions.filter(o => o.value !== '' && o.value !== 'Pending');
+
+  // THÊM BIẾN THÔNG BÁO
+  pageSuccessMessage: string | null = null;
+  dialogErrorMessage: string | null = null;
 
   constructor(
     private bookingService: BookingManagementService,
     private fb: FormBuilder
   ) {
     this.bookingForm = this.fb.group({
-      status: ['Approve', Validators.required],
+      status: ['Approved', Validators.required],
       paymentAmount: [0, [Validators.required, Validators.min(0)]],
       staffNote: ['']
     });
@@ -83,32 +86,23 @@ export class BookingManagementComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.currentPage = 1;
-    this.loadBookings();
-  }
-
-  onFilterChange(): void {
-    this.currentPage = 1;
-    this.loadBookings();
-  }
-
+  onSearch(): void { this.currentPage = 1; this.loadBookings(); }
+  onFilterChange(): void { this.currentPage = 1; this.loadBookings(); }
+  
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
       this.loadBookings();
     }
   }
-
-  get hasPreviousPage(): boolean {
-    return this.currentPage > 1;
-  }
-
-  get hasNextPage(): boolean {
-    return this.currentPage < this.totalPages;
-  }
+  get hasPreviousPage(): boolean { return this.currentPage > 1; }
+  get hasNextPage(): boolean { return this.currentPage < this.totalPages; }
 
   openEditModal(booking: ServiceBookingDto): void {
+    // Reset thông báo
+    this.dialogErrorMessage = null;
+    this.pageSuccessMessage = null;
+
     this.currentBookingId = booking.serviceBookingId;
     this.bookingForm.patchValue({
       status: booking.status,
@@ -120,14 +114,18 @@ export class BookingManagementComponent implements OnInit {
 
   hideDialog(): void {
     this.dialog.nativeElement.close();
+    this.currentBookingId = null;
   }
 
+  // Hàm này để reset form khi đóng hoàn toàn
   onDialogClose(): void {
-    this.bookingForm.reset({ status: 'Approve', paymentAmount: 0, staffNote: '' });
+    this.bookingForm.reset({ status: 'Approved', paymentAmount: 0, staffNote: '' });
     this.currentBookingId = null;
   }
 
   saveBooking(): void {
+    this.dialogErrorMessage = null; // Reset lỗi cũ
+
     if (this.bookingForm.invalid || !this.currentBookingId) {
       this.bookingForm.markAllAsTouched();
       return;
@@ -144,29 +142,31 @@ export class BookingManagementComponent implements OnInit {
       next: () => {
         this.loadBookings();
         this.hideDialog();
+        
+        // Thông báo thông minh hơn
+        let msg = 'Cập nhật trạng thái thành công!';
+        if (formValue.status === 'Approved') {
+          msg = 'Đã duyệt đơn và tạo Task mới thành công. Vui lòng vào mục Quản lý Công việc để phân công.';
+        }
+        this.setSuccessMessage(msg);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Lỗi khi cập nhật booking:', err);
+        // Hiển thị lỗi từ backend (ví dụ: Task đã tồn tại, lỗi DB...)
+        this.dialogErrorMessage = err.error?.message || 'Lỗi khi cập nhật. Vui lòng thử lại.';
       }
     });
   }
 
-  delete(id: string): void {
-    if (confirm('Bạn có chắc muốn xóa đơn booking này?')) {
-      this.bookingService.deleteBooking(id).subscribe({
-        next: () => {
-          if (this.bookings.length === 1 && this.currentPage > 1) {
-            this.currentPage--;
-          }
-          this.loadBookings();
-        },
-        error: (err) => console.error('Lỗi khi xóa:', err)
-      });
-    }
+  // Hàm helper
+  private setSuccessMessage(msg: string): void {
+    this.pageSuccessMessage = msg;
+    // Tự tắt sau 5 giây (lâu hơn xíu để đọc nếu thông báo dài)
+    setTimeout(() => this.pageSuccessMessage = null, 5000); 
   }
 
   getStatusLabel(status: string): string {
-  const option = this.statusOptions.find(o => o.value === status);
-  return option ? option.label : status;
-}
+    const option = this.statusOptions.find(o => o.value === status);
+    return option ? option.label : status;
+  }
 }

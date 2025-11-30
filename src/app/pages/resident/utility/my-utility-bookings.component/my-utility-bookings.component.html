@@ -1,64 +1,87 @@
 <div class="container">
-  <h2>Lịch Sử Đặt Tiện Ích</h2>
+  <h2>Lịch sử đặt tiện ích</h2>
 
-  <div *ngIf="isLoading">Đang tải...</div>
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading && !bookingIdToCancel">
+    Đang tải lịch sử đặt chỗ...
+  </div>
 
-  <table *ngIf="!isLoading && myBookings.length > 0">
-    <thead>
-      <tr>
-        <th>Tiện Ích</th>
-        <th>Bắt Đầu</th>
-        <th>Kết Thúc</th>
-        <th>Trạng Thái</th>
-        <th>Ghi Chú Của Bạn</th>
-        <th>Phản Hồi (Staff)</th>
-        <th>Ngày Tạo</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let b of myBookings">
-        <td>{{ b.utilityName }}</td>
-        <td>{{ b.bookingDate | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>{{ b.bookedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>
-          <span class="badge status-{{ b.status | lowercase }}">
-            {{ b.status }}
-          </span>
-        </td>
-        <td>{{ b.residentNote }}</td>
-        <td>{{ b.staffNote }}</td>
-        <td>{{ b.createdAt | date:'dd/MM/yyyy' }}</td>
-        <td>
-          <button 
-            *ngIf="b.status !== 'Cancelled' && b.status !== 'Rejected'"
-            class="btn-cancel-small"
-            [disabled]="isExpired(b.bookingDate)"
-            (click)="onCancel(b.utilityBookingId)"
-            [title]="isExpired(b.bookingDate) ? 'Đã quá thời gian, không thể hủy' : 'Hủy lịch này'">
-            Hủy
-          </button>
-          
-          <span *ngIf="b.status === 'Cancelled'" class="text-muted">Đã hủy</span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Có dữ liệu -->
+  <div class="table-responsive" *ngIf="myBookings.length > 0">
+    <table class="booking-table">
+      <thead>
+        <tr>
+          <th>Tiện ích</th>
+          <th>Thời gian sử dụng</th>
+          <th>Ngày đặt</th>
+          <th>Trạng thái</th>
+          <th>Ghi chú của bạn</th>
+          <th>Phản hồi nhân viên</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of myBookings" [class.expired]="isExpired(b.bookingDate)">
+          <td class="utility-name">
+            <strong>{{ b.utilityName }}</strong>
+          </td>
+          <td>
+            {{ b.bookingDate | date:'dd/MM/yyyy HH:mm' }}
+            <span class="expired-tag" *ngIf="isExpired(b.bookingDate)"> (Đã qua)</span>
+          </td>
+          <td>{{ b.bookedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + b.status.toLowerCase()">
+              {{ getStatusLabel(b.status) }}
+            </span>
+          </td>
+          <td class="note">{{ b.residentNote || '—' }}</td>
+          <td class="note">{{ b.staffNote || '—' }}</td>
+          <td>
+            <button 
+              *ngIf="b.status === 'Pending' || b.status === 'Approved'"
+              class="btn-cancel"
+              [disabled]="isExpired(b.bookingDate)"
+              (click)="openCancelModal(b.utilityBookingId)">
+              Hủy
+            </button>
 
-  <div *ngIf="!isLoading && myBookings.length === 0" class="empty-msg">
-    Bạn chưa đặt tiện ích nào.
+            <span class="text-muted" *ngIf="b.status === 'Cancelled'">Đã hủy</span>
+            <span class="text-muted" *ngIf="b.status === 'Rejected'">Bị từ chối</span>
+            <span class="text-muted" *ngIf="!['Pending','Approved'].includes(b.status) && !isExpired(b.bookingDate)">
+              —
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Không có dữ liệu -->
+  <div class="empty-state" *ngIf="!isLoading && myBookings.length === 0">
+    <p>Bạn chưa đặt tiện ích nào.</p>
+    <a routerLink="/resident/utilities" class="btn-primary">Đặt tiện ích ngay</a>
   </div>
 </div>
 
-<style>
-  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-  th { background-color: #f8f9fa; }
-  .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-  .status-pending { background-color: #ffc107; color: #000; }
-  .status-approved { background-color: #28a745; color: #fff; } /* Hoặc Confirmed */
-  .status-rejected { background-color: #dc3545; color: #fff; }
-  .status-cancelled { background-color: #6c757d; color: #fff; }
-  .status-completed { background-color: #17a2b8; color: #fff; }
-  .empty-msg { text-align: center; margin-top: 20px; color: #777; }
-</style>
+<!-- Dialog xác nhận hủy -->
+<dialog #cancelDialog class="simple-dialog">
+  <form class="dialog-form">
+    <h3>Xác nhận hủy đặt chỗ</h3>
+    <p>Bạn có chắc muốn <strong>hủy</strong> lịch đặt này?</p>
+    <p class="note">Hành động này không thể hoàn tác.</p>
+
+    <div class="error" *ngIf="cancelErrorMessage">
+      {{ cancelErrorMessage }}
+    </div>
+
+    <div class="buttons">
+      <button type="button" class="btn-secondary" (click)="closeCancelDialog()" [disabled]="isLoading">
+        Hủy bỏ
+      </button>
+      <button type="button" class="btn-danger" (click)="confirmCancel()" [disabled]="isLoading">
+        {{ isLoading ? 'Đang xử lý...' : 'Đồng ý hủy' }}
+      </button>
+    </div>
+  </form>
+</dialog>

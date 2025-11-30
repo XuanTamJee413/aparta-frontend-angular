@@ -104,6 +104,13 @@ export const MANAGER_ROUTES: Routes = [
   },
   { path: 'create-one-time-invoice', canActivate: [permissionGuard('invoice.pay.create')], loadComponent: () => import('./operation/create-one-time-invoice/create-one-time-invoice.component').then(m => m.CreateOneTimeInvoiceComponent), title: 'Tạo Phiếu Thu' },
 
+  // --- MAINTENANCE  ---
+  {
+    path: 'my-tasks',
+    loadComponent: () => import('./maintenance/my-task-list.component/my-task-list.component')
+      .then(m => m.MyTaskListComponent),
+    title: 'Công việc của tôi'
+  },
   // --- END OPERATION  ---
 
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
