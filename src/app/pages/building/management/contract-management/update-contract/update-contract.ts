@@ -67,33 +67,31 @@ export class UpdateContract implements OnInit {
     });
   }
 
- private buildForm(): void {
-  if (!this.contract) return;
+  private buildForm(): void {
+    if (!this.contract) return;
 
-  const endDateRaw = this.contract.endDate
-    ? this.contract.endDate.substring(0, 10)
-    : '';
+    this.form = this.fb.group({
+      image: [this.contract.image ?? '', [Validators.maxLength(2_000_000)]]
+    });
 
-  this.form = this.fb.group({
-    endDate: [endDateRaw, []],
-    image: [this.contract.image ?? '', [Validators.maxLength(2_000_000)]]
-  });
+    this.previewUrl = this.contract.image ?? null;
+    this.selectedFileName = null;
 
-  this.previewUrl = this.contract.image ?? null;
-  this.selectedFileName = null;
+    if (this.previewUrl) {
+      if (this.previewUrl.startsWith('data:application/pdf')) {
+        this.previewMode = 'pdf';
+      } else if (this.previewUrl.startsWith('data:') || this.previewUrl.match(/\.(png|jpe?g|gif|webp)$/i)) {
+        this.previewMode = 'image';
+      } else {
+        this.previewMode = 'link';
+      }
 
-  if (this.previewUrl) {
-    this.previewMode = this.previewUrl.startsWith('data:')
-      ? 'image'
-      : 'link';
-
-    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.previewUrl);
-  } else {
-    this.previewMode = 'none';
-    this.safePreviewUrl = null;
+      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.previewUrl);
+    } else {
+      this.previewMode = 'none';
+      this.safePreviewUrl = null;
+    }
   }
-}
-
 
   get pdfUrl(): string | null {
     if (!this.contract) return null;
@@ -106,30 +104,30 @@ export class UpdateContract implements OnInit {
   }
 
   onFileSelected(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (!input.files || input.files.length === 0) return;
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
 
-  const file = input.files[0];
-  this.selectedFileName = file.name;
+    const file = input.files[0];
+    this.selectedFile = file;
+    this.selectedFileName = file.name;
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const result = reader.result as string;
-    this.form.patchValue({ image: result });
-    this.previewUrl = result;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      this.form.patchValue({ image: result });
+      this.previewUrl = result;
 
-    if (result.startsWith('data:application/pdf')) {
-      this.previewMode = 'pdf';
-    } else {
-      this.previewMode = 'image';
-    }
+      if (result.startsWith('data:application/pdf')) {
+        this.previewMode = 'pdf';
+      } else {
+        this.previewMode = 'image';
+      }
 
-    this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(result);
-  };
+      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustUrl(result);
+    };
 
-  reader.readAsDataURL(file);
-}
-
+    reader.readAsDataURL(file);
+  }
 
   onSubmit(): void {
     if (!this.contract || !this.form) return;
@@ -141,21 +139,8 @@ export class UpdateContract implements OnInit {
 
     const formValue = this.form.value;
 
-    const startStr = this.contract.startDate;
-    const endStr: string | null = formValue.endDate ? String(formValue.endDate) : null;
-
-    if (startStr && endStr) {
-      const startDate = new Date(startStr.substring(0, 10));
-      const endDate = new Date(endStr);
-
-      if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) && endDate < startDate) {
-        alert('Ngày kết thúc không hợp lệ. Vui lòng chọn ngày lớn hơn hoặc bằng ngày bắt đầu.');
-        return;
-      }
-    }
-
     const payload: ContractUpdateDto = {
-      endDate: endStr ? endStr : null
+      image: formValue.image
     };
 
     this.isSaving = true;

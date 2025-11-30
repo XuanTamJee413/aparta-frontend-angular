@@ -14,6 +14,11 @@ export interface ProjectDto {
   bankAccountNumber?: string;
   bankAccountName?: string;
 
+  // PayOS
+  payOSClientId?: string;
+  payOSApiKey?: string;
+  payOSChecksumKey?: string;
+
   // Thống kê
   numApartments: number;
   numBuildings: number;
@@ -34,6 +39,9 @@ export interface ProjectCreateDto {
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
+  payOSClientId?: string;
+  payOSApiKey?: string;
+  payOSChecksumKey?: string;
 }
 
 export interface ProjectUpdateDto {
@@ -45,6 +53,9 @@ export interface ProjectUpdateDto {
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountName?: string;
+  payOSClientId?: string;
+  payOSApiKey?: string;
+  payOSChecksumKey?: string;
   isActive?: boolean;
 }
 

@@ -1,11 +1,21 @@
 <div class="container">
   <div class="card">
     <header>
-      <h1>Quản lý Dự án</h1>
-      <p>Danh sách dự án và cấu hình tài chính</p>
+      <div class="header-row">
+        <div>
+          <h1>Quản lý Dự án</h1>
+          <p>Danh sách dự án và cấu hình tài chính</p>
+        </div>
+        <a routerLink="/admin/project/create" class="btn-primary">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Tạo Dự án mới
+        </a>
+      </div>
     </header>
 
-    <div class="filter-container">
+    <div class="search-container">
       <div class="search-wrapper">
         <div class="search-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -18,17 +28,13 @@
           placeholder="Tìm theo Mã hoặc Tên dự án..."
           [ngModel]="searchTerm"
           (input)="onSearchInput($event)"
+          [disabled]="isLoading"
         />
       </div>
-
-      <div style="flex-grow: 1;"></div>
-      
-      <a routerLink="/admin/project/create" class="btn-add-new">
-        + Thêm Dự Án
-      </a>
     </div>
 
-    <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
       <p>Đang tải dữ liệu...</p>
     </div>
 
@@ -70,7 +76,7 @@
                 <span class="badge bg-info text-dark">{{ p.numBuildings }} Tòa</span>
                 <span class="badge bg-secondary ms-1">{{ p.numApartments }} Căn</span>
               </td>
-              <td>
+              <td class="text-nowrap status-cell">
                 <span class="status-badge" [ngClass]="p.isActive ? 'status-available' : 'status-unavailable'">
                   {{ p.isActive ? 'Hoạt động' : 'Đã dừng' }}
                 </span>

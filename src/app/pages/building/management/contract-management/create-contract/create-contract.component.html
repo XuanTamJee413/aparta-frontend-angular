@@ -32,7 +32,11 @@
             <div class="invalid-feedback">Vui lòng chọn căn hộ.</div>
           }
 
-          @if (!apartmentsLoading() && !apartmentsError() && availableApartments().length === 0) {
+          @if (
+            !apartmentsLoading() &&
+            !apartmentsError() &&
+            availableApartments().length === 0
+          ) {
             <div class="help-text">Hiện không còn căn hộ nào trống.</div>
           }
         </div>
@@ -45,27 +49,21 @@
             formControlName="startDate"
             [class.is-invalid]="isInvalid('startDate')"
           >
-          @if (contractForm.get('startDate')?.errors?.['required'] && (contractForm.get('startDate')?.dirty ||
-              contractForm.get('startDate')?.touched)) {
+          @if (
+            contractForm.get('startDate')?.errors?.['required'] &&
+            (contractForm.get('startDate')?.dirty ||
+              contractForm.get('startDate')?.touched)
+          ) {
             <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
           }
-          @if (contractForm.get('startDate')?.errors?.['notFutureDate'] && (contractForm.get('startDate')?.dirty ||
-              contractForm.get('startDate')?.touched)) {
-            <div class="invalid-feedback">Ngày bắt đầu phải lớn hơn ngày hiện tại.</div>
-          }
-        </div>
-
-        <div class="form-group">
-          <label for="endDate">Ngày kết thúc (có thể bỏ trống nếu mua căn hộ)</label>
-          <input
-            type="date"
-            id="endDate"
-            formControlName="endDate"
-            [class.is-invalid]="isInvalid('endDate') || contractForm.errors?.['endBeforeOrEqualStart']"
-          >
-          @if (contractForm.errors?.['endBeforeOrEqualStart'] && (contractForm.get('endDate')?.dirty ||
-              contractForm.get('endDate')?.touched)) {
-            <div class="invalid-feedback">Ngày kết thúc phải lớn hơn ngày bắt đầu.</div>
+          @if (
+            contractForm.get('startDate')?.errors?.['notFutureDate'] &&
+            (contractForm.get('startDate')?.dirty ||
+              contractForm.get('startDate')?.touched)
+          ) {
+            <div class="invalid-feedback">
+              Ngày bắt đầu phải lớn hơn ngày hiện tại.
+            </div>
           }
         </div>
       </div>
@@ -119,16 +117,27 @@
             formControlName="ownerIdNumber"
             [class.is-invalid]="isInvalid('ownerIdNumber')"
           >
-          @if (contractForm.get('ownerIdNumber')?.errors?.['required'] && (contractForm.get('ownerIdNumber')?.dirty ||
-              contractForm.get('ownerIdNumber')?.touched)) {
+          @if (
+            contractForm.get('ownerIdNumber')?.errors?.['required'] &&
+            (contractForm.get('ownerIdNumber')?.dirty ||
+              contractForm.get('ownerIdNumber')?.touched)
+          ) {
             <div class="invalid-feedback">Vui lòng nhập số CMND/CCCD.</div>
           }
-          @if (contractForm.get('ownerIdNumber')?.errors?.['pattern'] && (contractForm.get('ownerIdNumber')?.dirty ||
-              contractForm.get('ownerIdNumber')?.touched)) {
-            <div class="invalid-feedback">Số CMND/CCCD chỉ được chứa chữ số.</div>
+          @if (
+            contractForm.get('ownerIdNumber')?.errors?.['pattern'] &&
+            (contractForm.get('ownerIdNumber')?.dirty ||
+              contractForm.get('ownerIdNumber')?.touched)
+          ) {
+            <div class="invalid-feedback">
+              Số CMND/CCCD chỉ được chứa chữ số.
+            </div>
           }
-          @if (contractForm.get('ownerIdNumber')?.errors?.['duplicateIdNumber'] &&
-              (contractForm.get('ownerIdNumber')?.dirty || contractForm.get('ownerIdNumber')?.touched)) {
+          @if (
+            contractForm.get('ownerIdNumber')?.errors?.['duplicateIdNumber'] &&
+            (contractForm.get('ownerIdNumber')?.dirty ||
+              contractForm.get('ownerIdNumber')?.touched)
+          ) {
             <div class="invalid-feedback">
               Số CMND/CCCD này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.
             </div>

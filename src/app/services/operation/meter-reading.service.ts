@@ -35,8 +35,8 @@ export class MeterReadingService {
   /**
    * Lấy danh sách các loại phí (fee_type) cần trả hằng tháng cho một căn hộ
    */
-  getServicesForApartment(apartmentId: string): Observable<ApiResponse<MeterReadingServiceDto>> {
-    return this.http.get<ApiResponse<MeterReadingServiceDto>>(
+  getServicesForApartment(apartmentId: string): Observable<ApiResponse<MeterReadingServiceDto[]>> {
+    return this.http.get<ApiResponse<MeterReadingServiceDto[]>>(
       `${this.apiUrl}/MeterReadings/services-for-apartment/${apartmentId}`
     );
   }
