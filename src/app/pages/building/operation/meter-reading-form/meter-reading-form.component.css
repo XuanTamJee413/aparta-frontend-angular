@@ -170,6 +170,19 @@
   margin-bottom: 0.5rem;
 }
 
+.reading-window-info {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #93c5fd;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .select-wrapper {
   position: relative;
   display: flex;
@@ -546,6 +559,26 @@
   color: #333;
   font-size: 16px;
   font-weight: 600;
+}
+
+.method-group {
+  margin-bottom: 32px;
+}
+
+.method-group:last-child {
+  margin-bottom: 0;
+}
+
+.method-group-title {
+  margin-bottom: 16px;
+  color: #4f46e5;
+  font-size: 15px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e7ff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .readings-grid {
