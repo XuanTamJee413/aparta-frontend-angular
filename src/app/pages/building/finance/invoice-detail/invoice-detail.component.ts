@@ -28,6 +28,15 @@ export class InvoiceDetailComponent implements OnInit {
     this.invoiceId = this.route.snapshot.paramMap.get('invoiceId') || '';
     if (this.invoiceId) {
       this.loadInvoiceDetail();
+      
+      // Check if print parameter is present
+      const printParam = this.route.snapshot.queryParamMap.get('print');
+      if (printParam === 'true') {
+        // Wait for invoice to load, then print
+        setTimeout(() => {
+          window.print();
+        }, 1000);
+      }
     } else {
       this.error = 'Không tìm thấy ID hóa đơn';
     }

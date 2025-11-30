@@ -93,6 +93,15 @@
     @if (error && !isLoading) {
       <div class="alert alert-danger" style="margin-top: 1.5rem;">
         {{ error }}
+        <button class="alert-close" (click)="error = null">×</button>
+      </div>
+    }
+
+    <!-- Success Message -->
+    @if (successMessage) {
+      <div class="alert alert-success" style="margin-top: 1.5rem;">
+        {{ successMessage }}
+        <button class="alert-close" (click)="successMessage = null">×</button>
       </div>
     }
 
@@ -127,10 +136,6 @@
                   <td>{{ formatDate(invoice.endDate) }}</td>
                   <td class="actions">
                     <button class="action-view-btn" (click)="viewDetail(invoice.invoiceId)">
-                      <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
                       Xem Chi tiết
                     </button>
                   </td>
@@ -179,10 +184,6 @@
                   <td class="actions">
                     <div class="action-buttons">
                       <button class="action-view-btn" (click)="viewDetail(invoice.invoiceId)">
-                        <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
                         Xem Chi tiết
                       </button>
                       <button 
@@ -190,8 +191,8 @@
                         type="button"
                         class="btn-delete"
                         (click)="deleteInvoice(invoice.invoiceId)"
-                        title="Hủy">
-                        🗑️
+                        title="Xóa">
+                        Xóa
                       </button>
                       <button 
                         *ngIf="invoice.status === 'PENDING'"
@@ -199,7 +200,7 @@
                         class="btn-mark-paid"
                         (click)="markAsPaid(invoice.invoiceId)"
                         title="Thu tiền mặt">
-                        💵
+                        Trả tiền mặt
                       </button>
                     </div>
                   </td>
@@ -215,4 +216,29 @@
       </div>
     }
   </div>
+
+  <!-- Confirmation Modal -->
+  @if (showConfirmModal) {
+    <div class="modal-overlay" (click)="cancelAction()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">{{ confirmModalTitle }}</h3>
+          <button class="modal-close" (click)="cancelAction()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>{{ confirmModalMessage }}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="cancelAction()">Hủy</button>
+          <button 
+            class="btn-confirm" 
+            [class.btn-danger]="confirmModalType === 'delete'"
+            [class.btn-success]="confirmModalType === 'markPaid'"
+            (click)="confirmAction()">
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

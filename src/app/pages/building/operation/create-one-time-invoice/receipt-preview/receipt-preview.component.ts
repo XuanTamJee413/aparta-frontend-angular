@@ -17,9 +17,20 @@ export class ReceiptPreviewComponent {
   @Input() amount: number = 0;
   @Input() note: string = '';
   @Input() imagePreviews: string[] = [];
+  @Input() endDate: string | null = null;
 
   getCurrentDate(): string {
     return new Date().toLocaleDateString('vi-VN');
+  }
+
+  formatDate(dateString: string | null): string {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN');
+    } catch {
+      return dateString;
+    }
   }
 
   formatCurrency(amount: number): string {

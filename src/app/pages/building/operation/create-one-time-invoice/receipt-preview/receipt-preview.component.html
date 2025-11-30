@@ -15,6 +15,7 @@
 
   <div class="preview-date">
     <p>Ngày thu: {{ getCurrentDate() }}</p>
+    <p *ngIf="endDate">Hạn thanh toán: {{ formatDate(endDate) }}</p>
   </div>
 
   <div class="preview-section">

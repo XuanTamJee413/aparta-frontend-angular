@@ -58,3 +58,16 @@ export interface ApiResponse<T> {
   data?: T;
 }
 
+import { BuildingDto } from './building.model';
+
+export interface InvoiceSnapshot {
+  selectedBuilding: BuildingDto | null;
+  payerName: string;
+  apartmentAddress: string;
+  itemDescription: string;
+  amount: number;
+  note: string;
+  imagePreviews: string[];
+  endDate: string | null;
+}
+

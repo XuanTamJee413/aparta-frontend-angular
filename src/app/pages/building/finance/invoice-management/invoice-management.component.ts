@@ -41,6 +41,14 @@ export class InvoiceManagementComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
   
+  // Confirmation modal state
+  showConfirmModal = false;
+  confirmModalTitle = '';
+  confirmModalMessage = '';
+  confirmModalType: 'delete' | 'markPaid' | null = null;
+  pendingInvoiceId: string | null = null;
+  successMessage: string | null = null;
+  
   statusOptions: { value: string; label: string }[] = [
     { value: 'Tất cả', label: 'Tất cả' },
     { value: 'PENDING', label: 'Chờ thanh toán' },
@@ -348,43 +356,73 @@ export class InvoiceManagementComponent implements OnInit {
   }
 
   markAsPaid(invoiceId: string): void {
-    if (!confirm('Xác nhận đánh dấu hóa đơn đã thanh toán?')) {
-      return;
-    }
-
-    this.invoiceService.markInvoiceAsPaid(invoiceId).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          alert('Đã đánh dấu hóa đơn là đã thanh toán');
-          this.loadOneTimeInvoices();
-        } else {
-          alert(response.message || 'Có lỗi xảy ra');
-        }
-      },
-      error: (error) => {
-        alert(error.error?.message || 'Có lỗi xảy ra');
-      }
-    });
+    this.pendingInvoiceId = invoiceId;
+    this.confirmModalType = 'markPaid';
+    this.confirmModalTitle = 'Xác nhận đánh dấu đã thanh toán';
+    this.confirmModalMessage = 'Bạn có chắc chắn muốn đánh dấu hóa đơn này là đã thanh toán?';
+    this.showConfirmModal = true;
   }
 
   deleteInvoice(invoiceId: string): void {
-    if (!confirm('Bạn có chắc chắn muốn xóa hóa đơn này?')) {
+    this.pendingInvoiceId = invoiceId;
+    this.confirmModalType = 'delete';
+    this.confirmModalTitle = 'Xác nhận xóa hóa đơn';
+    this.confirmModalMessage = 'Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác.';
+    this.showConfirmModal = true;
+  }
+
+  confirmAction(): void {
+    if (!this.pendingInvoiceId || !this.confirmModalType) {
       return;
     }
 
-    this.invoiceService.deleteInvoice(invoiceId).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          alert('Đã xóa hóa đơn');
-          this.loadOneTimeInvoices();
-        } else {
-          alert(response.message || 'Có lỗi xảy ra');
+    this.showConfirmModal = false;
+
+    if (this.confirmModalType === 'markPaid') {
+      this.invoiceService.markInvoiceAsPaid(this.pendingInvoiceId).subscribe({
+        next: (response) => {
+          if (response.succeeded) {
+            this.successMessage = 'Đã đánh dấu hóa đơn là đã thanh toán';
+            setTimeout(() => {
+              this.successMessage = null;
+            }, 3000);
+            this.loadOneTimeInvoices();
+          } else {
+            this.error = response.message || 'Có lỗi xảy ra';
+          }
+        },
+        error: (error) => {
+          this.error = error.error?.message || 'Có lỗi xảy ra';
         }
-      },
-      error: (error) => {
-        alert(error.error?.message || 'Có lỗi xảy ra');
-      }
-    });
+      });
+    } else if (this.confirmModalType === 'delete') {
+      this.invoiceService.deleteInvoice(this.pendingInvoiceId).subscribe({
+        next: (response) => {
+          if (response.succeeded) {
+            this.successMessage = 'Đã xóa hóa đơn';
+            setTimeout(() => {
+              this.successMessage = null;
+            }, 3000);
+            this.loadOneTimeInvoices();
+          } else {
+            this.error = response.message || 'Có lỗi xảy ra';
+          }
+        },
+        error: (error) => {
+          this.error = error.error?.message || 'Có lỗi xảy ra';
+        }
+      });
+    }
+
+    // Reset state
+    this.pendingInvoiceId = null;
+    this.confirmModalType = null;
+  }
+
+  cancelAction(): void {
+    this.showConfirmModal = false;
+    this.pendingInvoiceId = null;
+    this.confirmModalType = null;
   }
 
 }
