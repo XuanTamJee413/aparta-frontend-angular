@@ -29,6 +29,8 @@ import { GenerateApartment } from './management/apartment-management/generate-ap
 import { StaffAssignmentListComponent } from './management/staff-assignment/staff-assignment-list/staff-assignment-list.component';
 
 export const MANAGER_ROUTES: Routes = [
+  // --- DASHBOARD ---
+  { path: 'dashboard', loadComponent: () => import('./dashboard/manager-dashboard.component').then(m => m.ManagerDashboardComponent), title: 'Dashboard' },
   // --- MANAGEMENT ---
   { path: 'manage-resident', component: ResidentList },
   { path: 'manage-apartment', component: ApartmentList },
@@ -59,7 +61,6 @@ export const MANAGER_ROUTES: Routes = [
   // --- END MANAGEMENT ---
 
   // --- FINANCE  ---
-  { path: 'payment-receipt', loadComponent: () => import('./finance/view-payment-receipt/view-payment-receipt').then(m => m.ViewPaymentReceipt) },
   { path: 'invoice-management', loadComponent: () => import('./finance/invoice-management/invoice-management.component').then(m => m.InvoiceManagementComponent), title: 'Quản lý Hóa đơn' },
   { path: 'invoice-detail/:invoiceId', loadComponent: () => import('./finance/invoice-detail/invoice-detail.component').then(m => m.InvoiceDetailComponent), title: 'Chi tiết Hóa đơn' },
   // --- END FINANCE  ---
@@ -105,5 +106,5 @@ export const MANAGER_ROUTES: Routes = [
 
   // --- END OPERATION  ---
 
-  { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
 ];

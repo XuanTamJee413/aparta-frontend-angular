@@ -2,6 +2,7 @@ import { Component, ViewChild, inject } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { MatSidenav } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -36,6 +37,7 @@ export class ManagerLayout {
 
   private isSmallScreenQuery = '(max-width: 959.98px)';
   isSmallScreen$: Observable<boolean>;
+  isManager$: Observable<boolean>;
 
   constructor(
     private breakpointObserver: BreakpointObserver,
@@ -47,6 +49,17 @@ export class ManagerLayout {
         map(result => result.matches),
         shareReplay()
       );
+    
+    // Check if user is manager (check original role from JWT, not normalized)
+    // Convert signal to Observable and map to check role
+    this.isManager$ = toObservable(this.auth.user).pipe(
+      map(user => {
+        if (!user || !user.role) return false;
+        const role = String(user.role).trim().toLowerCase();
+        // Check for manager role (before normalization to 'staff')
+        return role === 'manager';
+      })
+    );
   }
 
   closeSidenavOnMobile(): void {
