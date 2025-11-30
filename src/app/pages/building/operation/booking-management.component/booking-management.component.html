@@ -3,6 +3,10 @@
     <h3>Quản lý Đặt lịch Dịch vụ</h3>
   </div>
 
+  <div *ngIf="pageSuccessMessage" class="alert alert-success">
+    {{ pageSuccessMessage }}
+  </div>
+
   <div class="filter-bar">
     <div class="filter-group">
       <label for="search">Tìm theo tên dịch vụ:</label>
@@ -50,7 +54,6 @@
           <td>{{ booking.paymentAmount | number }} VND</td>
           <td class="action-cell">
             <button class="btn btn-edit" (click)="openEditModal(booking)">Cập nhật</button>
-            <!-- <button class="btn btn-delete" (click)="delete(booking.serviceBookingId)">Xóa</button> -->
           </td>
         </tr>
         <tr *ngIf="bookings.length === 0 && !isLoading" class="empty-row">
@@ -67,9 +70,7 @@
     <div class="pagination-controls">
       <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(1)">&laquo;</button>
       <button class="btn-page" [disabled]="!hasPreviousPage" (click)="onPageChange(currentPage - 1)">&lsaquo;</button>
-
       <span> Trang {{ currentPage }} / {{ totalPages }} </span>
-
       <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">&rsaquo;</button>
       <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(totalPages)">&raquo;</button>
     </div>
@@ -91,6 +92,9 @@
             {{ option.label }}
           </option>
         </select>
+        <small class="text-muted" *ngIf="bookingForm.get('status')?.value === 'Approved'">
+          * Khi chọn "Đã duyệt", hệ thống sẽ tự động tạo Công việc (Task) mới.
+        </small>
       </div>
 
       <div class="form-group">
@@ -105,6 +109,10 @@
         <label for="staffNote">Ghi chú (Nhân viên)</label>
         <textarea id="staffNote" formControlName="staffNote" rows="3"></textarea>
       </div>
+    </div>
+
+    <div *ngIf="dialogErrorMessage" class="form-error-summary">
+      <strong>Lỗi:</strong> {{ dialogErrorMessage }}
     </div>
 
     <div class="form-footer">
