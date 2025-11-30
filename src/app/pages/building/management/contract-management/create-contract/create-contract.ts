@@ -37,27 +37,6 @@ function futureDateValidator(): ValidatorFn {
   };
 }
 
-function contractDatesValidator(group: AbstractControl): ValidationErrors | null {
-  const start = group.get('startDate')?.value;
-  const end = group.get('endDate')?.value;
-
-  if (!start || !end) {
-    return null;
-  }
-
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(0, 0, 0, 0);
-
-  if (endDate <= startDate) {
-    return { endBeforeOrEqualStart: true };
-  }
-
-  return null;
-}
-
 @Component({
   selector: 'app-create-contract',
   standalone: true,
@@ -82,35 +61,29 @@ export class CreateContract implements OnInit {
     private router: Router,
     private location: Location
   ) {
-    this.contractForm = this.fb.group(
-      {
-        apartmentId: [null, [Validators.required]],
-        startDate: ['', [Validators.required, futureDateValidator()]],
+    this.contractForm = this.fb.group({
+      apartmentId: [null, [Validators.required]],
+      startDate: ['', [Validators.required, futureDateValidator()]],
 
-        endDate: [''],
 
-        ownerName: ['', [Validators.required, Validators.maxLength(100)]],
-        ownerEmail: ['', [Validators.required, Validators.email]],
-        ownerPhoneNumber: [
-          '',
-          [Validators.required, Validators.pattern('^[0-9]{10,11}$')]
-        ],
-        ownerIdNumber: [
-          '',
-          [
-            Validators.required,
-            Validators.maxLength(20),
-            Validators.pattern('^[0-9]+$')
-          ]
-        ],
-        ownerGender: ['Nam', [Validators.required]],
-        ownerDateOfBirth: ['', [Validators.required]],
-        ownerNationality: ['Việt Nam', [Validators.required]]
-      },
-      {
-        validators: [contractDatesValidator]
-      }
-    );
+      ownerName: ['', [Validators.required, Validators.maxLength(100)]],
+      ownerEmail: ['', [Validators.required, Validators.email]],
+      ownerPhoneNumber: [
+        '',
+        [Validators.required, Validators.pattern('^[0-9]{10,11}$')]
+      ],
+      ownerIdNumber: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(20),
+          Validators.pattern('^[0-9]+$')
+        ]
+      ],
+      ownerGender: ['Nam', [Validators.required]],
+      ownerDateOfBirth: ['', [Validators.required]],
+      ownerNationality: ['Việt Nam', [Validators.required]]
+    });
   }
 
   ngOnInit(): void {
@@ -161,7 +134,7 @@ export class CreateContract implements OnInit {
     const dto: ContractCreateDto = {
       apartmentId: raw.apartmentId,
       startDate: raw.startDate,
-      endDate: raw.endDate ? raw.endDate : null,
+      endDate: null,
       image: null,
 
       ownerName: raw.ownerName,

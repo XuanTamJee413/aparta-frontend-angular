@@ -9,10 +9,19 @@
     </mat-toolbar>
 
     <mat-nav-list (click)="closeSidenavOnMobile()">
+      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link" *ngIf="isManager$ | async">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+      <mat-divider *ngIf="isManager$ | async"></mat-divider>
       <h3 mat-subheader class="list-subheader">Quản lý</h3>
       <a mat-list-item routerLink="manage-apartment" routerLinkActive="active-link">
           <mat-icon>apartment</mat-icon>
           <span>Quản lý Căn hộ</span>
+      </a>
+      <a mat-list-item routerLink="user-management" routerLinkActive="active-link"> 
+        <mat-icon>group</mat-icon>
+        <span>Quản lý người dùng</span>
       </a>
       <a mat-list-item routerLink="manage-asset" routerLinkActive="active-link">
           <mat-icon>inventory_2</mat-icon>
@@ -37,10 +46,6 @@
       <mat-divider></mat-divider>
 
       <h3 mat-subheader class="list-subheader">Tài chính</h3>
-      <a mat-list-item routerLink="payment-receipt" routerLinkActive="active-link">
-          <mat-icon>money</mat-icon>
-          <span>Xem biên lai</span>
-      </a>
       <a mat-list-item routerLink="invoice-management" routerLinkActive="active-link">
           <mat-icon>attach_money</mat-icon>
           <span>Quản lý Hóa đơn</span>
@@ -88,6 +93,8 @@
       </a>
       <a mat-list-item routerLink="chat" routerLinkActive="active-link">
         <mat-icon>chat</mat-icon> <span>Chat với Cư dân</span></a>
+      <a mat-list-item routerLink="staff-proposal" routerLinkActive="active-link">
+        <mat-icon>feedback</mat-icon> <span>Đề xuất/Khiếu nại</span></a>
       <a mat-list-item routerLink="create-one-time-invoice" routerLinkActive="active-link">
         <mat-icon>receipt_long</mat-icon>
         <span>Tạo Phiếu Thu</span>

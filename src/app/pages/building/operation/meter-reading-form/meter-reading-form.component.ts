@@ -28,12 +28,14 @@ import {
 export class MeterReadingFormComponent implements OnInit {
   buildings: BuildingDto[] = [];
   selectedBuildingId: string = '';
+  selectedBuilding: BuildingDto | null = null;
   apartments: ApartmentDto[] = [];
   filteredApartments: ApartmentDto[] = [];
   searchText: string = '';
   selectedApartmentId: string = '';
   selectedApartment: ApartmentDto | null = null;
-  services: string[] = [];
+  services: MeterReadingServiceDto[] = [];
+  servicesByMethod: Map<string, MeterReadingServiceDto[]> = new Map();
   existingReadings: Map<string, MeterReadingDto> = new Map();
   latestReadings: Map<string, MeterReadingDto> = new Map();
   loadingBuildings = false;
@@ -50,7 +52,7 @@ export class MeterReadingFormComponent implements OnInit {
   submitMessageType: 'success' | 'error' | '' = '';
 
   // Pagination
-  pageSize = 20;
+  pageSize = 6;
   pageIndex = 0;
   totalItems = 0;
 
@@ -102,6 +104,7 @@ export class MeterReadingFormComponent implements OnInit {
           this.buildings = response.data.items.filter(b => b.isActive);
           if (this.buildings.length > 0) {
             this.selectedBuildingId = this.buildings[0].buildingId;
+            this.selectedBuilding = this.buildings[0];
             this.loadApartments();
           }
         }
@@ -119,11 +122,33 @@ export class MeterReadingFormComponent implements OnInit {
     if (!this.selectedBuildingId) {
       this.apartments = [];
       this.selectedApartmentId = '';
+      this.selectedBuilding = null;
       this.resetForm();
       return;
     }
 
+    // Tìm building được chọn
+    this.selectedBuilding = this.buildings.find(b => b.buildingId === this.selectedBuildingId) || null;
     this.loadApartments();
+  }
+
+  // Lấy thông tin ngày được phép ghi chỉ số
+  getReadingWindowInfo(): string {
+    if (!this.selectedBuilding) {
+      return '';
+    }
+
+    const start = this.selectedBuilding.readingWindowStart;
+    const end = this.selectedBuilding.readingWindowEnd;
+
+    if (start === end) {
+      return `Ngày ${start} hàng tháng`;
+    } else if (end > start) {
+      return `Từ ngày ${start} đến ngày ${end} hàng tháng`;
+    } else {
+      // Cross-month: ví dụ 31 -> 1
+      return `Từ ngày ${start} đến ngày ${end} (tháng sau) hàng tháng`;
+    }
   }
 
   // Tải danh sách căn hộ đã thuê
@@ -235,6 +260,7 @@ export class MeterReadingFormComponent implements OnInit {
 
     this.loadingServices = true;
     this.services = [];
+    this.servicesByMethod.clear();
     const readingsArray = this.meterReadingForm.get('readings') as FormArray;
     readingsArray.clear();
 
@@ -242,6 +268,15 @@ export class MeterReadingFormComponent implements OnInit {
       next: (response) => {
         if (response.succeeded && response.data) {
           this.services = response.data;
+          // Nhóm services theo calculationMethod
+          this.servicesByMethod.clear();
+          this.services.forEach(service => {
+            const method = service.calculationMethod || 'OTHER';
+            if (!this.servicesByMethod.has(method)) {
+              this.servicesByMethod.set(method, []);
+            }
+            this.servicesByMethod.get(method)!.push(service);
+          });
           this.checkExistingReadings();
         } else {
           this.showError(response.message || 'Không thể tải danh sách loại phí');
@@ -253,6 +288,35 @@ export class MeterReadingFormComponent implements OnInit {
         this.loadingServices = false;
       }
     });
+  }
+
+  // Lấy danh sách methods
+  getMethods(): string[] {
+    return Array.from(this.servicesByMethod.keys());
+  }
+
+  // Lấy services theo method
+  getServicesByMethod(method: string): MeterReadingServiceDto[] {
+    return this.servicesByMethod.get(method) || [];
+  }
+
+  // Lấy tên hiển thị cho method
+  getMethodDisplayName(method: string): string {
+    const methodNames: { [key: string]: string } = {
+      'PER_UNIT_METER': 'Theo chỉ số đồng hồ',
+      'TIERED': 'Theo bậc thang',
+      'OTHER': 'Khác'
+    };
+    return methodNames[method] || method;
+  }
+
+  // Lấy index của form control cho một service
+  getFormControlIndex(service: MeterReadingServiceDto): number {
+    const index = this.services.findIndex(s => s.feeType === service.feeType);
+    if (index === -1) {
+      console.warn(`Service ${service.feeType} not found in services array`);
+    }
+    return index;
   }
 
   // Kiểm tra chỉ số hiện có trong tháng
@@ -270,7 +334,7 @@ export class MeterReadingFormComponent implements OnInit {
     const checkPromises = this.services.map(service => 
       this.meterReadingService.checkMeterReadingExists(
         this.selectedApartmentId,
-        service,
+        service.feeType,
         billingPeriod
       ).toPromise()
     );
@@ -282,12 +346,12 @@ export class MeterReadingFormComponent implements OnInit {
           const checkData = response.data;
           
           if (checkData.exists && checkData.meterReading) {
-            this.existingReadings.set(service, checkData.meterReading);
+            this.existingReadings.set(service.feeType, checkData.meterReading);
             this.hasAnyExistingReadings = true;
           }
           
           if (checkData.latestReading) {
-            this.latestReadings.set(service, checkData.latestReading);
+            this.latestReadings.set(service.feeType, checkData.latestReading);
           }
         }
       });
@@ -308,11 +372,11 @@ export class MeterReadingFormComponent implements OnInit {
     readingsArray.clear();
 
     this.services.forEach(service => {
-      const existingReading = this.existingReadings.get(service);
+      const existingReading = this.existingReadings.get(service.feeType);
       
       readingsArray.push(
         this.fb.group({
-          feeType: [service, Validators.required],
+          feeType: [service.feeType, Validators.required],
           readingValue: [
             existingReading?.readingValue || null, 
             [Validators.required, Validators.min(0)]
@@ -355,7 +419,7 @@ export class MeterReadingFormComponent implements OnInit {
       
       this.readingsFormArray.controls.forEach((control, index) => {
         const readingGroup = control as FormGroup;
-        const feeType = readingGroup.get('feeType')?.value || this.services[index];
+        const feeType = readingGroup.get('feeType')?.value || this.services[index]?.feeType;
         const readingValue = readingGroup.get('readingValue')?.value;
         
         if (feeType && readingValue !== null && readingValue !== undefined) {
@@ -416,7 +480,7 @@ export class MeterReadingFormComponent implements OnInit {
 
     readings.forEach((reading: any, index: number) => {
       const readingGroup = this.readingsFormArray.at(index) as FormGroup;
-      const feeType = readingGroup.get('feeType')?.value || reading.feeType || this.services[index];
+      const feeType = readingGroup.get('feeType')?.value || reading.feeType || this.services[index]?.feeType;
       const rawReadingValue = readingGroup.get('readingValue')?.value || reading.readingValue;
       const readingId = readingGroup.get('readingId')?.value || reading.readingId;
 

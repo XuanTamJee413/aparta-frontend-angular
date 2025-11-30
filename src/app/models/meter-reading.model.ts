@@ -10,7 +10,10 @@ export interface ApartmentDto {
   createdAt: string;
 }
 
-export type MeterReadingServiceDto = string[];
+export interface MeterReadingServiceDto {
+  feeType: string;
+  calculationMethod: string;
+}
 
 export interface MeterReadingCreateDto {
   feeType: string;

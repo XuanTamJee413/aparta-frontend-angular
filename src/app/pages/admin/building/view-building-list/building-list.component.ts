@@ -1,197 +1,204 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core'; // Thêm ViewChild, TemplateRef
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { BuildingService, BuildingDto, BuildingQueryParameters, PaginatedResult } from '../../../../services/admin/building.service';
+import { BuildingService, BuildingDto, BuildingListResponse } from '../../../../services/admin/building.service';
 import { ProjectService, ProjectDto } from '../../../../services/admin/project.service';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Thêm Dialog
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Thêm Snackbar để thông báo
 
 @Component({
   selector: 'app-building-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule,
+    MatIconModule,
+    MatDialogModule, // Import Module Dialog
+    MatSnackBarModule // Import Module Snackbar
+  ],
   templateUrl: './building-list.component.html',
   styleUrls: ['./building-list.component.css']
 })
-export class BuildingListComponent implements OnInit {
+export class BuildingListComponent implements OnInit, OnDestroy {
   buildings: BuildingDto[] = [];
   projects: ProjectDto[] = [];
-  isLoading = false;
-  errorMessage = '';
-  isDeleting = false;
   
-  // Sorting
-  sortActiveFirst = true; // true: Active trước, false: Active sau
+  searchTerm: string = '';
+  selectedProjectId: string = '';
+  selectedStatus: string = ''; 
 
-  // Client-side sorted view
-  sortedBuildings(): BuildingDto[] {
-    const list = [...this.buildings];
-    return list.sort((a, b) => {
-      if (a.isActive === b.isActive) {
-        // Secondary by name for stable UX
-        const an = (a.name || '').toLowerCase();
-        const bn = (b.name || '').toLowerCase();
-        if (an < bn) return -1;
-        if (an > bn) return 1;
-        return 0;
-      }
-      return this.sortActiveFirst
-        ? (a.isActive ? -1 : 1)
-        : (a.isActive ? 1 : -1);
-    });
-  }
-
-  setActiveSort(first: boolean): void {
-    this.sortActiveFirst = first;
-  }
-
-  // Search and pagination
-  searchTerm = '';
   currentPage = 1;
-  pageSize = 10;
+  pageSize = 5; 
   totalCount = 0;
-  totalPages = 0;
+  
+  sortColumn: string = 'createdAt';
+  sortDirection: 'desc' | 'asc' = 'desc';
+
+  isLoading = false;
+  Math = Math; 
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
+  // [MỚI] Biến để xử lý Dialog xác nhận
+  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
+  buildingToToggle: BuildingDto | null = null; // Tòa nhà đang chọn để thao tác
 
   constructor(
     private buildingService: BuildingService,
     private projectService: ProjectService,
-    private snackBar: MatSnackBar
+    private dialog: MatDialog, // Inject Dialog
+    private snackBar: MatSnackBar // Inject Snackbar
   ) {}
 
   ngOnInit(): void {
     this.loadProjects();
     this.loadBuildings();
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(), 
+      takeUntil(this.destroy$)
+    ).subscribe(term => {
+      this.searchTerm = term;
+      this.currentPage = 1;
+      this.loadBuildings();
+    });
   }
 
-  loadProjects(): void {
-    this.projectService.getAllProjects({ isActive: true }).subscribe({
-      next: (response) => {
-        if (response.succeeded && response.data) {
-          this.projects = response.data;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ... (Giữ nguyên các hàm loadProjects, loadBuildings, onSearchInput, onFilterChange, onSort, getSortIcon, onPageChange ...)
+  loadProjects() {
+    this.projectService.getAllProjects().subscribe({
+      next: (res: any) => {
+        if (res.succeeded) {
+          this.projects = res.data;
         }
-      },
-      error: (error) => {
-        console.error('Error loading projects:', error);
       }
     });
   }
 
-  loadBuildings(): void {
+  loadBuildings() {
     this.isLoading = true;
-    this.errorMessage = '';
+    const skip = (this.currentPage - 1) * this.pageSize;
+    let isActive: boolean | undefined = undefined;
+    if (this.selectedStatus === 'true') isActive = true;
+    if (this.selectedStatus === 'false') isActive = false;
 
-    const queryParams: BuildingQueryParameters = {
+    const query = {
       searchTerm: this.searchTerm || undefined,
-      skip: (this.currentPage - 1) * this.pageSize,
+      projectId: this.selectedProjectId || undefined,
+      isActive: isActive,
+      sortBy: this.sortColumn,
+      sortOrder: this.sortDirection,
+      skip: skip,
       take: this.pageSize
     };
-
-    this.buildingService.getAllBuildings(queryParams).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        if (response.succeeded && response.data) {
-          this.buildings = response.data.items;
-          this.totalCount = response.data.totalCount;
-          this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+    this.buildingService.getBuildings(query).subscribe({
+      next: (res: BuildingListResponse) => {
+        if (res.succeeded && res.data) {
+          this.buildings = res.data.items;
+          this.totalCount = res.data.totalCount;
         } else {
-          this.errorMessage = response.message || 'Không thể tải danh sách tòa nhà';
+          this.buildings = [];
+          this.totalCount = 0;
         }
-      },
-      error: (error) => {
         this.isLoading = false;
-        const errorMessage = error.error?.message || error.message || 'Lỗi khi tải danh sách tòa nhà';
-        this.errorMessage = errorMessage;
-        this.snackBar.open(errorMessage, 'Đóng', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top'
-        });
-        console.error('Error loading buildings:', error);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isLoading = false;
       }
     });
   }
 
-  searchBuildings(): void {
+  onSearchInput(event: any) {
+    this.searchSubject.next(event.target.value);
+  }
+
+  onFilterChange() {
     this.currentPage = 1;
     this.loadBuildings();
   }
 
-  clearSearch(): void {
-    this.searchTerm = '';
-    this.currentPage = 1;
-    this.loadBuildings();
-  }
-
-  refreshBuildings(): void {
-    this.loadBuildings();
-  }
-
-  onPageSizeChange(): void {
-    this.currentPage = 1;
-    this.loadBuildings();
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loadBuildings();
+  onSort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
     }
+    this.loadBuildings();
   }
 
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const startPage = Math.max(1, this.currentPage - 2);
-    const endPage = Math.min(this.totalPages, this.currentPage + 2);
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) return '';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  onPageChange(page: number) {
+    this.currentPage = page;
+    this.loadBuildings();
+  }
+
+  get hasPreviousPage(): boolean { return this.currentPage > 1; }
+  get hasNextPage(): boolean { return this.currentPage * this.pageSize < this.totalCount; }
+  get totalPages(): number { return Math.ceil(this.totalCount / this.pageSize); }
+
+  // [MỚI] Hàm mở Dialog xác nhận hoặc thực hiện kích hoạt
+  openToggleStatusDialog(building: BuildingDto) {
+    this.buildingToToggle = building;
     
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
+    if (building.isActive) {
+      // Nếu đang Active -> Muốn dừng -> Hiện Dialog cảnh báo
+      this.dialog.open(this.confirmDialog, {
+        width: '400px',
+        disableClose: true
+      });
+    } else {
+      // Nếu đang Inactive -> Muốn kích hoạt -> Làm luôn (hoặc hiện dialog tùy ý, ở đây làm luôn cho nhanh)
+      this.executeUpdateStatus(true);
     }
-    
-    return pages;
   }
 
-  getProjectName(projectId: string): string {
-    const project = this.projects.find(p => p.projectId === projectId);
-    return project ? project.name || project.projectCode || projectId : projectId;
-  }
+  // [MỚI] Hàm gọi API cập nhật trạng thái
+  executeUpdateStatus(newStatus: boolean) {
+    if (!this.buildingToToggle) return;
 
-  deleteBuilding(building: BuildingDto): void {
-    if (!confirm(`Bạn có chắc chắn muốn xóa tòa nhà "${building.name}"?`)) {
-      return;
-    }
-
-    this.isDeleting = true;
-    this.buildingService.deleteBuilding(building.buildingId).subscribe({
-      next: (response) => {
-        this.isDeleting = false;
-        if (response.succeeded) {
-          this.snackBar.open(response.message || 'Xóa tòa nhà thành công', 'Đóng', {
-            duration: 3000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top'
-          });
-          this.loadBuildings(); // Reload the list
+    this.isLoading = true;
+    this.buildingService.updateBuilding(this.buildingToToggle.buildingId, { isActive: newStatus }).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        if (res.succeeded) {
+          this.showNotification(newStatus ? 'Đã kích hoạt tòa nhà.' : 'Đã dừng hoạt động tòa nhà.', 'success');
+          this.loadBuildings(); // Tải lại danh sách
         } else {
-          this.snackBar.open(response.message || 'Không thể xóa tòa nhà', 'Đóng', {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top'
-          });
+          this.showNotification(res.message || 'Lỗi cập nhật trạng thái.', 'error');
         }
+        this.buildingToToggle = null; // Reset
       },
-      error: (error) => {
-        this.isDeleting = false;
-        const errorMessage = error.error?.message || error.message || 'Lỗi khi xóa tòa nhà';
-        this.snackBar.open(errorMessage, 'Đóng', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top'
-        });
-        console.error('Error deleting building:', error);
+      error: (err) => {
+        this.isLoading = false;
+        this.showNotification(err.error?.message || 'Lỗi hệ thống.', 'error');
+        this.buildingToToggle = null;
       }
     });
   }
 
-  // Helper method for template
-  Math = Math;
+  showNotification(message: string, type: 'success' | 'error') {
+    this.snackBar.open(message, 'Đóng', {
+      duration: 3000,
+      panelClass: type === 'success' ? ['bg-success', 'text-white'] : ['bg-danger', 'text-white'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top'
+    });
+  }
 }

@@ -2,91 +2,61 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { 
+  BuildingDto, 
+  BuildingCreateDto, 
+  BuildingUpdateDto, 
+  BuildingQueryParameters,
+  BuildingListResponse,
+  BuildingDetailResponse,
+  BuildingBasicResponse 
+} from '../../models/building.model';
 
-export interface BuildingDto {
-  buildingId: string;
-  projectId: string;
-  buildingCode?: string;
-  name?: string;
-  numResidents?: number;
-  numApartments?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  isActive: boolean;
-}
-
-export interface BuildingCreateDto {
-  projectId: string;
-  buildingCode: string;
-  name: string;
-  numApartments?: number;
-  numResidents?: number;
-}
-
-export interface BuildingUpdateDto {
-  name?: string;
-  numApartments?: number;
-  numResidents?: number;
-  isActive?: boolean;
-}
-
-export interface BuildingQueryParameters {
-  searchTerm?: string;
-  skip?: number;
-  take?: number;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  totalCount: number;
-}
-
-export interface ApiResponse<T> {
-  succeeded: boolean;
-  message: string;
-  data?: T;
-}
+export * from '../../models/building.model'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class BuildingService {
-  private readonly apiUrl = `${environment.apiUrl}/Buildings`;
+  private apiUrl = `${environment.apiUrl}/Buildings`;
 
   constructor(private http: HttpClient) {}
 
-  getAllBuildings(query?: BuildingQueryParameters): Observable<ApiResponse<PaginatedResult<BuildingDto>>> {
+  // [CẬP NHẬT] Map đầy đủ tham số query
+  getBuildings(query: BuildingQueryParameters): Observable<BuildingListResponse> {
     let params = new HttpParams();
     
-    if (query) {
-      if (query.searchTerm) {
-        params = params.set('searchTerm', query.searchTerm);
-      }
-      if (query.skip !== undefined) {
-        params = params.set('skip', query.skip.toString());
-      }
-      if (query.take !== undefined) {
-        params = params.set('take', query.take.toString());
-      }
-    }
+    if (query.searchTerm) params = params.set('SearchTerm', query.searchTerm);
+    if (query.projectId) params = params.set('ProjectId', query.projectId);
+    if (query.isActive !== undefined && query.isActive !== null) params = params.set('IsActive', query.isActive);
+    if (query.sortBy) params = params.set('SortBy', query.sortBy);
+    if (query.sortOrder) params = params.set('SortOrder', query.sortOrder);
+    
+    if (query.skip !== undefined) params = params.set('Skip', query.skip.toString());
+    if (query.take !== undefined) params = params.set('Take', query.take.toString());
 
-    return this.http.get<ApiResponse<PaginatedResult<BuildingDto>>>(this.apiUrl, { params });
+    return this.http.get<BuildingListResponse>(this.apiUrl, { params });
   }
 
-  getBuildingById(id: string): Observable<ApiResponse<BuildingDto>> {
-    return this.http.get<ApiResponse<BuildingDto>>(`${this.apiUrl}/${id}`);
+  // Hàm tương thích cũ
+  getAllBuildings(params?: any): Observable<BuildingListResponse> {
+    const query: BuildingQueryParameters = {
+      searchTerm: params?.searchTerm,
+      take: params?.take || 100,
+      skip: params?.skip || 0
+    };
+    return this.getBuildings(query);
   }
 
-  createBuilding(building: BuildingCreateDto): Observable<ApiResponse<BuildingDto>> {
-    return this.http.post<ApiResponse<BuildingDto>>(this.apiUrl, building);
+  getBuildingById(id: string): Observable<BuildingDetailResponse> {
+    return this.http.get<BuildingDetailResponse>(`${this.apiUrl}/${id}`);
   }
 
-  updateBuilding(id: string, building: BuildingUpdateDto): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, building);
+  createBuilding(dto: BuildingCreateDto): Observable<BuildingDetailResponse> {
+    return this.http.post<BuildingDetailResponse>(this.apiUrl, dto);
   }
 
-  // Soft delete - deactivate building
-  deleteBuilding(id: string): Observable<ApiResponse<any>> {
-    return this.updateBuilding(id, { isActive: false });
+  updateBuilding(id: string, dto: BuildingUpdateDto): Observable<BuildingBasicResponse> {
+    return this.http.put<BuildingBasicResponse>(`${this.apiUrl}/${id}`, dto);
   }
 }

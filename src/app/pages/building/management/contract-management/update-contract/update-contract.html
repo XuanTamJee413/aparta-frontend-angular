@@ -21,7 +21,7 @@
   >
     <div class="card-header">
       <div>
-        <h1>Cập nhật hợp đồng thuê căn hộ</h1>
+        <h1>Cập nhật hợp đồng mua căn hộ</h1>
         <p class="subtitle">
           Mã hợp đồng:
           <strong>{{ contract.contractId }}</strong>
@@ -48,10 +48,10 @@
     </div>
 
     <div class="card-body">
-      <div class="section-title">Thông tin người thuê</div>
+      <div class="section-title">Thông tin người mua (Chủ hộ)</div>
 
       <div class="row">
-        <div class="label">Người thuê (Chủ hộ)</div>
+        <div class="label">Người mua</div>
         <div class="value">{{ contract.ownerName || '—' }}</div>
       </div>
 
@@ -65,23 +65,12 @@
         <div class="value">{{ contract.ownerEmail || '—' }}</div>
       </div>
 
-      <div class="section-title">Thời hạn hợp đồng</div>
+      <div class="section-title">Thông tin hợp đồng</div>
 
       <div class="row">
         <div class="label">Ngày bắt đầu</div>
         <div class="value">
           {{ formatDate(contract.startDate) }}
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="label">Ngày kết thúc</div>
-        <div class="value">
-          <input
-            type="date"
-            class="input-control"
-            formControlName="endDate"
-          />
         </div>
       </div>
 
@@ -109,33 +98,33 @@
           </div>
 
           <div class="preview-wrapper" *ngIf="previewMode !== 'none'">
-  <ng-container [ngSwitch]="previewMode">
+            <ng-container [ngSwitch]="previewMode">
 
-    <a
-      *ngSwitchCase="'link'"
-      [href]="safePreviewUrl"
-      target="_blank"
-      rel="noopener"
-      class="preview-link"
-    >
-      Xem tệp hiện tại
-    </a>
+              <a
+                *ngSwitchCase="'link'"
+                [href]="safePreviewUrl"
+                target="_blank"
+                rel="noopener"
+                class="preview-link"
+              >
+                Xem tệp hiện tại
+              </a>
 
-    <img
-      *ngSwitchCase="'image'"
-      [src]="safePreviewUrl"
-      alt="Xem trước hợp đồng"
-      class="preview-image"
-    />
+              <img
+                *ngSwitchCase="'image'"
+                [src]="safePreviewUrl"
+                alt="Xem trước hợp đồng"
+                class="preview-image"
+              />
 
-    <iframe
-      *ngSwitchCase="'pdf'"
-      [src]="safePreviewUrl"
-      class="preview-pdf"
-    ></iframe>
+              <iframe
+                *ngSwitchCase="'pdf'"
+                [src]="safePreviewUrl"
+                class="preview-pdf"
+              ></iframe>
 
-  </ng-container>
-</div>
+            </ng-container>
+          </div>
 
         </div>
       </div>

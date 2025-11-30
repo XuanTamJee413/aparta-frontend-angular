@@ -50,6 +50,9 @@
             </select>
             <div class="spinner-small" *ngIf="loadingBuildings"></div>
           </div>
+          <div *ngIf="selectedBuilding && getReadingWindowInfo()" class="reading-window-info">
+            <span>Có thể ghi chỉ số: {{ getReadingWindowInfo() }}</span>
+          </div>
         </div>
       </div>
 
@@ -208,51 +211,66 @@
             </span>
           </div>
 
-          <!-- Dynamic Reading Inputs - Grid Layout (2 per row) -->
-          <div class="readings-grid-section">
+          <!-- Dynamic Reading Inputs - Grouped by Method -->
+          <div class="readings-grid-section" *ngIf="readingsFormArray.length > 0">
             <h4 class="grid-title">Nhập chỉ số cho các loại phí:</h4>
-            <div formArrayName="readings" class="readings-grid">
-              <div 
-                *ngFor="let reading of readingsFormArray.controls; let i = index" 
-                [formGroupName]="i" 
-                class="reading-card">
-                <div class="reading-card-header">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/>
-                  </svg>
-                  <span class="fee-type-label">{{ getReadingFormGroup(i).get('feeType')?.value }}</span>
-                </div>
-                <div class="form-field">
-                  <label class="field-label">Chỉ số</label>
-                  <div class="input-with-icon">
-                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2v-4H9v-2h3V7h2v4h3v2h-3v4z"/>
-                    </svg>
-                    <input 
-                      type="number" 
-                      class="form-input" 
-                      formControlName="readingValue" 
-                      required 
-                      min="0" 
-                      step="0.01"
-                      placeholder="Nhập chỉ số">
+            <div formArrayName="readings">
+              <div *ngFor="let method of getMethods()" class="method-group">
+                <h5 class="method-group-title">{{ getMethodDisplayName(method) }}</h5>
+                <div class="readings-grid">
+                  <ng-container *ngFor="let service of getServicesByMethod(method)">
+                    <div 
+                      *ngIf="getFormControlIndex(service) >= 0 && getFormControlIndex(service) < readingsFormArray.length"
+                      [formGroupName]="getFormControlIndex(service)" 
+                      class="reading-card">
+                    <div class="reading-card-header">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/>
+                      </svg>
+                      <span class="fee-type-label">{{ service.feeType }}</span>
+                    </div>
+                    <div class="form-field">
+                      <label class="field-label">Chỉ số</label>
+                      <div class="input-with-icon">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2v-4H9v-2h3V7h2v4h3v2h-3v4z"/>
+                        </svg>
+                        <input 
+                          type="number" 
+                          class="form-input" 
+                          formControlName="readingValue" 
+                          required 
+                          min="0" 
+                          step="0.01"
+                          placeholder="Nhập chỉ số">
+                      </div>
+                      <div class="field-hint" *ngIf="getLatestReadingValue(service.feeType) !== null">
+                        Chỉ số trước: {{ getLatestReadingValue(service.feeType) }}
+                      </div>
+                      <div class="field-error" *ngIf="getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.hasError('required') && getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.touched">
+                        Vui lòng nhập chỉ số
+                      </div>
+                      <div class="field-error" *ngIf="getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.hasError('min') && getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.touched">
+                        Chỉ số phải lớn hơn hoặc bằng 0
+                      </div>
+                    </div>
                   </div>
-                  <div class="field-hint" *ngIf="getLatestReadingValue(getReadingFormGroup(i).get('feeType')?.value) !== null">
-                    Chỉ số trước: {{ getLatestReadingValue(getReadingFormGroup(i).get('feeType')?.value) }}
-                  </div>
-                  <div class="field-error" *ngIf="getReadingFormGroup(i).get('readingValue')?.hasError('required') && getReadingFormGroup(i).get('readingValue')?.touched">
-                    Vui lòng nhập chỉ số
-                  </div>
-                  <div class="field-error" *ngIf="getReadingFormGroup(i).get('readingValue')?.hasError('min') && getReadingFormGroup(i).get('readingValue')?.touched">
-                    Chỉ số phải lớn hơn hoặc bằng 0
-                  </div>
+                    </ng-container>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="form-actions">
-            <button type="submit" [disabled]="meterReadingForm.invalid || saving" class="submit-btn">
+            <!-- Debug info -->
+            <div style="font-size: 12px; color: #666; margin-bottom: 8px; padding: 8px; background: #f0f0f0; border-radius: 4px;">
+              Form valid: {{ meterReadingForm.valid }}, 
+              Form invalid: {{ meterReadingForm.invalid }}, 
+              Saving: {{ saving }},
+              Readings count: {{ readingsFormArray.length }},
+              Services count: {{ services.length }}
+            </div>
+            <button type="submit" [disabled]="meterReadingForm.invalid || saving || readingsFormArray.length === 0" class="submit-btn">
               <div class="spinner-small" *ngIf="saving"></div>
               <svg *ngIf="!saving" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>

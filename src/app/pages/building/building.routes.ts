@@ -22,14 +22,21 @@ import { CreateContract } from './management/contract-management/create-contract
 import { ContractDetail } from './management/contract-management/contract-detail/contract-detail.component';
 import { UpdateContract } from './management/contract-management/update-contract/update-contract';
 import { ChatShellComponent } from '../chat/chat-shell/chat-shell';
+import { StaffProposalComponent } from './operation/proposal/staff-proposal.component';
+import { UserManagementComponent } from './management/user-management/user-management.component';
+import { GenerateApartment } from './management/apartment-management/generate-apartment/generate-apartment';
 
 import { StaffAssignmentListComponent } from './management/staff-assignment/staff-assignment-list/staff-assignment-list.component';
 
 export const MANAGER_ROUTES: Routes = [
+  // --- DASHBOARD ---
+  { path: 'dashboard', loadComponent: () => import('./dashboard/manager-dashboard.component').then(m => m.ManagerDashboardComponent), title: 'Dashboard' },
   // --- MANAGEMENT ---
   { path: 'manage-resident', component: ResidentList },
   { path: 'manage-apartment', component: ApartmentList },
+  { path: 'user-management', component: UserManagementComponent, title: 'Quản Lý Tài Khoản' },
   { path: 'manage-apartment/create', component: CreateApartment },
+  { path: 'manage-apartment/generate', component: GenerateApartment },
   { path: 'manage-apartment/edit/:id', component: EditApartment },
   { path: 'manage-contract', component: ContractList },
   { path: 'manage-contract/create', component: CreateContract },
@@ -54,7 +61,6 @@ export const MANAGER_ROUTES: Routes = [
   // --- END MANAGEMENT ---
 
   // --- FINANCE  ---
-  { path: 'payment-receipt', loadComponent: () => import('./finance/view-payment-receipt/view-payment-receipt').then(m => m.ViewPaymentReceipt) },
   { path: 'invoice-management', loadComponent: () => import('./finance/invoice-management/invoice-management.component').then(m => m.InvoiceManagementComponent), title: 'Quản lý Hóa đơn' },
   { path: 'invoice-detail/:invoiceId', loadComponent: () => import('./finance/invoice-detail/invoice-detail.component').then(m => m.InvoiceDetailComponent), title: 'Chi tiết Hóa đơn' },
   // --- END FINANCE  ---
@@ -75,8 +81,8 @@ export const MANAGER_ROUTES: Routes = [
     title: 'Quản lý Đặt Dịch Vụ'
   },
     {
-    path: 'utility-bookings', 
-    loadComponent: () => import('./operation/utility-booking-management.component/utility-booking-management.component') 
+    path: 'utility-bookings',
+    loadComponent: () => import('./operation/utility-booking-management.component/utility-booking-management.component')
       .then(m => m.UtilityBookingManagementComponent),
     title: 'Quản lý Đặt Tiện Ích'
   },
@@ -92,6 +98,10 @@ export const MANAGER_ROUTES: Routes = [
     path: 'chat',
     component: ChatShellComponent,
   },
+  {
+    path: 'staff-proposal',
+    component: StaffProposalComponent,
+  },
   { path: 'create-one-time-invoice', canActivate: [permissionGuard('invoice.pay.create')], loadComponent: () => import('./operation/create-one-time-invoice/create-one-time-invoice.component').then(m => m.CreateOneTimeInvoiceComponent), title: 'Tạo Phiếu Thu' },
 
   // --- MAINTENANCE  ---
@@ -103,5 +113,5 @@ export const MANAGER_ROUTES: Routes = [
   },
   // --- END OPERATION  ---
 
-  { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
 ];

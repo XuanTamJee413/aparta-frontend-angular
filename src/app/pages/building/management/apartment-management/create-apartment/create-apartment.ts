@@ -78,6 +78,10 @@ export class CreateApartment implements OnInit {
   form = this.fb.group(
     {
       buildingId: this.fb.control<string | null>(null, { validators: [Validators.required] }),
+      floor: this.fb.control<number>(1, {
+        validators: [Validators.required, Validators.min(1)],
+        nonNullable: true
+      }),
       code: this.fb.control<string>('', {
         validators: [Validators.required],
         asyncValidators: [this.codeUniqueValidator()],
@@ -85,7 +89,10 @@ export class CreateApartment implements OnInit {
         nonNullable: true
       }),
       type: this.fb.control<AptType | ''>('', { validators: [Validators.required], nonNullable: true }),
-      area: this.fb.control<number>(0, { validators: [Validators.required, Validators.min(1)], nonNullable: true }),
+      area: this.fb.control<number>(0, {
+        validators: [Validators.required, Validators.min(1)],
+        nonNullable: true
+      }),
     },
     { validators: [areaByTypeValidator()] }
   );
@@ -124,7 +131,8 @@ export class CreateApartment implements OnInit {
       code: this.form.controls.code.value!,
       type: this.form.controls.type.value! as AptType,
       area: this.form.controls.area.value!,
-      status: 'Chưa Thuê'
+      status: 'Chưa Thuê',
+      floor: this.form.controls.floor.value!
     };
 
     this.submitting.set(true);

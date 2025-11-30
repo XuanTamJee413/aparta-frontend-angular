@@ -17,6 +17,8 @@ export interface DashboardStatistics {
   occupancyRate: number;
   revenueByMonth: MonthlyRevenue[];
   apartmentStatus: ApartmentStatus;
+  pendingMeterReadings: number;
+  unpaidInvoices: number;
 }
 
 export interface MonthlyRevenue {
@@ -39,5 +41,32 @@ export class DashboardService {
   getStatistics(): Observable<ApiResponse<DashboardStatistics>> {
     return this.http.get<ApiResponse<DashboardStatistics>>(`${this.apiUrl}/statistics`);
   }
+
+  getApartmentStatusByProject(): Observable<ApiResponse<ProjectApartmentStatus[]>> {
+    return this.http.get<ApiResponse<ProjectApartmentStatus[]>>(`${this.apiUrl}/apartment-status-by-project`);
+  }
+
+  getAvailableYears(): Observable<ApiResponse<number[]>> {
+    return this.http.get<ApiResponse<number[]>>(`${this.apiUrl}/available-years`);
+  }
+
+  getRevenueByProject(year: number): Observable<ApiResponse<ProjectRevenue[]>> {
+    return this.http.get<ApiResponse<ProjectRevenue[]>>(`${this.apiUrl}/revenue-by-project?year=${year}`);
+  }
+}
+
+export interface ProjectApartmentStatus {
+  projectId: string;
+  projectName: string;
+  totalApartments: number;
+  soldApartments: number;
+  unsoldApartments: number;
+}
+
+export interface ProjectRevenue {
+  projectId: string;
+  projectName: string;
+  revenueByMonth: MonthlyRevenue[];
+  totalRevenue: number;
 }
 

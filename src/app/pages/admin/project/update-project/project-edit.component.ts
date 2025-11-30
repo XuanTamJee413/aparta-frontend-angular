@@ -1,208 +1,238 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ProjectService, ProjectDto, ProjectUpdateDto } from '../../../../services/admin/project.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ProjectService, ProjectDto, ProjectDetailResponse, ProjectBasicResponse } from '../../../../services/admin/project.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-edit',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatSlideToggleModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './project-edit.component.html',
   styleUrls: ['./project-edit.component.css']
 })
 export class ProjectEditComponent implements OnInit {
-  projectForm: FormGroup;
-  isLoading = false;
-  loadingProject = false;
+  editForm: FormGroup;
   projectId: string = '';
   currentProject: ProjectDto | null = null;
+  isSubmitting = false;
+  isLoading = false;
+  isValidatingPayOS = false;
+  payOSValidationMessage = '';
+  payOSValidationStatus: 'idle' | 'valid' | 'invalid' = 'idle';
 
   constructor(
     private fb: FormBuilder,
     private projectService: ProjectService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar // Inject SnackBar
   ) {
-    this.projectForm = this.fb.group({
-      projectCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-      isActive: [true]
+    this.editForm = this.fb.group({
+      // Readonly
+      projectCode: [{value: '', disabled: true}],
+      
+      // Editable
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      isActive: [true],
+      
+      address: [''],
+      ward: [''],
+      district: [''],
+      city: [''],
+      
+      bankName: ['PayOS'],
+      bankAccountNumber: ['', [Validators.pattern('^[0-9]+$')]],
+      bankAccountName: [''],
+      
+      // PayOS Settings
+      payOSClientId: [''],
+      payOSApiKey: [''],
+      payOSChecksumKey: ['']
     });
   }
 
   ngOnInit(): void {
+    // Set bankName mặc định là "PayOS"
+    this.editForm.patchValue({
+      bankName: 'PayOS'
+    });
+    // Disable bankName field
+    this.editForm.get('bankName')?.disable();
+
     this.projectId = this.route.snapshot.paramMap.get('id') || '';
     if (this.projectId) {
       this.loadProject();
-    } else {
-      this.snackBar.open('Không tìm thấy ID dự án', 'Đóng', {
-        duration: 3000,
-        panelClass: ['error-snackbar']
-      });
-      this.router.navigate(['/admin/project/list']);
     }
   }
 
-  private loadProject(): void {
-    this.loadingProject = true;
-    
+  loadProject() {
+    this.isLoading = true;
     this.projectService.getProjectById(this.projectId).subscribe({
-      next: (response: any) => {
-        if (response.succeeded && response.data) {
-          this.currentProject = response.data;
-          this.populateForm(response.data);
+      next: (res: ProjectDetailResponse) => {
+        if (res.succeeded && res.data) {
+          this.currentProject = res.data;
+          this.editForm.patchValue(this.currentProject);
+          
+          // Nếu đã có PayOS credentials và bank account info, set validation status và disable fields
+          if (this.currentProject.payOSClientId && this.currentProject.bankAccountNumber) {
+            this.payOSValidationStatus = 'valid';
+            this.payOSValidationMessage = '✓ Tài khoản PayOS đã được cấu hình';
+            this.editForm.get('bankAccountNumber')?.disable();
+            this.editForm.get('bankAccountName')?.disable();
+          }
         } else {
-          this.snackBar.open(response.message || 'Không tìm thấy dự án', 'Đóng', {
-            duration: 3000,
-            panelClass: ['error-snackbar']
-          });
-          this.router.navigate(['/admin/project/list']);
+          this.showNotification('Không tìm thấy dự án.', 'error');
         }
-        this.loadingProject = false;
+        this.isLoading = false;
       },
-      error: (error: any) => {
-        console.error('Error loading project:', error);
-        this.snackBar.open('Lỗi khi tải thông tin dự án', 'Đóng', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
-        this.router.navigate(['/admin/project/list']);
-        this.loadingProject = false;
+      error: () => {
+        this.showNotification('Lỗi khi tải dữ liệu dự án.', 'error');
+        this.isLoading = false;
       }
     });
   }
 
-  private populateForm(project: ProjectDto): void {
-    this.projectForm.patchValue({
-      projectCode: project.projectCode || '',
-      name: project.name || '',
-      numApartments: project.numApartments || 0,
-      numBuildings: project.numBuildings || 0,
-      isActive: project.isActive
-    });
+  // Reset PayOS validation khi user thay đổi input
+  resetPayOSValidation() {
+    // Chỉ reset nếu đã có validation status (đã click nút kiểm tra)
+    if (this.payOSValidationStatus !== 'idle') {
+      this.payOSValidationStatus = 'idle';
+      this.payOSValidationMessage = '';
+      // Enable lại 2 trường bank account khi reset
+      this.editForm.get('bankAccountNumber')?.enable();
+      this.editForm.get('bankAccountName')?.enable();
+      // Clear giá trị
+      this.editForm.patchValue({
+        bankAccountNumber: '',
+        bankAccountName: ''
+      });
+    }
   }
 
-  onSubmit(): void {
-    if (this.projectForm.valid) {
-      this.isLoading = true;
-      
-      const updateData: ProjectUpdateDto = {
-        projectCode: this.projectForm.value.projectCode,
-        name: this.projectForm.value.name,
-        numApartments: this.projectForm.value.numApartments || 0,
-        numBuildings: this.projectForm.value.numBuildings || 0,
-        isActive: this.projectForm.value.isActive
-      };
+  // Validate PayOS credentials - chỉ chạy khi user click nút
+  validatePayOS() {
+    const clientId = this.editForm.get('payOSClientId')?.value;
+    const apiKey = this.editForm.get('payOSApiKey')?.value;
+    const checksumKey = this.editForm.get('payOSChecksumKey')?.value;
 
-      this.projectService.updateProject(this.projectId, updateData).subscribe({
-        next: (response: any) => {
-          if (response.succeeded) {
-            // Hiển thị message từ backend hoặc message mặc định
-            const successMessage = response.message || 'Cập nhật dự án thành công!';
-            this.snackBar.open(successMessage, 'Đóng', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
+    // Nếu không có PayOS settings, bỏ qua validation
+    if (!clientId && !apiKey && !checksumKey) {
+      this.payOSValidationStatus = 'idle';
+      this.payOSValidationMessage = '';
+      return;
+    }
+
+    // Kiểm tra có đủ 3 trường không
+    if (!clientId || !apiKey || !checksumKey) {
+      this.payOSValidationStatus = 'invalid';
+      this.payOSValidationMessage = 'Vui lòng nhập đầy đủ 3 thông tin PayOS (Client ID, API Key, Checksum Key)';
+      return;
+    }
+
+    this.isValidatingPayOS = true;
+    this.payOSValidationMessage = 'Đang kiểm tra...';
+    this.payOSValidationStatus = 'idle';
+
+    this.projectService.validatePayOSCredentials(clientId, apiKey, checksumKey).subscribe({
+      next: (res: any) => {
+        this.isValidatingPayOS = false;
+        if (res.succeeded && res.data?.isValid) {
+          this.payOSValidationStatus = 'valid';
+          this.payOSValidationMessage = '✓ Tài khoản PayOS hợp lệ';
+          
+          // Tự động điền thông tin ngân hàng từ PayOS response
+          if (res.data?.accountNumber) {
+            this.editForm.patchValue({
+              bankAccountNumber: res.data.accountNumber
             });
-            this.router.navigate(['/admin/project/list']);
-          } else {
-            // Hiển thị message từ backend hoặc message mặc định
-            const errorMessage = response.message || 'Lỗi khi cập nhật dự án';
-            this.snackBar.open(errorMessage, 'Đóng', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
+            // Disable trường số tài khoản sau khi điền
+            this.editForm.get('bankAccountNumber')?.disable();
+          }
+          if (res.data?.accountName) {
+            this.editForm.patchValue({
+              bankAccountName: res.data.accountName
             });
+            // Disable trường tên chủ tài khoản sau khi điền
+            this.editForm.get('bankAccountName')?.disable();
           }
-          this.isLoading = false;
-        },
-        error: (error: any) => {
-          console.error('Error updating project:', error);
-          
-          // Xử lý error response từ backend
-          let errorMessage = 'Lỗi khi cập nhật dự án';
-          
-          if (error.error && error.error.message) {
-            // Nếu backend trả về error với message
-            errorMessage = error.error.message;
-          } else if (error.message) {
-            // Nếu có message trong error object
-            errorMessage = error.message;
-          }
-          
-          this.snackBar.open(errorMessage, 'Đóng', {
-            duration: 3000,
-            panelClass: ['error-snackbar']
-          });
-          this.isLoading = false;
+        } else {
+          this.payOSValidationStatus = 'invalid';
+          this.payOSValidationMessage = res.data?.message || 'Tài khoản PayOS không hợp lệ';
         }
-      });
-    } else {
-      this.markFormGroupTouched();
-      this.snackBar.open('Vui lòng kiểm tra lại thông tin nhập vào', 'Đóng', {
-        duration: 3000,
-        panelClass: ['warning-snackbar']
-      });
-    }
-  }
-
-  onCancel(): void {
-    this.router.navigate(['/admin/project/list']);
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.projectForm.controls).forEach(key => {
-      const control = this.projectForm.get(key);
-      control?.markAsTouched();
+      },
+      error: (err: any) => {
+        this.isValidatingPayOS = false;
+        this.payOSValidationStatus = 'invalid';
+        this.payOSValidationMessage = err.error?.message || 'Lỗi khi kiểm tra tài khoản PayOS';
+      }
     });
   }
 
-  getErrorMessage(fieldName: string): string {
-    const control = this.projectForm.get(fieldName);
-    if (control?.hasError('required')) {
-      return 'Trường này là bắt buộc';
+  onSubmit() {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
     }
-    if (control?.hasError('minlength')) {
-      return `Tối thiểu ${control.errors?.['minlength'].requiredLength} ký tự`;
+
+    // Kiểm tra PayOS validation nếu có nhập PayOS settings
+    const hasPayOS = this.editForm.get('payOSClientId')?.value || 
+                     this.editForm.get('payOSApiKey')?.value || 
+                     this.editForm.get('payOSChecksumKey')?.value;
+
+    if (hasPayOS && this.payOSValidationStatus !== 'valid') {
+      this.showNotification('Vui lòng kiểm tra và xác thực tài khoản PayOS trước khi cập nhật dự án', 'error');
+      return;
     }
-    if (control?.hasError('maxlength')) {
-      return `Tối đa ${control.errors?.['maxlength'].requiredLength} ký tự`;
+
+    this.isSubmitting = true;
+
+    const formValue = this.editForm.getRawValue();
+    // Đảm bảo bankName luôn là "PayOS" nếu có PayOS credentials
+    if (hasPayOS) {
+      formValue.bankName = 'PayOS';
     }
-    if (control?.hasError('min')) {
-      return `Giá trị tối thiểu là ${control.errors?.['min'].min}`;
-    }
-    if (control?.hasError('max')) {
-      return `Giá trị tối đa là ${control.errors?.['max'].max}`;
-    }
-    return '';
+    
+    const updateDto = {
+      name: formValue.name,
+      isActive: formValue.isActive,
+      address: formValue.address,
+      ward: formValue.ward,
+      district: formValue.district,
+      city: formValue.city,
+      bankName: formValue.bankName,
+      bankAccountNumber: formValue.bankAccountNumber,
+      bankAccountName: formValue.bankAccountName,
+      payOSClientId: formValue.payOSClientId,
+      payOSApiKey: formValue.payOSApiKey,
+      payOSChecksumKey: formValue.payOSChecksumKey
+    };
+
+    this.projectService.updateProject(this.projectId, updateDto).subscribe({
+      next: (res: ProjectBasicResponse) => {
+        this.isSubmitting = false;
+        if (res.succeeded) {
+          this.showNotification('Cập nhật thành công!', 'success');
+          setTimeout(() => this.router.navigate(['/admin/project/list']), 1500);
+        } else {
+          this.showNotification(res.message || 'Lỗi cập nhật.', 'error');
+        }
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        const msg = err.error?.message || 'Lỗi hệ thống.';
+        this.showNotification(msg, 'error');
+      }
+    });
   }
 
-  isFieldInvalid(fieldName: string): boolean {
-    const control = this.projectForm.get(fieldName);
-    return !!(control && control.invalid && control.touched);
-  }
-
-  formatDate(date: Date | undefined): string {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('vi-VN');
+  private showNotification(message: string, type: 'success' | 'error') {
+    this.snackBar.open(message, 'Đóng', {
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: type === 'success' ? ['mat-toolbar', 'mat-primary'] : ['mat-toolbar', 'mat-warn']
+    });
   }
 }

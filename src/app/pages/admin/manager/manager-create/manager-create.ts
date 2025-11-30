@@ -87,8 +87,13 @@ export class ManagerCreateComponent implements OnInit {
   }
 
   onStaffCodeChange(value: string): void {
-    const sanitized = (value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const sanitized = (value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
     this.manager.staffCode = sanitized;
+  }
+
+  onPhoneInput(value: string): void {
+    const sanitized = (value ?? '').replace(/\D/g, '').slice(0, 10);
+    this.manager.phone = sanitized;
   }
 
   onSubmit(form?: NgForm): void {
