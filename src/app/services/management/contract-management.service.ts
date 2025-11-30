@@ -107,7 +107,7 @@ export class ContractManagementService {
 
   getAvailableApartments(): Observable<ApiResponse<AvailableApartmentDto[]>> {
     const params = new HttpParams()
-      .set('status', 'Chưa Thuê')
+      .set('status', 'Còn Trống')
       .set('sortBy', 'code')
       .set('sortOrder', 'asc');
 

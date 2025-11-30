@@ -21,8 +21,8 @@
       <div class="filters-right">
         <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
           <option [ngValue]="null">Tất cả trạng thái</option>
-          <option value="Đã Thuê">Đã Thuê</option>
-          <option value="Chưa Thuê">Chưa Thuê</option>
+          <option value="Đã Bán">Đã Bán</option>
+          <option value="Còn Trống">Còn Trống</option>
           <option value="Đang Bảo Trì">Đang Bảo Trì</option>
           <option value="Đã Đóng">Đã Đóng</option>
         </select>
@@ -100,8 +100,8 @@
               <td>{{ apartment.area }} m²</td>
               <td>
                 <span class="status-badge" [ngClass]="{
-                        'status-rented': apartment.status === 'Đã Thuê',
-                        'status-available': apartment.status === 'Chưa Thuê',
+                        'status-rented': apartment.status === 'Đã Bán',
+                        'status-available': apartment.status === 'Còn Trống',
                         'status-maintenance': apartment.status === 'Đang Bảo Trì',
                         'status-closed': apartment.status === 'Đã Đóng'
                       }">

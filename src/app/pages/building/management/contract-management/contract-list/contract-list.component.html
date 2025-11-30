@@ -60,7 +60,7 @@
                   </div>
                 </th>
 
-                <th class="sortable-header" (click)="onSort('endDate')">
+                <!-- <th class="sortable-header" (click)="onSort('endDate')">
                   <div class="sort-header-content">
                     <span>Ngày kết thúc</span>
                     <span class="sort-icon">
@@ -70,7 +70,7 @@
                       <ng-template #endDefault>⇅</ng-template>
                     </span>
                   </div>
-                </th>
+                </th> -->
 
                 <th>Thao tác</th>
               </tr>
@@ -88,7 +88,7 @@
                 </td>
                 <td>{{ contract.ownerName || '—' }}</td>
                 <td>{{ contract.startDate | date: 'yyyy-MM-dd' }}</td>
-                <td>{{ contract.endDate ? (contract.endDate | date: 'yyyy-MM-dd') : '—' }}</td>
+                <!-- <td>{{ contract.endDate ? (contract.endDate | date: 'yyyy-MM-dd') : '—' }}</td> -->
 
                 <td class="actions">
                   <button type="button" class="action-view" (click)="onView(contract.contractId)">
@@ -110,14 +110,14 @@
                     Sửa
                   </button>
 
-                  <button type="button" class="action-delete-btn" (click)="onDelete(contract.contractId)"
+                  <!-- <button type="button" class="action-delete-btn" (click)="onDelete(contract.contractId)"
                     *ngIf="!isHistorical(contract)">
                     <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-3h4m-7 3h10" />
                     </svg>
                     Hủy
-                  </button>
+                  </button> -->
                 </td>
 
               </tr>
