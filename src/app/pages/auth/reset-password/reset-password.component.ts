@@ -188,7 +188,7 @@ export class ResetPasswordComponent implements OnInit {
 
   private navigateByRole(): void {
     if (this.auth.hasRole('custom')) {
-      this.router.navigateByUrl('/manager');
+      this.router.navigateByUrl('/manager/manage-apartment');
       return;
     }
     if (this.auth.hasRole('admin')) {
@@ -200,7 +200,7 @@ export class ResetPasswordComponent implements OnInit {
       return;
     }
     if (this.auth.hasRole('staff')) {
-      this.router.navigateByUrl('/manager');
+      this.router.navigateByUrl('/manager/manage-apartment');
       return;
     }
     // Default to login

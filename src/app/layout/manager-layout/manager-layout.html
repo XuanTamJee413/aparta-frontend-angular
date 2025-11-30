@@ -9,11 +9,11 @@
     </mat-toolbar>
 
     <mat-nav-list (click)="closeSidenavOnMobile()">
-      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link" *ngIf="isManager$ | async">
+      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon>
         <span>Dashboard</span>
       </a>
-      <mat-divider *ngIf="isManager$ | async"></mat-divider>
+      <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Quản lý</h3>
       <a mat-list-item routerLink="manage-apartment" routerLinkActive="active-link">
           <mat-icon>apartment</mat-icon>
