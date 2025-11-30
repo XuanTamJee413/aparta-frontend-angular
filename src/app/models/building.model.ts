@@ -53,8 +53,13 @@ export interface BuildingUpdateDto {
   readingWindowEnd?: number;
 }
 
+// [CẬP NHẬT] Thêm các trường sort và filter
 export interface BuildingQueryParameters {
   searchTerm?: string;
+  projectId?: string;    // Lọc theo dự án
+  isActive?: boolean;    // Lọc theo trạng thái
+  sortBy?: string;       // Cột cần sắp xếp
+  sortOrder?: string;    // 'asc' hoặc 'desc'
   skip?: number;
   take?: number;
 }

@@ -6,32 +6,28 @@
     </header>
 
     <div class="filter-container">
-      <div class="search-wrapper">
+       <div class="search-wrapper">
         <div class="search-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
           </svg>
         </div>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Tìm theo Mã hoặc Tên tòa nhà..."
-          [(ngModel)]="searchTerm"
-          (keyup.enter)="onSearch()"
-        />
+        <input id="search-building" name="searchTerm" type="text" class="search-input" placeholder="Tìm theo Mã hoặc Tên tòa nhà..." [ngModel]="searchTerm" (input)="onSearchInput($event)" autocomplete="off" />
       </div>
-
-      <button class="btn-filter" (click)="onSearch()">Tìm kiếm</button>
-      
-      <div style="flex-grow: 1;"></div>
-      
-      <a routerLink="/admin/building/create" class="btn-add-new">
-        + Thêm Tòa Nhà
-      </a>
+      <select id="filter-project" name="projectFilter" class="form-select filter-select" [(ngModel)]="selectedProjectId" (change)="onFilterChange()">
+        <option value="">-- Tất cả Dự án --</option>
+        <option *ngFor="let p of projects" [value]="p.projectId">{{ p.name }}</option>
+      </select>
+      <select id="filter-status" name="statusFilter" class="form-select filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+        <option value="">-- Tất cả Trạng thái --</option>
+        <option value="true">Hoạt động</option>
+        <option value="false">Ngừng hoạt động</option>
+      </select>
+      <a routerLink="/admin/building/create" class="btn-add-new">+ Thêm Tòa Nhà</a>
     </div>
 
     <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
-      <p>Đang tải dữ liệu...</p>
+      <p class="text-primary">Đang tải dữ liệu...</p>
     </div>
 
     <div *ngIf="!isLoading" class="table-container">
@@ -39,10 +35,10 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Mã Tòa</th>
-              <th>Tên Tòa nhà</th>
-              <th>Cấu trúc (Tầng/Hầm)</th>
-              <th>Bảo hành</th>
+              <th (click)="onSort('buildingCode')" class="sortable">Mã Tòa <span class="sort-icon">{{ getSortIcon('buildingCode') }}</span></th>
+              <th (click)="onSort('name')" class="sortable">Tên Tòa nhà <span class="sort-icon">{{ getSortIcon('name') }}</span></th>
+              <th (click)="onSort('totalFloors')" class="sortable">Cấu trúc <span class="sort-icon">{{ getSortIcon('totalFloors') }}</span></th>
+              <th (click)="onSort('handoverDate')" class="sortable">Bảo hành <span class="sort-icon">{{ getSortIcon('handoverDate') }}</span></th>
               <th>Chốt số (Ngày)</th>
               <th>Trạng thái</th>
               <th>Hành động</th>
@@ -50,7 +46,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let b of buildings">
-              <td class="font-medium">{{ b.buildingCode }}</td>
+              <td class="font-medium text-primary fw-bold">{{ b.buildingCode }}</td>
               <td>
                 <div style="font-weight: 600;">{{ b.name }}</div>
                 <div style="font-size: 0.8rem; color: #666;">{{ b.numApartments }} căn - {{ b.numResidents }} dân</div>
@@ -60,9 +56,7 @@
                 <span style="background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 4px;">{{ b.totalBasements }} Hầm</span>
               </td>
               <td>
-                <span [class.status-available]="b.warrantyStatus === 'Còn bảo hành'" 
-                      [class.status-unavailable]="b.warrantyStatus !== 'Còn bảo hành'"
-                      class="status-badge">
+                <span [class.status-available]="b.warrantyStatus === 'Còn bảo hành'" [class.status-unavailable]="b.warrantyStatus !== 'Còn bảo hành'" class="status-badge">
                   {{ b.warrantyStatus }}
                 </span>
                 <div *ngIf="b.handoverDate" style="font-size: 0.75rem; color: #888; margin-top: 2px;">
@@ -75,15 +69,29 @@
                 <span style="color: #4f46e5; font-weight: bold;">{{ b.readingWindowEnd }}</span>
               </td>
               <td>
-                <span class="status-badge" [ngClass]="b.isActive ? 'status-available' : 'status-unavailable'">
-                  {{ b.isActive ? 'Hoạt động' : 'Ngưng hoạt động' }}
-                </span>
-              </td>
-              <td class="action-cell">
-                <button class="btn-edit" [routerLink]="['/admin/building/edit', b.buildingId]">
-                  Sửa
-                </button>
-              </td>
+            <span class="status-badge" 
+                  [ngClass]="b.isActive ? 'status-available' : 'status-unavailable'">
+              {{ b.isActive ? 'Hoạt động' : 'Đã dừng' }}
+            </span>
+          </td>
+
+          <td class="action-cell">
+            <div class="action-buttons">
+              <a [routerLink]="['/admin/building/edit', b.buildingId]" 
+                 class="btn-icon btn-edit" 
+                 title="Chỉnh sửa thông tin">
+                <mat-icon>edit</mat-icon>
+              </a>
+
+              <button type="button" 
+                      class="btn-icon" 
+                      [ngClass]="b.isActive ? 'btn-stop' : 'btn-activate'"
+                      (click)="openToggleStatusDialog(b)"
+                      [title]="b.isActive ? 'Dừng hoạt động' : 'Kích hoạt lại'">
+                <mat-icon>{{ b.isActive ? 'block' : 'power_settings_new' }}</mat-icon>
+              </button>
+            </div>
+          </td>
             </tr>
             <tr *ngIf="buildings.length === 0">
               <td colspan="7" class="no-results">Không tìm thấy tòa nhà nào.</td>
@@ -97,15 +105,39 @@
           Hiển thị {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalCount) }} trong tổng số {{ totalCount }}
         </div>
         <div class="pagination-controls">
-          <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
-            &laquo;
-          </button>
+          <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">&laquo;</button>
           <span>Trang {{ currentPage }} / {{ totalPages }}</span>
-          <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">
-            &raquo;
-          </button>
+          <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">&raquo;</button>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<ng-template #confirmDialog>
+  <div class="custom-dialog-container" *ngIf="buildingToToggle">
+    <div class="dialog-header">
+      <mat-icon style="color: #dc2626;">warning</mat-icon>
+      <h2>Xác nhận ngưng hoạt động</h2>
+    </div>
+    
+    <div class="dialog-body">
+      <p style="margin-bottom: 0.75rem;">Bạn có chắc chắn muốn <strong>DỪNG HOẠT ĐỘNG</strong> tòa nhà <strong>{{ buildingToToggle.name }}</strong> không?</p>
+      
+      <div style="background-color: #fff5f5; border: 1px solid #fed7d7; padding: 12px; border-radius: 6px; font-size: 0.875rem; color: #c53030;">
+        <strong>Lưu ý quan trọng:</strong>
+        <ul style="margin: 4px 0 0 0; padding-left: 20px;">
+          <li>Cư dân thuộc tòa nhà sẽ tạm thời không thể đăng nhập.</li>
+          <li>Các dịch vụ liên quan đến tòa nhà này sẽ bị tạm dừng.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-dialog-cancel" mat-dialog-close (click)="buildingToToggle = null">Hủy bỏ</button>
+      <button class="btn-dialog-confirm" [mat-dialog-close]="true" (click)="executeUpdateStatus(false)">
+        Đồng ý Dừng
+      </button>
+    </div>
+  </div>
+</ng-template>

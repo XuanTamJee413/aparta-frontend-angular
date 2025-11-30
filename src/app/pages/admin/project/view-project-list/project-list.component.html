@@ -72,14 +72,23 @@
               </td>
               <td>
                 <span class="status-badge" [ngClass]="p.isActive ? 'status-available' : 'status-unavailable'">
-                  {{ p.isActive ? 'Hoạt động' : 'Ngừng hoạt động' }}
+                  {{ p.isActive ? 'Hoạt động' : 'Đã dừng' }}
                 </span>
               </td>
               <td class="small text-muted">{{ p.createdAt | date:'dd/MM/yyyy' }}</td>
               <td class="small text-muted">{{ p.updatedAt | date:'dd/MM/yyyy' }}</td>
-              <td class="actions">
-                <button class="btn-edit" [routerLink]="['/admin/project/edit', p.projectId]">
-                  Sửa
+              <td data-label="Hành động" class="actions">
+                <a [routerLink]="['/admin/project/edit', p.projectId]" class="btn-action" title="Chỉnh sửa">
+                  <mat-icon>edit</mat-icon> Sửa
+                </a>
+
+                <button class="btn-action" 
+                        [class.btn-deactivate]="p.isActive" 
+                        [class.btn-activate]="!p.isActive"
+                        (click)="onToggleStatus(p)"
+                        [title]="p.isActive ? 'Khóa dự án' : 'Kích hoạt lại'">
+                  <mat-icon>{{ p.isActive ? 'lock' : 'lock_open' }}</mat-icon>
+                  {{ p.isActive ? 'Khóa' : 'Mở' }}
                 </button>
               </td>
             </tr>
@@ -92,3 +101,31 @@
     </div>
   </div>
 </div>
+
+<ng-template #confirmDialog>
+  <div class="custom-dialog-container">
+    <div class="dialog-header">
+      <mat-icon style="color: #dc2626;">warning</mat-icon>
+      <h2>Xác nhận ngưng hoạt động</h2>
+    </div>
+    
+    <div class="dialog-body">
+      <p style="margin-bottom: 0.75rem;">Bạn có chắc chắn muốn <strong>khóa dự án</strong> này không?</p>
+      
+      <div style="background-color: #fff5f5; border: 1px solid #fed7d7; padding: 12px; border-radius: 6px; font-size: 0.875rem; color: #c53030;">
+        <strong>Lưu ý:</strong>
+        <ul style="margin: 4px 0 0 0; padding-left: 20px;">
+          <li>Dự án sẽ không thể truy cập bởi cư dân.</li>
+          <li>Các dịch vụ liên quan sẽ bị tạm dừng.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-dialog-cancel" mat-dialog-close>Hủy bỏ</button>
+      <button class="btn-dialog-confirm" [mat-dialog-close]="true" (click)="confirmDeactivate()">
+        Đồng ý Khóa
+      </button>
+    </div>
+  </div>
+</ng-template>

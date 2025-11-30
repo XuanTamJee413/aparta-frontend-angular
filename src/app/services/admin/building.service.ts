@@ -12,7 +12,6 @@ import {
   BuildingBasicResponse 
 } from '../../models/building.model';
 
-// --- QUAN TRỌNG: Re-export để các file cũ không bị lỗi import ---
 export * from '../../models/building.model'; 
 
 @Injectable({
@@ -23,19 +22,23 @@ export class BuildingService {
 
   constructor(private http: HttpClient) {}
 
-  // API mới chuẩn
+  // [CẬP NHẬT] Map đầy đủ tham số query
   getBuildings(query: BuildingQueryParameters): Observable<BuildingListResponse> {
     let params = new HttpParams();
     
     if (query.searchTerm) params = params.set('SearchTerm', query.searchTerm);
+    if (query.projectId) params = params.set('ProjectId', query.projectId);
+    if (query.isActive !== undefined && query.isActive !== null) params = params.set('IsActive', query.isActive);
+    if (query.sortBy) params = params.set('SortBy', query.sortBy);
+    if (query.sortOrder) params = params.set('SortOrder', query.sortOrder);
+    
     if (query.skip !== undefined) params = params.set('Skip', query.skip.toString());
     if (query.take !== undefined) params = params.set('Take', query.take.toString());
 
     return this.http.get<BuildingListResponse>(this.apiUrl, { params });
   }
 
-  // --- HÀM TƯƠNG THÍCH (FIX LỖI CÁC MODULE KHÁC) ---
-  // Các module khác đang gọi getAllBuildings({ take: 100 })
+  // Hàm tương thích cũ
   getAllBuildings(params?: any): Observable<BuildingListResponse> {
     const query: BuildingQueryParameters = {
       searchTerm: params?.searchTerm,
@@ -44,7 +47,6 @@ export class BuildingService {
     };
     return this.getBuildings(query);
   }
-  // -------------------------------------------------
 
   getBuildingById(id: string): Observable<BuildingDetailResponse> {
     return this.http.get<BuildingDetailResponse>(`${this.apiUrl}/${id}`);

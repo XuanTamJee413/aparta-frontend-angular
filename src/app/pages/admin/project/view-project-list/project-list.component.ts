@@ -1,33 +1,42 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { ProjectService, ProjectDto, ProjectListResponse } from '../../../../services/admin/project.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatDialogModule, MatIconModule, MatButtonModule],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css']
 })
 export class ProjectListComponent implements OnInit, OnDestroy {
   projects: ProjectDto[] = [];
-  filteredProjects: ProjectDto[] = []; // Dùng mảng này để hiển thị (đã filter/sort)
-  
+  filteredProjects: ProjectDto[] = [];
   searchTerm: string = '';
   isLoading = false;
-  
-  // Cấu hình Sort
   sortColumn: string = 'createdAt';
   sortDirection: 'asc' | 'desc' = 'desc';
+  Math = Math;
+  pendingProject: ProjectDto | null = null;
 
   // Xử lý Live Search
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+  
+  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
 
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private projectService: ProjectService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.loadProjects();
@@ -121,5 +130,52 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   getSortIcon(column: string): string {
     if (this.sortColumn !== column) return '';
     return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  onToggleStatus(project: ProjectDto) {
+    if (project.isActive) {
+      // Nếu đang Active -> Hiện Dialog xác nhận
+      this.pendingProject = project;
+      this.dialog.open(this.confirmDialog, {
+        width: '400px',
+        disableClose: true
+      });
+    } else {
+      // Nếu đang Inactive -> Mở khóa luôn
+      this.executeToggle(project, true);
+    }
+  }
+
+  confirmDeactivate() {
+    if (this.pendingProject) {
+      this.executeToggle(this.pendingProject, false);
+      this.pendingProject = null;
+    }
+  }
+
+  private executeToggle(project: ProjectDto, newStatus: boolean) {
+    this.isLoading = true;
+    this.projectService.updateProject(project.projectId, { isActive: newStatus }).subscribe({
+      next: (res) => {
+        if (res.succeeded) {
+          project.isActive = newStatus;
+          this.showNotification(newStatus ? 'Đã kích hoạt lại dự án.' : 'Đã khóa dự án.', 'success');
+        } else {
+          this.showNotification(res.message || 'Lỗi cập nhật.', 'error');
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.showNotification('Lỗi hệ thống.', 'error');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private showNotification(message: string, type: 'success' | 'error') {
+    this.snackBar.open(message, 'Đóng', {
+      duration: 3000,
+      panelClass: type === 'success' ? ['success-snackbar'] : ['error-snackbar']
+    });
   }
 }

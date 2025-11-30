@@ -51,4 +51,8 @@ export class ProjectService {
   updateProject(id: string, dto: ProjectUpdateDto): Observable<ProjectBasicResponse> {
     return this.http.put<ProjectBasicResponse>(`${this.apiUrl}/${id}`, dto);
   }
+
+  toggleStatus(id: string, isActive: boolean): Observable<ProjectBasicResponse> {
+    return this.updateProject(id, { isActive });
+  }
 }
