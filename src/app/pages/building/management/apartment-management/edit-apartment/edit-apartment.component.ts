@@ -15,7 +15,7 @@ import { map, switchMap, finalize, catchError } from 'rxjs/operators';
 import { EMPTY, of } from 'rxjs';
 
 type AptType = 'Small' | 'Medium' | 'Big' | 'Large';
-type ApartmentStatus = 'Chưa Thuê' | 'Đang Bảo Trì' | 'Đã Thuê' | 'Đã Trả Phòng' | 'Đã Đóng';
+type ApartmentStatus = 'Còn Trống' | 'Đang Bảo Trì' | 'Đã Bán' | 'Đã Trả Phòng' | 'Đã Đóng';
 
 const TYPE_RANGES: Record<AptType, { min: number; max: number }> = {
   Small: { min: 25, max: 45 },
@@ -73,7 +73,7 @@ export class EditApartment implements OnInit {
     };
   }
 
-  readonly editableStatuses: ApartmentStatus[] = ['Chưa Thuê', 'Đang Bảo Trì'];
+  readonly editableStatuses: ApartmentStatus[] = ['Còn Trống', 'Đang Bảo Trì'];
 
   form = this.fb.group(
     {
@@ -126,21 +126,19 @@ export class EditApartment implements OnInit {
 
         const status = apartment.status as ApartmentStatus;
 
-        // ❌ Không cho phép chỉnh sửa: Đã Thuê / Đã Trả Phòng / Đã Đóng
-        if (status === 'Đã Thuê' || status === 'Đã Trả Phòng' || status === 'Đã Đóng') {
+        if (status === 'Đã Bán' || status === 'Đã Trả Phòng' || status === 'Đã Đóng') {
           this.error.set('Không được phép chỉnh sửa căn hộ này!');
           this.form.disable();
           return;
         }
 
-        // ✅ Cho phép chỉnh sửa: Chưa Thuê / Đang Bảo Trì
         this.form.patchValue({
           code: apartment.code,
           type: (['Small', 'Medium', 'Big', 'Large'].includes(apartment.type)
             ? apartment.type as AptType
             : ''),
           area: apartment.area ?? 0,
-          status: this.editableStatuses.includes(status) ? status : 'Chưa Thuê'
+          status: this.editableStatuses.includes(status) ? status : 'Còn Trống'
         });
 
         this.form.get('type')?.valueChanges.subscribe(() => {

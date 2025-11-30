@@ -1,0 +1,133 @@
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Tạo hàng loạt Căn hộ</h1>
+      <p>Cấu hình các phòng cho một tầng, chọn khoảng tầng và hệ thống sẽ tạo căn hộ tự động.</p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+      <div class="form-group">
+        <label for="building" class="form-label">Tòa nhà</label>
+        <select id="building" class="form-select" formControlName="buildingId">
+          <option [ngValue]="null" disabled>-- Chọn tòa nhà --</option>
+          @if (buildingsLoading()) {
+          <option [ngValue]="null" disabled>Đang tải...</option>
+          } @else if (buildingsError()) {
+          <option [ngValue]="null" disabled>{{ buildingsError() }}</option>
+          } @else {
+          @for (b of buildings(); track b.buildingId) {
+          <option [value]="b.buildingId">{{ b.name }}</option>
+          }
+          }
+        </select>
+        @if (form.controls['buildingId'].invalid && (form.controls['buildingId'].dirty ||
+        form.controls['buildingId'].touched)) {
+        <div class="form-error">Vui lòng chọn tòa nhà.</div>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startFloor" class="form-label">Tầng bắt đầu</label>
+          <input id="startFloor" type="number" class="form-control" formControlName="startFloor" min="1" />
+        </div>
+
+        <div class="form-group">
+          <label for="endFloor" class="form-label">Tầng kết thúc</label>
+          <input id="endFloor" type="number" class="form-control" formControlName="endFloor" min="1" />
+        </div>
+      </div>
+
+      @if (floorRangeError) {
+      <div class="form-error">
+        {{ floorRangeError }}
+      </div>
+      }
+
+      <div class="form-hint">
+        Tầng phải lớn hơn 0 và tầng kết thúc &ge; tầng bắt đầu. Nếu vượt quá số tầng thực tế của tòa nhà, hệ thống sẽ
+        báo lỗi.
+      </div>
+
+      <div class="rooms-section">
+        <div class="rooms-header">
+          <h2>Cấu hình phòng cho 1 tầng</h2>
+          <button type="button" class="btn-outline" (click)="addRoom()">+ Thêm phòng</button>
+        </div>
+
+        <div class="rooms-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>STT phòng</th>
+                <th>Loại</th>
+                <th>Diện tích (m²)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody formArrayName="rooms">
+              @for (room of roomsArray.controls; let i = $index; track i) {
+              <tr [formGroupName]="i">
+                <td>
+                  <input type="number" class="form-control" formControlName="roomIndex" min="1" />
+                  @if (getRoomError(i, 'roomIndex', 'required')) {
+                  <div class="form-error">Bắt buộc.</div>
+                  }
+                  @if (getRoomError(i, 'roomIndex', 'min')) {
+                  <div class="form-error">STT phòng phải ≥ 1.</div>
+                  }
+                </td>
+                <td>
+                  <select class="form-select" formControlName="type">
+                    <option value="" disabled>-- Chọn loại --</option>
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Big">Big</option>
+                    <option value="Large">Large</option>
+                  </select>
+                  @if (getRoomError(i, 'type', 'required')) {
+                  <div class="form-error">Chọn loại phòng.</div>
+                  }
+                </td>
+                <td>
+                  <input type="number" class="form-control" formControlName="area" min="1" />
+                  @if (getRoomError(i, 'area', 'required')) {
+                  <div class="form-error">Diện tích bắt buộc.</div>
+                  }
+                  @if (getRoomError(i, 'area', 'min')) {
+                  <div class="form-error">Diện tích phải &gt; 0.</div>
+                  }
+                  @if (roomHasAreaRangeError(i)) {
+                  <div class="form-error">
+                    Diện tích không hợp lệ cho loại phòng đã chọn.
+                  </div>
+                  }
+                </td>
+                <td class="text-right">
+                  <button type="button" class="btn-link" (click)="removeRoom(i)">
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="4" class="no-results">Chưa có phòng nào. Hãy bấm "Thêm phòng".</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if (success()) { <div class="alert-success">{{ success() }}</div> }
+      @if (error()) { <div class="alert-danger">{{ error() }}</div> }
+
+      <div class="form-actions">
+        <a routerLink="/manager/manage-apartment" class="btn-secondary">Hủy</a>
+        <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting()">
+          @if (submitting()) { <span>Đang tạo...</span> } @else { <span>Tạo hàng loạt</span> }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

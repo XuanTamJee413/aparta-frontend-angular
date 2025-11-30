@@ -1,0 +1,132 @@
+.proposal-container {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    /* Thêm dòng này để căn giữa các phần tử con theo trục ngang */
+    align-items: center; 
+    background-color: #f9f9f9; /* Thêm màu nền nhẹ cho toàn trang để nổi bật card */
+    min-height: calc(100vh - 64px);
+}
+
+.proposal-form-card,
+.proposal-history-card {
+    max-width: 800px;
+    width: 100%;
+    /* Đảm bảo card không bị dính sát lề trên màn hình nhỏ */
+    box-sizing: border-box; 
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* --- Proposal Item Styles --- */
+.proposal-item {
+    padding: 16px 0;
+    border-bottom: 1px solid #eee; /* Thay divider bằng border dưới item */
+}
+
+.proposal-item:last-child {
+    border-bottom: none;
+}
+
+.proposal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.proposal-date {
+    font-size: 0.85rem;
+    color: #757575;
+}
+
+/* Status Badges */
+.proposal-status {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.status-pending {
+    background-color: #fff8e1;
+    color: #f57f17;
+    border: 1px solid #ffecb3;
+}
+
+.status-in-progress {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+.proposal-content {
+    margin: 8px 0 16px 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* Reply Box Styles */
+.proposal-reply {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background-color: #f5f5f5;
+    border-left: 4px solid #3f51b5; /* Màu primary */
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9rem;
+}
+
+.proposal-reply strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #3f51b5;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.no-reply {
+    color: #9e9e9e;
+    font-style: italic;
+    border-left: 4px solid #e0e0e0;
+    background-color: transparent;
+    padding-left: 16px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: #9e9e9e;
+    font-style: italic;
+}
+
+/* Mat Card Customization */
+:host ::ng-deep .mat-card-header {
+    padding: 16px 16px 0 16px;
+}
+
+:host ::ng-deep .mat-card-content {
+    padding: 16px;
+}
+
+:host ::ng-deep .mat-card-actions {
+    padding: 8px 16px 16px 16px !important;
+    margin-bottom: 0;
+}
+
+/* Ẩn mat-divider mặc định nếu dùng border-bottom cho item */
+mat-divider {
+    display: none; 
+}

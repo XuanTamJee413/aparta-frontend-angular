@@ -61,7 +61,7 @@ export class VehicleList implements OnInit {
     this.error = null;
     this.editingVehicleId = null;
 
-    this.vehicleService.getApartments().subscribe({
+    this.vehicleService.getMyApartments().subscribe({
       next: (aptResponse) => {
         if (aptResponse.succeeded) {
           aptResponse.data.forEach((apt: Apartment) => {
@@ -86,7 +86,7 @@ export class VehicleList implements OnInit {
     this.query.searchTerm = this.searchTerm || null;
     this.query.status = this.selectedStatus;
 
-    this.vehicleService.getVehicles(this.query).subscribe({
+    this.vehicleService.getMyVehicles(this.query).subscribe({
       next: (vehicleResponse: ApiResponse<Vehicle[]>) => {
         if (vehicleResponse.succeeded) {
           vehicleResponse.data.forEach((vehicle) => {

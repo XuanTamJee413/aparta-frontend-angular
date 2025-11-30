@@ -1,53 +1,47 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ProjectService, ProjectDto, ProjectUpdateDto } from '../../../../services/admin/project.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ProjectService, ProjectDto, ProjectDetailResponse, ProjectBasicResponse } from '../../../../services/admin/project.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-edit',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatSlideToggleModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './project-edit.component.html',
   styleUrls: ['./project-edit.component.css']
 })
 export class ProjectEditComponent implements OnInit {
-  projectForm: FormGroup;
-  isLoading = false;
-  loadingProject = false;
+  editForm: FormGroup;
   projectId: string = '';
   currentProject: ProjectDto | null = null;
+  isSubmitting = false;
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private projectService: ProjectService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar // Inject SnackBar
   ) {
-    this.projectForm = this.fb.group({
-      projectCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-      isActive: [true]
+    this.editForm = this.fb.group({
+      // Readonly
+      projectCode: [{value: '', disabled: true}],
+      
+      // Editable
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      isActive: [true],
+      
+      address: [''],
+      ward: [''],
+      district: [''],
+      city: [''],
+      
+      bankName: [''],
+      bankAccountNumber: ['', [Validators.pattern('^[0-9]+$')]],
+      bankAccountName: ['']
     });
   }
 
@@ -55,154 +49,70 @@ export class ProjectEditComponent implements OnInit {
     this.projectId = this.route.snapshot.paramMap.get('id') || '';
     if (this.projectId) {
       this.loadProject();
-    } else {
-      this.snackBar.open('Không tìm thấy ID dự án', 'Đóng', {
-        duration: 3000,
-        panelClass: ['error-snackbar']
-      });
-      this.router.navigate(['/admin/project/list']);
     }
   }
 
-  private loadProject(): void {
-    this.loadingProject = true;
-    
+  loadProject() {
+    this.isLoading = true;
     this.projectService.getProjectById(this.projectId).subscribe({
-      next: (response: any) => {
-        if (response.succeeded && response.data) {
-          this.currentProject = response.data;
-          this.populateForm(response.data);
+      next: (res: ProjectDetailResponse) => {
+        if (res.succeeded && res.data) {
+          this.currentProject = res.data;
+          this.editForm.patchValue(this.currentProject);
         } else {
-          this.snackBar.open(response.message || 'Không tìm thấy dự án', 'Đóng', {
-            duration: 3000,
-            panelClass: ['error-snackbar']
-          });
-          this.router.navigate(['/admin/project/list']);
+          this.showNotification('Không tìm thấy dự án.', 'error');
         }
-        this.loadingProject = false;
+        this.isLoading = false;
       },
-      error: (error: any) => {
-        console.error('Error loading project:', error);
-        this.snackBar.open('Lỗi khi tải thông tin dự án', 'Đóng', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
-        this.router.navigate(['/admin/project/list']);
-        this.loadingProject = false;
+      error: () => {
+        this.showNotification('Lỗi khi tải dữ liệu dự án.', 'error');
+        this.isLoading = false;
       }
     });
   }
 
-  private populateForm(project: ProjectDto): void {
-    this.projectForm.patchValue({
-      projectCode: project.projectCode || '',
-      name: project.name || '',
-      numApartments: project.numApartments || 0,
-      numBuildings: project.numBuildings || 0,
-      isActive: project.isActive
-    });
-  }
+  onSubmit() {
+    if (this.editForm.invalid) return;
 
-  onSubmit(): void {
-    if (this.projectForm.valid) {
-      this.isLoading = true;
-      
-      const updateData: ProjectUpdateDto = {
-        projectCode: this.projectForm.value.projectCode,
-        name: this.projectForm.value.name,
-        numApartments: this.projectForm.value.numApartments || 0,
-        numBuildings: this.projectForm.value.numBuildings || 0,
-        isActive: this.projectForm.value.isActive
-      };
+    this.isSubmitting = true;
 
-      this.projectService.updateProject(this.projectId, updateData).subscribe({
-        next: (response: any) => {
-          if (response.succeeded) {
-            // Hiển thị message từ backend hoặc message mặc định
-            const successMessage = response.message || 'Cập nhật dự án thành công!';
-            this.snackBar.open(successMessage, 'Đóng', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
-            this.router.navigate(['/admin/project/list']);
-          } else {
-            // Hiển thị message từ backend hoặc message mặc định
-            const errorMessage = response.message || 'Lỗi khi cập nhật dự án';
-            this.snackBar.open(errorMessage, 'Đóng', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
-            });
-          }
-          this.isLoading = false;
-        },
-        error: (error: any) => {
-          console.error('Error updating project:', error);
-          
-          // Xử lý error response từ backend
-          let errorMessage = 'Lỗi khi cập nhật dự án';
-          
-          if (error.error && error.error.message) {
-            // Nếu backend trả về error với message
-            errorMessage = error.error.message;
-          } else if (error.message) {
-            // Nếu có message trong error object
-            errorMessage = error.message;
-          }
-          
-          this.snackBar.open(errorMessage, 'Đóng', {
-            duration: 3000,
-            panelClass: ['error-snackbar']
-          });
-          this.isLoading = false;
+    const formValue = this.editForm.getRawValue();
+    const updateDto = {
+      name: formValue.name,
+      isActive: formValue.isActive,
+      address: formValue.address,
+      ward: formValue.ward,
+      district: formValue.district,
+      city: formValue.city,
+      bankName: formValue.bankName,
+      bankAccountNumber: formValue.bankAccountNumber,
+      bankAccountName: formValue.bankAccountName
+    };
+
+    this.projectService.updateProject(this.projectId, updateDto).subscribe({
+      next: (res: ProjectBasicResponse) => {
+        this.isSubmitting = false;
+        if (res.succeeded) {
+          this.showNotification('Cập nhật thành công!', 'success');
+          setTimeout(() => this.router.navigate(['/admin/project/list']), 1500);
+        } else {
+          this.showNotification(res.message || 'Lỗi cập nhật.', 'error');
         }
-      });
-    } else {
-      this.markFormGroupTouched();
-      this.snackBar.open('Vui lòng kiểm tra lại thông tin nhập vào', 'Đóng', {
-        duration: 3000,
-        panelClass: ['warning-snackbar']
-      });
-    }
-  }
-
-  onCancel(): void {
-    this.router.navigate(['/admin/project/list']);
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.projectForm.controls).forEach(key => {
-      const control = this.projectForm.get(key);
-      control?.markAsTouched();
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        const msg = err.error?.message || 'Lỗi hệ thống.';
+        this.showNotification(msg, 'error');
+      }
     });
   }
 
-  getErrorMessage(fieldName: string): string {
-    const control = this.projectForm.get(fieldName);
-    if (control?.hasError('required')) {
-      return 'Trường này là bắt buộc';
-    }
-    if (control?.hasError('minlength')) {
-      return `Tối thiểu ${control.errors?.['minlength'].requiredLength} ký tự`;
-    }
-    if (control?.hasError('maxlength')) {
-      return `Tối đa ${control.errors?.['maxlength'].requiredLength} ký tự`;
-    }
-    if (control?.hasError('min')) {
-      return `Giá trị tối thiểu là ${control.errors?.['min'].min}`;
-    }
-    if (control?.hasError('max')) {
-      return `Giá trị tối đa là ${control.errors?.['max'].max}`;
-    }
-    return '';
-  }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const control = this.projectForm.get(fieldName);
-    return !!(control && control.invalid && control.touched);
-  }
-
-  formatDate(date: Date | undefined): string {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('vi-VN');
+  private showNotification(message: string, type: 'success' | 'error') {
+    this.snackBar.open(message, 'Đóng', {
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: type === 'success' ? ['mat-toolbar', 'mat-primary'] : ['mat-toolbar', 'mat-warn']
+    });
   }
 }

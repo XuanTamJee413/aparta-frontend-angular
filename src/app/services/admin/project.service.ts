@@ -2,84 +2,53 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { 
+  ProjectDto, 
+  ProjectCreateDto, 
+  ProjectUpdateDto, 
+  ProjectQueryParameters,
+  ProjectListResponse,
+  ProjectDetailResponse,
+  ProjectBasicResponse
+} from '../../models/project.model';
 
-export interface ProjectDto {
-  projectId: string;
-  projectCode?: string;
-  name?: string;
-  numApartments?: number;
-  numBuildings?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  isActive: boolean;
-}
-
-export interface ProjectCreateDto {
-  projectCode?: string;
-  name?: string;
-  numApartments?: number;
-  numBuildings?: number;
-}
-
-export interface ProjectUpdateDto {
-  projectCode?: string;
-  name?: string;
-  numApartments?: number;
-  numBuildings?: number;
-  isActive?: boolean;
-}
-
-export interface ProjectQueryParameters {
-  isActive?: boolean;
-  searchTerm?: string;
-  sortBy?: string;
-  sortOrder?: string;
-}
-
-export interface ApiResponse<T> {
-  succeeded: boolean;
-  message: string;
-  data?: T;
-}
+export * from '../../models/project.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProjectService {
-  private readonly apiUrl = `${environment.apiUrl}/Projects`;
+  private apiUrl = `${environment.apiUrl}/Projects`;
 
   constructor(private http: HttpClient) {}
 
-  getAllProjects(query?: ProjectQueryParameters): Observable<ApiResponse<ProjectDto[]>> {
+  // API Mới
+  getProjects(query: ProjectQueryParameters): Observable<ProjectListResponse> {
     let params = new HttpParams();
-    
-    if (query) {
-      if (query.isActive !== undefined) {
-        params = params.set('isActive', query.isActive.toString());
-      }
-      if (query.searchTerm) {
-        params = params.set('searchTerm', query.searchTerm);
-      }
-      if (query.sortBy) {
-        params = params.set('sortBy', query.sortBy);
-      }
-      if (query.sortOrder) {
-        params = params.set('sortOrder', query.sortOrder);
-      }
+    if (query.isActive !== undefined && query.isActive !== null) {
+      params = params.set('IsActive', query.isActive);
     }
+    if (query.searchTerm) params = params.set('SearchTerm', query.searchTerm);
+    if (query.sortBy) params = params.set('SortBy', query.sortBy);
+    if (query.sortOrder) params = params.set('SortOrder', query.sortOrder);
 
-    return this.http.get<ApiResponse<ProjectDto[]>>(this.apiUrl, { params });
+    return this.http.get<ProjectListResponse>(this.apiUrl, { params });
   }
 
-  getProjectById(id: string): Observable<ApiResponse<ProjectDto>> {
-    return this.http.get<ApiResponse<ProjectDto>>(`${this.apiUrl}/${id}`);
+  // Hàm tương thích (Fix lỗi các module khác gọi getAllProjects)
+  getAllProjects(query?: ProjectQueryParameters): Observable<ProjectListResponse> {
+    return this.getProjects(query || {});
   }
 
-  createProject(project: ProjectCreateDto): Observable<ApiResponse<ProjectDto>> {
-    return this.http.post<ApiResponse<ProjectDto>>(this.apiUrl, project);
+  getProjectById(id: string): Observable<ProjectDetailResponse> {
+    return this.http.get<ProjectDetailResponse>(`${this.apiUrl}/${id}`);
   }
 
-  updateProject(id: string, project: ProjectUpdateDto): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/${id}`, project);
+  createProject(dto: ProjectCreateDto): Observable<ProjectDetailResponse> {
+    return this.http.post<ProjectDetailResponse>(this.apiUrl, dto);
+  }
+
+  updateProject(id: string, dto: ProjectUpdateDto): Observable<ProjectBasicResponse> {
+    return this.http.put<ProjectBasicResponse>(`${this.apiUrl}/${id}`, dto);
   }
 }

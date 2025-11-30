@@ -79,10 +79,14 @@
             </div>
 
             <footer class="message-input-area">
-                <input type="text" placeholder="Nhập tin nhắn..." [(ngModel)]="newMessageContent"
+                <input type="text" placeholder="Nhập tin nhắn..." [(ngModel)]="newMessageContent" [disabled]="isSending"
                     (keyup.enter)="sendMessage(newMessageContent)" />
-                <button (click)="sendMessage(newMessageContent)" [disabled]="!newMessageContent.trim()">
-                    <i class="fas fa-paper-plane"></i> Gửi
+
+                <button (click)="sendMessage(newMessageContent)" [disabled]="!newMessageContent.trim() || isSending">
+
+                    <i class="fas" [ngClass]="isSending ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+
+                    {{ isSending ? '...' : 'Gửi' }}
                 </button>
             </footer>
         </ng-container>

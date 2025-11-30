@@ -1,204 +1,117 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BuildingService, BuildingDto, BuildingUpdateDto } from '../../../../services/admin/building.service';
-import { ProjectService, ProjectDto } from '../../../../services/admin/project.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { BuildingService, BuildingDto, BuildingDetailResponse, BuildingBasicResponse } from '../../../../services/admin/building.service';
 
 @Component({
   selector: 'app-building-edit',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatSelectModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './building-edit.component.html',
   styleUrls: ['./building-edit.component.css']
 })
 export class BuildingEditComponent implements OnInit {
+  editForm: FormGroup;
+  buildingId: string = '';
   currentBuilding: BuildingDto | null = null;
-  projects: ProjectDto[] = [];
-  buildingForm: FormGroup;
-  loadingProject = false;
+  
+  // Fix: Dùng tên biến chuẩn để tránh lỗi TS2339
+  isLoading = false; 
   isSubmitting = false;
+  errorMessage = '';
+  successMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private buildingService: BuildingService,
-    private projectService: ProjectService,
-    private router: Router,
     private route: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private router: Router
   ) {
-    this.buildingForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(100)]],
-      isActive: [true]
+    this.editForm = this.fb.group({
+      // Chỉ hiển thị
+      projectId: [{value: '', disabled: true}],
+      buildingCode: [{value: '', disabled: true}],
+      
+      // Cho phép sửa
+      name: ['', Validators.required],
+      isActive: [true],
+      totalFloors: [1, [Validators.required, Validators.min(1)]],
+      totalBasements: [0, [Validators.required, Validators.min(0)]],
+      totalArea: [null],
+      handoverDate: [null],
+      description: [''],
+      receptionPhone: [''],
+      readingWindowStart: [1, [Validators.required, Validators.min(1), Validators.max(31)]],
+      readingWindowEnd: [5, [Validators.required, Validators.min(1), Validators.max(31)]]
     });
   }
 
   ngOnInit(): void {
-    this.loadProjects();
-    this.loadBuilding();
-  }
-
-  loadProjects(): void {
-    this.projectService.getAllProjects({ isActive: true }).subscribe({
-      next: (response) => {
-        if (response.succeeded && response.data) {
-          this.projects = response.data;
-        }
-      },
-      error: (error) => {
-        console.error('Error loading projects:', error);
-      }
-    });
-  }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.buildingForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
-  }
-
-  getErrorMessage(fieldName: string): string {
-    const field = this.buildingForm.get(fieldName);
-    if (field?.hasError('required')) {
-      return `${this.getFieldLabel(fieldName)} là bắt buộc`;
+    this.buildingId = this.route.snapshot.paramMap.get('id') || '';
+    if (this.buildingId) {
+      this.loadBuilding();
     }
-    if (field?.hasError('maxlength')) {
-      const maxLength = field.errors?.['maxlength']?.requiredLength;
-      return `${this.getFieldLabel(fieldName)} không được vượt quá ${maxLength} ký tự`;
-    }
-    if (field?.hasError('min')) {
-      return `${this.getFieldLabel(fieldName)} phải lớn hơn hoặc bằng 0`;
-    }
-    return '';
   }
 
-  private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      name: 'Tên tòa nhà',
-      numApartments: 'Số căn hộ',
-      numResidents: 'Số cư dân'
-    };
-    return labels[fieldName] || fieldName;
-  }
-
-  getProjectCode(projectId: string): string {
-    const project = this.projects.find(p => p.projectId === projectId);
-    return project ? project.projectCode || projectId : projectId;
-  }
-
-  loadBuilding(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.snackBar.open('Mã tòa nhà không hợp lệ', 'Đóng', {
-        duration: 3000,
-        horizontalPosition: 'center',
-        verticalPosition: 'top'
-      });
-      this.router.navigate(['/admin/building/list']);
-      return;
-    }
-
-    this.loadingProject = true;
-
-    this.buildingService.getBuildingById(id).subscribe({
-      next: (response) => {
-        this.loadingProject = false;
-        if (response.succeeded && response.data) {
-          this.currentBuilding = response.data;
-          this.buildingForm.patchValue({
-            name: this.currentBuilding.name || '',
-            numApartments: this.currentBuilding.numApartments,
-            numResidents: this.currentBuilding.numResidents,
-            isActive: this.currentBuilding.isActive
-          });
+  loadBuilding() {
+    this.isLoading = true;
+    this.buildingService.getBuildingById(this.buildingId).subscribe({
+      next: (res: BuildingDetailResponse) => {
+        if (res.succeeded && res.data) {
+          this.currentBuilding = res.data;
+          this.editForm.patchValue(this.currentBuilding);
         } else {
-          this.snackBar.open(response.message || 'Không tìm thấy tòa nhà', 'Đóng', {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top'
-          });
-          this.router.navigate(['/admin/building/list']);
+          this.errorMessage = 'Không tìm thấy tòa nhà.';
         }
+        this.isLoading = false;
       },
-      error: (error) => {
-        this.loadingProject = false;
-        this.snackBar.open('Có lỗi xảy ra khi tải thông tin tòa nhà', 'Đóng', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top'
-        });
-        console.error('Error loading building:', error);
-        this.router.navigate(['/admin/building/list']);
+      error: () => {
+        this.errorMessage = 'Lỗi khi tải dữ liệu.';
+        this.isLoading = false;
       }
     });
   }
 
-  onSubmit(): void {
-    if (this.buildingForm.invalid || this.isSubmitting || !this.currentBuilding) {
-      this.markFormGroupTouched();
-      return;
-    }
+  onSubmit() {
+    if (this.editForm.invalid) return;
 
     this.isSubmitting = true;
-    const updateData: BuildingUpdateDto = this.buildingForm.value;
+    const formValue = this.editForm.getRawValue();
 
-    this.buildingService.updateBuilding(this.currentBuilding.buildingId, updateData).subscribe({
-      next: (response) => {
+    const updateDto = {
+      name: formValue.name,
+      isActive: formValue.isActive,
+      totalFloors: formValue.totalFloors,
+      totalBasements: formValue.totalBasements,
+      totalArea: formValue.totalArea,
+      handoverDate: formValue.handoverDate,
+      description: formValue.description,
+      receptionPhone: formValue.receptionPhone,
+      readingWindowStart: formValue.readingWindowStart,
+      readingWindowEnd: formValue.readingWindowEnd
+    };
+
+    this.buildingService.updateBuilding(this.buildingId, updateDto).subscribe({
+      next: (res: BuildingBasicResponse) => {
         this.isSubmitting = false;
-        if (response.succeeded) {
-          this.snackBar.open(response.message || 'Cập nhật tòa nhà thành công!', 'Đóng', {
-            duration: 3000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top'
-          });
-          this.loadBuilding(); // Reload to get updated data
+        if (res.succeeded) {
+          this.successMessage = 'Cập nhật thành công!';
+          setTimeout(() => this.router.navigate(['/admin/building/list']), 1500);
         } else {
-          this.snackBar.open(response.message || 'Cập nhật tòa nhà thất bại', 'Đóng', {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top'
-          });
+          this.errorMessage = res.message || 'Lỗi cập nhật.';
         }
       },
-      error: (error) => {
+      error: (err: any) => {
         this.isSubmitting = false;
-        const errorMessage = error.error?.message || error.message || 'Có lỗi xảy ra khi cập nhật tòa nhà';
-        this.snackBar.open(errorMessage, 'Đóng', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top'
-        });
-        console.error('Error updating building:', error);
+        this.errorMessage = err.error?.message || 'Lỗi hệ thống.';
       }
     });
   }
-
-  onCancel(): void {
-    this.router.navigate(['/admin/building/list']);
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.buildingForm.controls).forEach(key => {
-      const control = this.buildingForm.get(key);
-      control?.markAsTouched();
-    });
+  
+  // Helper để tránh lỗi 'isFieldInvalid does not exist' trong HTML
+  isFieldInvalid(field: string) {
+    const control = this.editForm.get(field);
+    return control?.invalid && control?.touched;
   }
 }

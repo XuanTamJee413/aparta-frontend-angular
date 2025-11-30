@@ -1,36 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router } from '@angular/router';
-import { ProjectService, ProjectCreateDto } from '../../../../services/admin/project.service';
+import { Router, RouterModule } from '@angular/router';
+import { ProjectService, ProjectDetailResponse } from '../../../../services/admin/project.service';
+import { Subject, takeUntil } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-create',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './project-create.component.html',
   styleUrls: ['./project-create.component.css']
 })
-export class ProjectCreateComponent implements OnInit {
-  projectForm: FormGroup;
-  isLoading = false;
+export class ProjectCreateComponent implements OnInit, OnDestroy {
+  createForm: FormGroup;
+  isSubmitting = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -38,109 +24,113 @@ export class ProjectCreateComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar
   ) {
-    this.projectForm = this.fb.group({
-      projectCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]]
+    this.createForm = this.fb.group({
+      // 1. Thông tin chung
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      projectCode: ['', [Validators.required, Validators.pattern('^[A-Z0-9_]+$')]],
+      
+      // 2. Địa chỉ
+      address: [''],
+      ward: [''],
+      district: [''],
+      city: [''],
+      
+      // 3. Ngân hàng
+      bankName: [''],
+      bankAccountNumber: ['', [Validators.pattern('^[0-9]+$')]],
+      bankAccountName: ['']
     });
   }
 
   ngOnInit(): void {
-    // No need to generate project ID - backend will handle it
+    // Lắng nghe sự thay đổi của Tên dự án để sinh Mã dự án
+    this.createForm.get('name')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        this.generateProjectCode(value);
+      });
   }
 
-  onSubmit(): void {
-    if (this.projectForm.valid) {
-      this.isLoading = true;
-      
-      const projectData: ProjectCreateDto = {
-        projectCode: this.projectForm.value.projectCode,
-        name: this.projectForm.value.name
-      };
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-      this.projectService.createProject(projectData).subscribe({
-        next: (response: any) => {
-          console.log('Create project response:', response); // Debug log
-          if (response.succeeded) {
-            // Hiển thị message từ backend hoặc message mặc định
-            const successMessage = response.message || 'Tạo dự án thành công!';
-            this.snackBar.open(successMessage, 'Đóng', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
-            this.router.navigate(['/admin/project/list']);
-          } else {
-            // Hiển thị message từ backend hoặc message mặc định
-            const errorMessage = response.message || 'Lỗi khi tạo dự án';
-            this.snackBar.open(errorMessage, 'Đóng', {
-              duration: 3000,
-              panelClass: ['error-snackbar']
-            });
-          }
-          this.isLoading = false;
-        },
-        error: (error: any) => {
-          console.error('Error creating project:', error);
-          
-          // Xử lý error response từ backend
-          let errorMessage = 'Lỗi khi tạo dự án';
-          
-          if (error.error && error.error.message) {
-            // Nếu backend trả về error với message
-            errorMessage = error.error.message;
-          } else if (error.message) {
-            // Nếu có message trong error object
-            errorMessage = error.message;
-          }
-          
-          this.snackBar.open(errorMessage, 'Đóng', {
-            duration: 3000,
-            panelClass: ['error-snackbar']
-          });
-          this.isLoading = false;
-        }
-      });
-    } else {
-      this.markFormGroupTouched();
-      this.snackBar.open('Vui lòng kiểm tra lại thông tin nhập vào', 'Đóng', {
-        duration: 3000,
-        panelClass: ['warning-snackbar']
-      });
+  private generateProjectCode(name: string): void {
+    if (!name) {
+      return;
     }
+
+    const currentYear = new Date().getFullYear();
+    const acronym = this.getAcronym(name);
+    const autoCode = `${acronym}${currentYear}`;
+
+    // Gán giá trị vào ô ProjectCode
+    this.createForm.get('projectCode')?.setValue(autoCode);
   }
 
-  onCancel(): void {
-    this.router.navigate(['/admin/project/list']);
+  // 1. Hàm chuyển đổi sang Latin không dấu
+  private toLatin(str: string): string {
+    if (!str) return '';
+    
+    // Thay thế thủ công Đ/đ trước khi chuẩn hóa NFD
+    let result = str.replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    
+    // Chuẩn hóa NFD và loại bỏ dấu
+    result = result.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    // Loại bỏ các ký tự đặc biệt (giữ lại chữ, số và khoảng trắng)
+    result = result.replace(/[^a-zA-Z0-9\s]/g, '');
+    
+    return result;
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.projectForm.controls).forEach(key => {
-      const control = this.projectForm.get(key);
-      control?.markAsTouched();
+  // 2. Hàm lấy chữ cái đầu từ chuỗi đã chuyển Latin
+  private getAcronym(str: string): string {
+    const latinStr = this.toLatin(str);
+    
+    return latinStr
+      .trim()
+      .split(/\s+/)
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase();
+  }
+
+  onSubmit() {
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    this.projectService.createProject(this.createForm.value).subscribe({
+      next: (res: ProjectDetailResponse) => {
+        this.isSubmitting = false;
+        if (res.succeeded) {
+          this.showNotification('Tạo dự án thành công!', 'success');
+          setTimeout(() => {
+            this.router.navigate(['/admin/project/list']);
+          }, 1500);
+        } else {
+          this.showNotification(res.message || 'Lỗi khi tạo dự án.', 'error');
+        }
+      },
+      error: (err: any) => {
+        this.isSubmitting = false;
+        const msg = err.error?.message || 'Đã xảy ra lỗi hệ thống.';
+        this.showNotification(msg, 'error');
+      }
     });
   }
 
-  getErrorMessage(fieldName: string): string {
-    const control = this.projectForm.get(fieldName);
-    if (control?.hasError('required')) {
-      return 'Trường này là bắt buộc';
-    }
-    if (control?.hasError('minlength')) {
-      return `Tối thiểu ${control.errors?.['minlength'].requiredLength} ký tự`;
-    }
-    if (control?.hasError('maxlength')) {
-      return `Tối đa ${control.errors?.['maxlength'].requiredLength} ký tự`;
-    }
-    if (control?.hasError('min')) {
-      return `Giá trị tối thiểu là ${control.errors?.['min'].min}`;
-    }
-    if (control?.hasError('max')) {
-      return `Giá trị tối đa là ${control.errors?.['max'].max}`;
-    }
-    return '';
-  }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const control = this.projectForm.get(fieldName);
-    return !!(control && control.invalid && control.touched);
+  private showNotification(message: string, type: 'success' | 'error') {
+    this.snackBar.open(message, 'Đóng', {
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: type === 'success' ? ['mat-toolbar', 'mat-primary'] : ['mat-toolbar', 'mat-warn']
+    });
   }
 }
