@@ -1,0 +1,142 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Công Việc Của Tôi</h3>
+    <div class="header-info">
+      <small>Tổng: <strong>{{ totalCount }}</strong> công việc</small>
+    </div>
+  </div>
+
+  <!-- Thông báo thành công -->
+  <div *ngIf="pageSuccessMessage" class="alert alert-success">
+    {{ pageSuccessMessage }}
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="statusFilter">Trạng thái:</label>
+      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
+        <option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="loadMyTasks()">Làm mới</button>
+  </div>
+
+  <!-- Bảng công việc -->
+  <div class="card-body">
+    <div class="loading" *ngIf="isLoading">Đang tải công việc...</div>
+
+    <table class="task-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>Mô tả công việc</th>
+          <th>Loại</th>
+          <th>Thời hạn</th>
+          <th>Trạng thái</th>
+          <th>Ghi chú của tôi</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of tasks">
+          <td class="task-desc">
+            <div class="desc-text">{{ task.description }}</div>
+            <small class="text-info" *ngIf="task.serviceBookingId">
+              (Từ yêu cầu cư dân)
+            </small>
+          </td>
+          <td>
+            <span class="badge-type badge-{{ task.type | lowercase }}">
+              {{ getTypeLabel(task.type) }}
+            </span>
+          </td>
+          <td class="date-range">
+            <div><strong>Bắt đầu:</strong> {{ task.startDate | date:'dd/MM HH:mm' }}</div>
+            <div><strong>Kết thúc:</strong> {{ task.endDate | date:'dd/MM HH:mm' }}</div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + formatStatusClass(task.status)">
+              {{ getStatusLabel(task.status) }}
+            </span>
+          </td>
+          <td class="note-cell">
+            {{ task.assigneeNote || '—' }}
+          </td>
+          <td class="action-cell">
+            <!-- Chỉ hiện nút khi được phép -->
+            <button 
+              *ngIf="canStart(task.status)"
+              class="btn btn-start"
+              (click)="startTask(task)">
+              Bắt đầu làm
+            </button>
+
+            <button 
+              *ngIf="canComplete(task.status)"
+              class="btn btn-complete"
+              (click)="openReportModal(task)">
+              Hoàn thành
+            </button>
+
+            <span class="status-done" *ngIf="task.status === 'Completed'">
+              Đã hoàn thành
+            </span>
+          </td>
+        </tr>
+
+        <tr *ngIf="tasks.length === 0" class="empty-row">
+          <td colspan="6" class="text-center">
+            Bạn chưa có công việc nào trong trạng thái này.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Phân trang -->
+  <div class="card-footer" *ngIf="totalPages > 1">
+    <div class="pagination-summary">
+      Hiển thị {{ tasks.length }} / {{ totalCount }} công việc
+    </div>
+    <div class="pagination-controls">
+      <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">Trước</button>
+      <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+      <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">Sau</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIALOG BÁO CÁO HOÀN THÀNH -->
+<dialog #reportDialog class="modern-dialog" (close)="closeDialog()">
+  <form [formGroup]="reportForm" (ngSubmit)="submitReport()" class="dialog-form">
+    <div class="form-header">
+      <h3>Báo cáo hoàn thành công việc</h3>
+      <button type="button" class="btn-close" (click)="closeDialog()">×</button>
+    </div>
+
+    <div class="form-body">
+      <div class="form-group">
+        <label>Kết quả thực hiện / Ghi chú <span class="required">*</span></label>
+        <textarea 
+          formControlName="note" 
+          rows="5" 
+          placeholder="VD: Đã sửa xong ống nước tầng 5, kiểm tra áp lực ổn định. Không còn rò rỉ."
+          class="note-input"></textarea>
+        <small class="form-error" *ngIf="reportForm.get('note')?.invalid && reportForm.get('note')?.touched">
+          Vui lòng nhập nội dung báo cáo.
+        </small>
+      </div>
+    </div>
+
+    <div *ngIf="dialogErrorMessage" class="form-error-summary">
+      {{ dialogErrorMessage }}
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-cancel" (click)="closeDialog()">Hủy</button>
+      <button type="submit" class="btn btn-save" [disabled]="reportForm.invalid || isLoading">
+        {{ isLoading ? 'Đang gửi...' : 'Xác nhận hoàn thành' }}
+      </button>
+    </div>
+  </form>
+</dialog>

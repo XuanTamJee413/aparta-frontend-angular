@@ -1,3 +1,4 @@
+// src/app/models/task.model.ts
 
 export interface PagedList<T> {
   items: T[];
@@ -10,17 +11,25 @@ export interface PagedList<T> {
 }
 
 export interface TaskQueryParameters {
-  // Phân trang
   pageNumber: number;
   pageSize: number;
-
-  // Tìm kiếm & Lọc chung
   searchTerm?: string | null;
   status?: string | null;
+  type?: string | null;
+  assigneeId?: string | null;
+}
 
-  // Lọc riêng của Task (Quan trọng)
-  type?: string | null;       // Lọc theo loại: Repair, Cleaning...
-  assigneeId?: string | null; // Lọc theo người được giao việc
+// --- [MỚI] DTO thông tin nhân viên trong list ---
+export interface TaskAssigneeDto {
+  userId: string;
+  name: string;
+  phone: string;
+}
+
+// --- [MỚI] DTO Gỡ nhân viên ---
+export interface TaskUnassignDto {
+  taskId: string;
+  assigneeUserId: string;
 }
 
 // 3. DTO Hiển thị Task (Output)
@@ -35,37 +44,42 @@ export interface TaskDto {
   startDate?: string | null;
   endDate?: string | null;
   createdAt?: string | null;
+  assigneeNote?: string | null;
   
-  // Thông tin người được giao việc
+  // Thông tin người được giao việc (Single - Có thể giữ để tương thích ngược)
   assigneeUserId?: string | null;
   assigneeName?: string | null;
   assignedDate?: string | null;
+
+  // --- [MỚI] Danh sách những người được giao ---
+  assignees?: TaskAssigneeDto[]; 
 }
 
-// 4. DTO Tạo mới Task (Input)
+// 4. DTO Tạo mới Task
 export interface TaskCreateDto {
-  serviceBookingId?: string | null; // Null nếu là task lẻ
+  serviceBookingId?: string | null;
   type: string;
   description: string;
   startDate?: string | null;
   endDate?: string | null;
 }
 
-// 5. DTO Phân công Task (Input)
+// 5. DTO Phân công Task
 export interface TaskAssignmentCreateDto {
   taskId: string;
   assigneeUserId: string; 
 }
 
-// 6. DTO Cập nhật trạng thái (Input - Dành cho Maintenance Staff)
+// 6. DTO Cập nhật trạng thái
 export interface TaskUpdateStatusDto {
   status: string;
   note?: string | null;
 }
 
-// 7. Mock Model cho Nhân viên (Để đổ dữ liệu vào dropdown Assign)
+// 7. Mock Model cho Nhân viên
 export interface StaffDto {
   userId: string;
   name: string;
   role: string;
+  phone?: string; // Có thể thêm phone nếu cần hiển thị
 }
