@@ -48,7 +48,9 @@ export class AssetList implements OnInit {
   pageSize  = signal(10);
 
   totalItems = computed(() => this.assets().length);
-  totalPages = computed(() => Math.max(1, Math.ceil(this.totalItems() / this.pageSize())));
+  totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalItems() / this.pageSize()))
+  );
   startIndex = computed(() => (this.pageIndex() - 1) * this.pageSize());
   endIndex   = computed(() => Math.min(this.startIndex() + this.pageSize(), this.totalItems()));
 
@@ -92,21 +94,34 @@ export class AssetList implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    const buildings$ = this.assetService.getBuildings()
-      .pipe(
-        catchError(err => {
-          console.error('Lỗi tải Tòa nhà:', err);
-          return of<BuildingDto[]>([]);
-        })
-      );
+    const buildings$ = this.assetService.getBuildings().pipe(
+      catchError(err => {
+        console.error('Lỗi tải Tòa nhà:', err);
+        if (err?.status === 403) {
+          this.router.navigate(['/forbidden']);
+        }
+        return of<BuildingDto[]>([]);
+      })
+    );
 
-    const assets$ = this.assetService.getAssets(this.query)
-      .pipe(
-        catchError(err => {
-          console.error('Lỗi tải Tài sản:', err);
-          return of<ApiResponse<AssetDto[]>>({ succeeded: false, message: 'API_ERROR', data: [] });
-        })
-      );
+    const assets$ = this.assetService.getAssets(this.query).pipe(
+      catchError((err) => {
+        console.error('Lỗi tải Tài sản:', err);
+        if (err?.status === 403) {
+          this.router.navigate(['/forbidden']);
+          return of<ApiResponse<AssetDto[]>>({
+            succeeded: false,
+            message: 'FORBIDDEN',
+            data: []
+          });
+        }
+        return of<ApiResponse<AssetDto[]>>({
+          succeeded: false,
+          message: 'API_ERROR',
+          data: []
+        });
+      })
+    );
 
     forkJoin({ buildings: buildings$, assetsResponse: assets$ }).subscribe({
       next: (result) => {
@@ -119,6 +134,8 @@ export class AssetList implements OnInit {
           this.assets.set(this.mapAssetsToView(resp.data, result.buildings));
         } else if (noData) {
           this.assets.set([]);
+        } else if (resp.message === 'FORBIDDEN') {
+          this.assets.set([]);
         } else {
           this.error.set(resp.message || 'Không tải được danh sách tài sản.');
           this.assets.set([]);
@@ -128,6 +145,10 @@ export class AssetList implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
+        if (err?.status === 403) {
+          this.router.navigate(['/forbidden']);
+          return;
+        }
         this.error.set('Đã xảy ra lỗi khi tải dữ liệu.');
         this.isLoading.set(false);
         console.error('Lỗi forkJoin:', err);
@@ -155,6 +176,10 @@ export class AssetList implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
+        if (err?.status === 403) {
+          this.router.navigate(['/forbidden']);
+          return;
+        }
         this.error.set('Không thể tải danh sách tài sản. Vui lòng thử lại.');
         this.isLoading.set(false);
         console.error('Lỗi tải Tài sản:', err);
@@ -171,7 +196,9 @@ export class AssetList implements OnInit {
   private mapAssetsToView(assets: AssetDto[], buildings: BuildingDto[]): AssetView[] {
     const buildingMap = new Map<string, string>();
     buildings.forEach(b => {
-      const buildingName = b?.name ?? (b?.buildingCode ? `(Mã: ${b.buildingCode})` : '(Không có tên)');
+      const buildingName =
+        b?.name ??
+        (b?.buildingCode ? `(Mã: ${b.buildingCode})` : '(Không có tên)');
       buildingMap.set(b.buildingId, buildingName);
     });
 
@@ -204,11 +231,13 @@ export class AssetList implements OnInit {
   }
 
   onAddAsset(): void {
-    this.router.navigate(['manager/manage-asset/create']).catch(err => console.error('Lỗi điều hướng:', err));
+    this.router.navigate(['manager/manage-asset/create'])
+      .catch(err => console.error('Lỗi điều hướng:', err));
   }
 
   onEdit(asset: AssetView): void {
-    this.router.navigate(['manager/manage-asset/edit', asset.assetId]).catch(err => console.error('Lỗi điều hướng:', err));
+    this.router.navigate(['manager/manage-asset/edit', asset.assetId])
+      .catch(err => console.error('Lỗi điều hướng:', err));
   }
 
   onAskDelete(asset: AssetView): void {
@@ -227,6 +256,10 @@ export class AssetList implements OnInit {
         this.loadAssets();
       },
       error: (err) => {
+        if (err?.status === 403) {
+          this.router.navigate(['/forbidden']);
+          return;
+        }
         console.error('Lỗi xóa tài sản:', err);
         this.error.set('Xóa thất bại. ' + (err?.error?.message || err?.message || ''));
         this.deletingAssetId.set(null);
@@ -236,7 +269,8 @@ export class AssetList implements OnInit {
   }
 
   onView(asset: AssetView): void {
-    this.router.navigate(['manager/manage-asset/detail', asset.assetId]).catch(err => console.error('Lỗi điều hướng:', err));
+    this.router.navigate(['manager/manage-asset/detail', asset.assetId])
+      .catch(err => console.error('Lỗi điều hướng:', err));
   }
 
   onSort(field: 'quantity' | 'createdAt'): void {
