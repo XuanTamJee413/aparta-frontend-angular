@@ -58,7 +58,9 @@ export class VehicleService {
   getVehicles(query: VehicleQueryParameters): Observable<ApiResponse<Vehicle[]>> {
     let params = new HttpParams();
     if (query.searchTerm) params = params.append('SearchTerm', query.searchTerm);
-    if (query.status !== null && query.status !== undefined) params = params.append('Status', query.status);
+    if (query.status !== null && query.status !== undefined) {
+      params = params.append('Status', query.status);
+    }
     if (query.sortBy) params = params.append('SortBy', query.sortBy);
     if (query.sortOrder) params = params.append('SortOrder', query.sortOrder);
 
@@ -68,7 +70,9 @@ export class VehicleService {
   getMyVehicles(query: VehicleQueryParameters): Observable<ApiResponse<Vehicle[]>> {
     let params = new HttpParams();
     if (query.searchTerm) params = params.append('SearchTerm', query.searchTerm);
-    if (query.status !== null && query.status !== undefined) params = params.append('Status', query.status);
+    if (query.status !== null && query.status !== undefined) {
+      params = params.append('Status', query.status);
+    }
     if (query.sortBy) params = params.append('SortBy', query.sortBy);
     if (query.sortOrder) params = params.append('SortOrder', query.sortOrder);
 
@@ -81,6 +85,10 @@ export class VehicleService {
 
   getApartments(): Observable<ApiResponse<Apartment[]>> {
     return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
+  }
+
+   getApartmentById(id: string): Observable<Apartment> {
+    return this.http.get<Apartment>(`${this.apartmentApiUrl}/${id}`);
   }
 
   getMyApartments(): Observable<ApiResponse<Apartment[]>> {
