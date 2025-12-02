@@ -109,7 +109,8 @@ export class RoleListComponent implements OnInit {
   confirmDelete(role: Role): void {
     const ref = this.dialog.open(RoleDeleteDialogComponent, {
       width: '420px',
-      data: { role }
+      data: { role },
+      autoFocus: false
     });
     ref.afterClosed().subscribe(ok => {
       if (ok === true) {

@@ -1,3 +1,37 @@
-.groups{display:flex;flex-direction:column;gap:12px;margin-top:8px}
-.group{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px}
-.perm{margin:6px 0}
+/* Dialog base */
+.dialog-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #111827; }
+.dialog-content { padding-top: 0.25rem; }
+.dialog-actions { padding-top: 0.5rem; }
+.dialog-title-bar { display: flex; align-items: center; justify-content: space-between; position: relative; }
+.dialog-close-btn { background: transparent; border: none; padding: 4px 8px; font-size: 2rem; line-height: 1; cursor: pointer; color: #6b7280; border-radius: 6px; }
+.dialog-close-btn:hover { background: #f3f4f6; color: #111827; }
+.dialog-close-btn:focus { outline: 2px solid #4f46e5; outline-offset: 2px; }
+
+/* Buttons */
+.btn-dialog-cancel { padding: 0.5rem 1rem; background-color: #fff; border: 1px solid #d1d5db; border-radius: 0.375rem; color: #374151; font-weight: 500; cursor: pointer; }
+.btn-dialog-cancel:hover { background-color: #f3f4f6; }
+.btn-dialog-confirm { padding: 0.5rem 1rem; background-color: #4f46e5; border: 1px solid #4f46e5; border-radius: 0.375rem; color: white; font-weight: 500; cursor: pointer; }
+.btn-dialog-confirm:hover { background-color: #4338ca; border-color: #4338ca; }
+.btn-dialog-cancel:disabled, .btn-dialog-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Ensure close button matches cancel button in rename dialog */
+.btn-dialog-cancel:focus { background-color: #fff; border-color: #d1d5db; box-shadow: none; }
+:host ::ng-deep .btn-dialog-cancel .mat-mdc-button-focus-overlay { opacity: 0 !important; }
+
+/* Override Angular Material default button label color inside this dialog */
+:host ::ng-deep .btn-dialog-cancel.mat-mdc-button:not(:disabled) { color: #374151 !important; }
+:host ::ng-deep .btn-dialog-confirm.mat-mdc-button:not(:disabled) { color: #ffffff !important; }
+
+/* Groups */
+.groups { display: flex; flex-direction: column; gap: 12px; }
+.group { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+.group-header { font-weight: 600; color: #111827; margin-bottom: 8px; }
+
+/* Permission row */
+.perm { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid #f3f4f6; }
+.perm:first-of-type { border-top: none; }
+.perm-name { color: #374151; font-size: 0.9rem; }
+
+/* Slide toggle label text color */
+.mat-slide-toggle .mat-slide-toggle-content { color: #374151; font-weight: 500; }
+.mat-slide-toggle.mat-disabled .mat-slide-toggle-content { color: #9ca3af; }

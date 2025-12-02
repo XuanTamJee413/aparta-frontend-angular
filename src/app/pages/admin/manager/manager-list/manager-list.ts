@@ -84,4 +84,12 @@ export class ManagerListComponent implements OnInit {
       this.currentPage++;
     }
   }
+
+  getStatusLabel(raw: string | null | undefined): string {
+    const value = (raw || '').trim().toLowerCase();
+    if (value === 'active' || value === 'hoạt động' || value === 'enabled') {
+      return 'Hoạt động';
+    }
+    return 'Không hoạt động';
+  }
 }

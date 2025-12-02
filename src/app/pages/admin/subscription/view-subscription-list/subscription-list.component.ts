@@ -61,7 +61,8 @@ export class SubscriptionListComponent implements OnInit {
   statusOptions = [
     { value: '', label: 'Tất cả' },
     { value: 'Active', label: 'Đang hoạt động' },
-    { value: 'Expired', label: 'Đã hết hạn' }
+    { value: 'Expired', label: 'Đã hết hạn' },
+    { value: 'Canceled', label: 'Đã hủy' }
   ];
 
   constructor(
