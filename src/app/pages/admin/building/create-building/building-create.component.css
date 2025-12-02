@@ -1,4 +1,4 @@
-.container { padding: 2rem; background: #f5f7fa; min-height: 100vh; }
+.container { padding: 2rem; background: #f9fafb; min-height: 100vh; }
 .card { max-width: 900px; margin: 0 auto; background: white; border-radius: 0.75rem; padding: 2rem; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 header h1 { font-size: 1.5rem; font-weight: 600; color: #111827; margin: 0; }
 header p { margin-top: 0.25rem; color: #6b7280; font-size: 0.875rem; }

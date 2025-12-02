@@ -5,7 +5,7 @@
 
 .container {
   background-color: #f9fafb;
-  min-height: 100vh;
+  min-height: calc(100vh - 16rem); 
   padding: 2rem;
 }
 
@@ -121,7 +121,7 @@ header p {
 .data-table { min-width: 100%; border-collapse: collapse; }
 .data-table thead { background: #f9fafb; }
 .data-table th { padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; }
-.data-table td { padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+.data-table td { padding: 0.75rem 1rem; font-size: 0.875rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
 .data-table tbody tr:hover { background: #f9fafb; }
 .font-medium { font-weight: 500; color: #111827; }
 .no-results { text-align: center; padding: 2.5rem; color: #6b7280; }
@@ -141,13 +141,14 @@ header p {
 
 /* === BUTTON ACTIONS STYLE (Flexbox) === */
 .actions {
-  display: flex;
+  
   align-items: center;
-  gap: 8px; /* Khoảng cách giữa 2 nút */
+  white-space: nowrap; /* Tránh xuống dòng khi zoom */
 }
 
 /* Style chung cho nút bấm để căn icon và chữ thẳng hàng */
 .btn-action {
+  margin-left: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -265,4 +266,10 @@ header p {
 .btn-dialog-confirm:hover {
   background-color: #b91c1c;
 }
+/* Quy mô (match Building structure badges) */
+.scale-cell { white-space: nowrap; }
+.badge-row { display: inline-flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.badge-compact { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; line-height: 1; white-space: nowrap; }
+.badge-tower { background: #e0f2f1; color: #00695c; }
+.badge-unit { background: #eceff1; color: #455a64; }
 /* --- End of File --- */
