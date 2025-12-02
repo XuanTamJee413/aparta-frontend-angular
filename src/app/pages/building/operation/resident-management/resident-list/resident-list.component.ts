@@ -5,9 +5,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ApartmentMember, ApartmentMemberQueryParameters, ResidentManagementService,ApiResponse } from '../../../../../services/management/resident-management.service';
 
-
+import {
+  ApartmentMember,
+  ApartmentMemberQueryParameters,
+  ResidentManagementService,
+  ApiResponse
+} from '../../../../../services/management/resident-management.service';
+import { AuthService } from '../../../../../services/auth.service';
 
 @Component({
   selector: 'app-resident-list',
@@ -40,17 +45,33 @@ export class ResidentList implements OnInit {
 
   private searchDebouncer = new Subject<string>();
 
-  constructor(private residentService: ResidentManagementService) {}
+  isManagerView = false;
+
+  constructor(
+    private residentService: ResidentManagementService,
+    private auth: AuthService
+  ) {}
 
   ngOnInit(): void {
+
+    this.isManagerView =
+      this.auth.hasRole('admin') ||
+      this.auth.hasRole('custom');
+
     this.loadApartments();
     this.loadMembers();
+
     this.searchDebouncer
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => this.loadMembers());
   }
-   loadApartments(): void {
-    this.residentService.getApartments().subscribe({
+
+  loadApartments(): void {
+    const apartments$ = this.isManagerView
+      ? this.residentService.getApartments()
+      : this.residentService.getMyApartments();
+
+    apartments$.subscribe({
       next: (res) => {
         if (res?.succeeded && Array.isArray(res.data)) {
           this.apartmentCodeMap = res.data.reduce((acc, a) => {
@@ -72,7 +93,11 @@ export class ResidentList implements OnInit {
     this.query.searchTerm = this.searchTerm || null;
     this.query.isOwned = this.selectedOwnerStatus;
 
-    this.residentService.getMembers(this.query).subscribe({
+    const members$ = this.isManagerView
+      ? this.residentService.getMembers(this.query)
+      : this.residentService.getMyMembers(this.query);
+
+    members$.subscribe({
       next: (response: ApiResponse<ApartmentMember[]>) => {
         if (response.succeeded) {
           this.allMembers = response.data;

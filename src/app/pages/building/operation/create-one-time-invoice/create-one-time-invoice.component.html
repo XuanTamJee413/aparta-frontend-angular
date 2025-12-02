@@ -16,13 +16,6 @@
       </div>
     }
 
-    @if (successMessage) {
-      <div class="alert-success">
-        <strong>Thành công!</strong> {{ successMessage }}
-        <button class="alert-close" (click)="successMessage = null">×</button>
-      </div>
-    }
-
     @if (isLoading) {
       <div class="loading-container">
         <div class="spinner"></div>
@@ -128,7 +121,6 @@
               placeholder="Tự động điền khi chọn căn hộ"
               [readonly]="true"
               required>
-            <p class="form-hint">Tên người sở hữu căn hộ (tự động điền)</p>
           </div>
         </section>
 
@@ -203,36 +195,26 @@
 
           <!-- Submit Button -->
           <div class="form-actions">
-            @if (createdInvoiceId) {
-              <button 
-                type="button"
-                class="btn-primary btn-success"
-                (click)="printInvoice()">
-                <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                In Hóa Đơn
-              </button>
-              <div class="success-message-on-button">
-                <strong>Thành công!</strong> Tạo hóa đơn thành công!
+            @if (isSuccess && successMessage) {
+              <div class="success-message-above-button">
+                {{ successMessage }}
               </div>
-            } @else {
-              <button 
-                type="button"
-                class="btn-primary"
-                (click)="onSubmit()"
-                [disabled]="isLoading || !itemDescription || !amount || amount <= 0 || !apartmentAddress || !payerName">
-                @if (isLoading) {
-                  <div class="btn-spinner"></div>
-                  Đang tạo...
-                } @else {
-                  <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Tạo Phiếu Thu
-                }
-              </button>
             }
+            <button 
+              type="button"
+              class="btn-primary"
+              (click)="onSubmit()"
+              [disabled]="isLoading || !itemDescription || !amount || amount <= 0 || !apartmentAddress || !payerName">
+              @if (isLoading) {
+                <div class="btn-spinner"></div>
+                Đang tạo...
+              } @else {
+                <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Tạo Phiếu Thu
+              }
+            </button>
           </div>
         </section>
       </div>
@@ -246,7 +228,8 @@
           [itemDescription]="itemDescription"
           [amount]="amount"
           [note]="note"
-          [imagePreviews]="imagePreviews">
+          [imagePreviews]="imagePreviews"
+          [endDate]="endDate">
         </app-receipt-preview>
       </div>
     </div>

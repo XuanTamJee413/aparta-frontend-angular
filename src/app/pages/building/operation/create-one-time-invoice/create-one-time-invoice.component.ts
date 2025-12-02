@@ -47,6 +47,8 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
   error: string | null = null;
   successMessage: string | null = null;
   createdInvoiceId: string | null = null;
+  endDate: string | null = null;
+  isSuccess: boolean = false;
 
   constructor(
     private invoiceService: InvoiceManagementService,
@@ -57,10 +59,12 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     private router: Router
   ) {}
 
+  // Khởi tạo component - Tự động tải danh sách tòa nhà khi component được load
   ngOnInit(): void {
     this.loadBuildings();
   }
 
+  // Tải danh sách tòa nhà từ API - Chỉ lấy các tòa nhà đang hoạt động (isActive = true) - Tự động chọn tòa nhà đầu tiên nếu chưa có tòa nhà nào được chọn
   loadBuildings(): void {
     this.buildingService.getAllBuildings({ take: 100 }).subscribe({
       next: (response) => {
@@ -79,6 +83,7 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     });
   }
 
+  // Xử lý khi người dùng thay đổi tòa nhà được chọn - Tự động tải lại danh sách căn hộ và bảng giá của tòa nhà mới
   onBuildingChange(): void {
     if (this.selectedBuildingId) {
       this.selectedBuilding = this.buildings.find(b => b.buildingId === this.selectedBuildingId) || null;
@@ -87,10 +92,11 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }
   }
 
+  // Tải danh sách căn hộ của tòa nhà được chọn - Chỉ lấy các căn hộ có trạng thái "Đã Bán"
   loadApartments(): void {
     this.apartmentService.getApartments({
       buildingId: this.selectedBuildingId,
-      status: 'Đã thuê',
+      status: 'Đã Bán',
       searchTerm: null,
       sortBy: null,
       sortOrder: null
@@ -98,14 +104,17 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
       next: (response) => {
         if (response.succeeded && response.data) {
           this.apartments = response.data;
+        } else {
+          this.apartments = [];
         }
       },
       error: (error) => {
-        // Error handled silently
+        this.apartments = [];
       }
     });
   }
 
+  // Tải danh sách bảng giá của tòa nhà được chọn - Chỉ lấy các bảng giá có phương thức tính là "Một lần" (ONE_TIME)
   loadPriceQuotations(): void {
     this.priceQuotationService.getPriceQuotations({
       buildingId: this.selectedBuildingId,
@@ -128,6 +137,7 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     });
   }
 
+  // Xử lý khi người dùng chọn một loại thu từ bảng giá - Tự động điền mô tả khoản thu và số tiền từ bảng giá được chọn
   onQuotationSelect(quotationId: string): void {
     const quotation = this.priceQuotations.find(q => q.priceQuotationId === quotationId);
     if (quotation) {
@@ -137,6 +147,7 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }
   }
 
+  // Xử lý khi người dùng nhập mã căn hộ vào ô tìm kiếm - Hiển thị danh sách gợi ý căn hộ phù hợp - Tự động điền thông tin nếu tìm thấy căn hộ chính xác
   onApartmentSearchInput(): void {
     if (!this.apartmentSearchText || this.apartmentSearchText.trim() === '') {
       this.filteredApartments = [];
@@ -146,15 +157,15 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
       return;
     }
 
-    const searchText = this.apartmentSearchText.toLowerCase().trim();
+    const searchText = this.apartmentSearchText.trim().toLowerCase();
     this.filteredApartments = this.apartments.filter(apartment =>
-      apartment.code.toLowerCase().includes(searchText)
+      apartment.code?.trim().toLowerCase().includes(searchText)
     );
     this.showApartmentSuggestions = this.filteredApartments.length > 0;
     
     // Check for exact match and auto-fill owner name
     const exactMatch = this.apartments.find(a => 
-      a.code.trim().toLowerCase() === searchText
+      a.code?.trim().toLowerCase() === searchText
     );
     if (exactMatch) {
       this.apartmentAddress = exactMatch.code;
@@ -173,6 +184,7 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }
   }
 
+  // Xử lý khi người dùng chọn một căn hộ từ danh sách gợi ý - Tự động điền mã căn hộ và tải thông tin chủ sở hữu
   selectApartment(apartment: Apartment): void {
     this.apartmentAddress = apartment.code;
     this.apartmentSearchText = apartment.code;
@@ -182,6 +194,7 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     this.loadApartmentOwner(apartment.apartmentId);
   }
 
+  // Tải thông tin chủ sở hữu căn hộ từ API - Tự động điền tên chủ sở hữu vào trường "Họ tên"
   loadApartmentOwner(apartmentId: string): void {
     if (!apartmentId) {
       this.payerName = '';
@@ -202,14 +215,15 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     });
   }
 
+  // Xử lý khi người dùng rời khỏi ô nhập mã căn hộ (blur event) - Kiểm tra và tự động điền thông tin nếu mã căn hộ hợp lệ
   onApartmentInputBlur(): void {
     setTimeout(() => {
       this.showApartmentSuggestions = false;
       
       if (this.apartmentSearchText && this.apartmentSearchText.trim()) {
-        const searchText = this.apartmentSearchText.trim();
+        const searchText = this.apartmentSearchText.trim().toLowerCase();
         const exactMatch = this.apartments.find(a => 
-          a.code.trim().toLowerCase() === searchText.toLowerCase()
+          a.code?.trim().toLowerCase() === searchText
         );
         if (exactMatch) {
           this.apartmentAddress = exactMatch.code;
@@ -222,12 +236,14 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }, 200);
   }
 
+  // Xử lý khi người dùng focus vào ô nhập mã căn hộ - Hiển thị lại danh sách gợi ý nếu đã có text
   onApartmentInputFocus(): void {
     if (this.apartmentSearchText) {
       this.onApartmentSearchInput();
     }
   }
 
+  // Xử lý khi người dùng chọn file ảnh để upload - Kiểm tra số lượng ảnh (tối đa 3 ảnh) - Tạo preview cho các ảnh đã chọn
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -258,18 +274,21 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }
   }
 
+  // Xóa một ảnh đã upload khỏi danh sách
   removeImage(index: number): void {
     this.selectedFiles.splice(index, 1);
     this.imagePreviews.splice(index, 1);
   }
 
+  // Xử lý khi người dùng submit form tạo phiếu thu - Validate dữ liệu, tạo hóa đơn, lưu snapshot và tự động tạo PDF
   onSubmit(): void {
     if (!this.selectedBuildingId || !this.apartmentAddress || !this.payerName || !this.itemDescription || !this.amount || this.amount <= 0) {
       this.error = 'Vui lòng điền đầy đủ thông tin bắt buộc';
       return;
     }
 
-    const apartment = this.apartments.find(a => a.code.toLowerCase() === this.apartmentAddress.toLowerCase());
+    const searchCode = this.apartmentAddress.trim().toLowerCase();
+    const apartment = this.apartments.find(a => a.code?.trim().toLowerCase() === searchCode);
     if (!apartment) {
       this.error = 'Căn hộ không hợp lệ. Vui lòng chọn từ danh sách gợi ý.';
       return;
@@ -298,9 +317,16 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
       next: (response) => {
         this.isLoading = false;
         if (response.succeeded) {
-          this.successMessage = 'Tạo hóa đơn thành công!';
+          this.endDate = response.data?.endDate || null;
           this.createdInvoiceId = response.data?.invoiceId || null;
-          // Không reset form - giữ nguyên dữ liệu
+          
+          // Hiển thị thông báo thành công trên button
+          this.isSuccess = true;
+          this.successMessage = 'Thành công! Tạo phiếu thu thành công!';
+          this.error = null;
+          
+          // Reset form nhưng giữ nguyên message thành công
+          this.resetFormKeepMessage();
         } else {
           this.error = response.message || 'Có lỗi xảy ra khi tạo hóa đơn';
         }
@@ -312,16 +338,46 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     });
   }
 
-  printInvoice(): void {
-    if (this.createdInvoiceId) {
-      this.router.navigate(['/manager/invoice-detail', this.createdInvoiceId]);
-      // Sau khi navigate, trang invoice-detail sẽ có nút in
-      setTimeout(() => {
-        window.print();
-      }, 500);
-    }
+  // Reset toàn bộ form về trạng thái ban đầu - Xóa tất cả dữ liệu đã nhập, ảnh đã upload
+  resetForm(): void {
+    // Reset form data
+    this.selectedQuotationId = null;
+    this.payerName = '';
+    this.apartmentAddress = '';
+    this.apartmentSearchText = '';
+    this.selectedApartmentId = '';
+    this.itemDescription = '';
+    this.amount = 0;
+    this.note = '';
+    this.selectedFiles = [];
+    this.imagePreviews = [];
+    this.createdInvoiceId = null;
+    this.endDate = null;
+    this.error = null;
+    this.successMessage = null;
+    this.isSuccess = false;
   }
 
+  // Reset form nhưng giữ nguyên message thành công
+  resetFormKeepMessage(): void {
+    // Reset form data
+    this.selectedQuotationId = null;
+    this.payerName = '';
+    this.apartmentAddress = '';
+    this.apartmentSearchText = '';
+    this.selectedApartmentId = '';
+    this.itemDescription = '';
+    this.amount = 0;
+    this.note = '';
+    this.selectedFiles = [];
+    this.imagePreviews = [];
+    this.createdInvoiceId = null;
+    this.endDate = null;
+    this.error = null;
+    // Giữ nguyên successMessage và isSuccess
+  }
+
+  // Format số tiền thành định dạng tiền tệ Việt Nam (VND) - Ví dụ: 1000000 -> "1.000.000 ₫"
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -329,21 +385,27 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }).format(amount);
   }
 
+  // Format số thành định dạng Việt Nam (có dấu phẩy ngăn cách hàng nghìn) - Ví dụ: 1000000 -> "1.000.000"
   formatNumber(amount: number): string {
     return new Intl.NumberFormat('vi-VN').format(amount);
   }
 
+  // Kiểm tra xem địa chỉ căn hộ đã nhập có hợp lệ không - Căn hộ phải tồn tại trong danh sách căn hộ của tòa nhà
   isApartmentValid(): boolean {
     if (!this.apartmentAddress || !this.apartmentSearchText) {
       return false;
     }
-    return this.apartments.some(a => a.code.toLowerCase() === this.apartmentAddress.toLowerCase());
+    const searchCode = this.apartmentAddress.trim().toLowerCase();
+    return this.apartments.some(a => a.code?.trim().toLowerCase() === searchCode);
   }
 
+  // Kiểm tra xem text đã nhập trong ô tìm kiếm căn hộ có hợp lệ không - Sử dụng để hiển thị thông báo lỗi nếu căn hộ không tồn tại
   isSearchTextValid(): boolean {
     if (!this.apartmentSearchText) {
       return false;
     }
-    return this.apartments.some(a => a.code.toLowerCase() === this.apartmentSearchText.toLowerCase());
+    const searchCode = this.apartmentSearchText.trim().toLowerCase();
+    const isValid = this.apartments.some(a => a.code?.trim().toLowerCase() === searchCode);
+    return isValid;
   }
 }

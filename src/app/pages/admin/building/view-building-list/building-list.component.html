@@ -86,6 +86,7 @@
                  class="btn-icon btn-edit" 
                  title="Chỉnh sửa thông tin">
                 <mat-icon>edit</mat-icon>
+                <span>Sửa</span>
               </a>
 
               <button type="button" 
@@ -94,6 +95,7 @@
                       (click)="openToggleStatusDialog(b)"
                       [title]="b.isActive ? 'Dừng hoạt động' : 'Kích hoạt lại'">
                 <mat-icon>{{ b.isActive ? 'block' : 'power_settings_new' }}</mat-icon>
+                <span>{{ b.isActive ? 'Dừng' : 'Kích hoạt' }}</span>
               </button>
             </div>
           </td>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 import {
   VehicleService,
   Vehicle,
@@ -12,6 +13,8 @@ import {
   ApiResponse,
   Apartment
 } from '../../../../../services/operation/vehicle.service';
+
+import { AuthService } from '../../../../../services/auth.service';
 
 @Component({
   selector: 'app-vehicle-list',
@@ -39,6 +42,7 @@ export class VehicleList implements OnInit {
     sortBy: 'vehicleNumber',
     sortOrder: 'asc'
   };
+
   private searchDebouncer = new Subject<string>();
 
   editingVehicleId: string | null = null;
@@ -47,13 +51,27 @@ export class VehicleList implements OnInit {
 
   private apartmentNameMap = new Map<string, string>();
 
-  constructor(private vehicleService: VehicleService) {}
+  isManagerView = false;
+
+  constructor(
+    private vehicleService: VehicleService,
+    private auth: AuthService
+  ) {}
 
   ngOnInit(): void {
+
+    this.isManagerView =
+      this.auth.hasRole('admin') ||
+
+      this.auth.hasRole('custom');
+
     this.loadInitialData();
-    this.searchDebouncer.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
-      this.loadVehicles();
-    });
+
+    this.searchDebouncer
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(() => {
+        this.loadVehicles();
+      });
   }
 
   loadInitialData(): void {
@@ -61,7 +79,11 @@ export class VehicleList implements OnInit {
     this.error = null;
     this.editingVehicleId = null;
 
-    this.vehicleService.getMyApartments().subscribe({
+    const apartment$ = this.isManagerView
+      ? this.vehicleService.getApartments()
+      : this.vehicleService.getMyApartments();
+
+    apartment$.subscribe({
       next: (aptResponse) => {
         if (aptResponse.succeeded) {
           aptResponse.data.forEach((apt: Apartment) => {
@@ -83,19 +105,27 @@ export class VehicleList implements OnInit {
 
     this.error = null;
     this.editingVehicleId = null;
+
     this.query.searchTerm = this.searchTerm || null;
     this.query.status = this.selectedStatus;
 
-    this.vehicleService.getMyVehicles(this.query).subscribe({
+    const vehicle$ = this.isManagerView
+      ? this.vehicleService.getVehicles(this.query)
+      : this.vehicleService.getMyVehicles(this.query);
+
+    vehicle$.subscribe({
       next: (vehicleResponse: ApiResponse<Vehicle[]>) => {
         if (vehicleResponse.succeeded) {
           vehicleResponse.data.forEach((vehicle) => {
-            vehicle.apartmentCode = this.apartmentNameMap.get(vehicle.apartmentId) || vehicle.apartmentId;
+            vehicle.apartmentCode =
+              this.apartmentNameMap.get(vehicle.apartmentId) || vehicle.apartmentId;
           });
           this.allVehicles = vehicleResponse.data;
         } else {
           this.allVehicles = [];
-          if (vehicleResponse.message !== 'SM01') this.error = vehicleResponse.message;
+          if (vehicleResponse.message !== 'SM01') {
+            this.error = vehicleResponse.message;
+          }
         }
         this.applyPagination();
         this.isLoading = false;
@@ -112,8 +142,12 @@ export class VehicleList implements OnInit {
 
   applyPagination(): void {
     this.totalPages = Math.ceil(this.allVehicles.length / this.itemsPerPage);
-    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages || 1;
-    if (this.currentPage < 1) this.currentPage = 1;
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages || 1;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
 
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
@@ -173,7 +207,9 @@ export class VehicleList implements OnInit {
       next: (response) => {
         console.log('Cập nhật thành công!', response);
         const index = this.allVehicles.findIndex((v) => v.vehicleId === vehicle.vehicleId);
-        if (index !== -1) this.allVehicles[index].status = vehicle.status;
+        if (index !== -1) {
+          this.allVehicles[index].status = vehicle.status;
+        }
         this.applyPagination();
         this.editingVehicleId = null;
       },
