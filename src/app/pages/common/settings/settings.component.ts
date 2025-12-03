@@ -11,8 +11,8 @@ import { CommonModule } from '@angular/common';
         <header>
           <div class="header-row">
             <div>
-              <h1>Cài đặt hệ thống</h1>
-              <p>Các tùy chọn cơ bản cho ứng dụng</p>
+              <h1>{{ t.pageTitle }}</h1>
+              <p>{{ t.pageSubtitle }}</p>
             </div>
           </div>
         </header>
@@ -22,27 +22,27 @@ import { CommonModule } from '@angular/common';
           <section class="info-section">
             <div class="section-header">
               <div>
-                <h2>Chung</h2>
-                <p class="section-note">Ngôn ngữ và định dạng ngày giờ</p>
+                <h2>{{ t.generalSection }}</h2>
+                <p class="section-note">{{ t.generalNote }}</p>
               </div>
             </div>
             <div class="form-grid">
               <div class="form-group">
-                <label class="form-label">Ngôn ngữ</label>
+                <label class="form-label">{{ t.languageLabel }}</label>
                 <div class="option-group">
                   <label class="option-card">
-                    <input type="radio" name="language" value="vi" checked />
+                    <input type="radio" name="language" value="vi" [checked]="currentLanguage === 'vi'" (change)="changeLanguage('vi')" />
                     <span class="option-icon">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" class="flag-svg">
                         <path fill="#DA251D" d="M0 0h3v2H0z"/>
                         <path fill="#FF0" d="M1.5 0.35l0.16 0.5h0.52l-0.42 0.3 0.16 0.5-0.42-0.3-0.42 0.3 0.16-0.5-0.42-0.3h0.52z"/>
                       </svg>
                     </span>
-                    <span class="option-label">Tiếng Việt</span>
+                    <span class="option-label">{{ t.vietnamese }}</span>
                   </label>
 
                   <label class="option-card">
-                    <input type="radio" name="language" value="en" />
+                    <input type="radio" name="language" value="en" [checked]="currentLanguage === 'en'" (change)="changeLanguage('en')" />
                     <span class="option-icon">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" class="flag-svg">
                         <clipPath id="s"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
@@ -56,22 +56,22 @@ import { CommonModule } from '@angular/common';
                         </g>
                       </svg>
                     </span>
-                    <span class="option-label">English</span>
+                    <span class="option-label">{{ t.english }}</span>
                   </label>
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label" for="dateFormat">Định dạng ngày</label>
+                <label class="form-label" for="dateFormat">{{ t.dateFormatLabel }}</label>
                 <select id="dateFormat" class="form-input">
                   <option value="dd/MM/yyyy" selected>dd/MM/yyyy</option>
                   <option value="MM/dd/yyyy">MM/dd/yyyy</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="timeFormat">Định dạng giờ</label>
+                <label class="form-label" for="timeFormat">{{ t.timeFormatLabel }}</label>
                 <select id="timeFormat" class="form-input">
-                  <option value="24h" selected>24 giờ</option>
-                  <option value="12h">12 giờ (AM/PM)</option>
+                  <option value="24h" selected>{{ t.time24h }}</option>
+                  <option value="12h">{{ t.time12h }}</option>
                 </select>
               </div>
             </div>
@@ -81,13 +81,13 @@ import { CommonModule } from '@angular/common';
           <section class="info-section">
             <div class="section-header">
               <div>
-                <h2>Giao diện</h2>
-                <p class="section-note">Chủ đề và hiển thị</p>
+                <h2>{{ t.interfaceSection }}</h2>
+                <p class="section-note">{{ t.interfaceNote }}</p>
               </div>
             </div>
             <div class="form-grid">
               <div class="form-group">
-                <label class="form-label">Chủ đề</label>
+                <label class="form-label">{{ t.themeLabel }}</label>
                 <div class="option-group">
                   <label class="option-card">
                     <input type="radio" name="theme" [checked]="currentTheme === 'light'" (change)="applyTheme('light')" />
@@ -104,7 +104,7 @@ import { CommonModule } from '@angular/common';
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                       </svg>
                     </span>
-                    <span class="option-label">Sáng</span>
+                    <span class="option-label">{{ t.lightTheme }}</span>
                   </label>
                   <label class="option-card">
                     <input type="radio" name="theme" [checked]="currentTheme === 'dark'" (change)="applyTheme('dark')" />
@@ -113,12 +113,12 @@ import { CommonModule } from '@angular/common';
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                       </svg>
                     </span>
-                    <span class="option-label">Tối</span>
+                    <span class="option-label">{{ t.darkTheme }}</span>
                   </label>
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label">Kích thước chữ</label>
+                <label class="form-label">{{ t.fontSizeLabel }}</label>
                 <div class="option-group">
                   <label class="option-card">
                     <input type="radio" name="fontSize" checked />
@@ -130,7 +130,7 @@ import { CommonModule } from '@angular/common';
                         <path d="M12 4l6 16"></path>
                       </svg>
                     </span>
-                    <span class="option-label">Mặc định</span>
+                    <span class="option-label">{{ t.fontDefault }}</span>
                   </label>
                   <label class="option-card">
                     <input type="radio" name="fontSize" />
@@ -140,7 +140,7 @@ import { CommonModule } from '@angular/common';
                         <path d="M12 4l6 16"></path>
                       </svg>
                     </span>
-                    <span class="option-label">Nhỏ</span>
+                    <span class="option-label">{{ t.fontSmall }}</span>
                   </label>
                   <label class="option-card">
                     <input type="radio" name="fontSize" />
@@ -150,7 +150,7 @@ import { CommonModule } from '@angular/common';
                         <path d="M6 20l6-16"></path>
                       </svg>
                     </span>
-                    <span class="option-label">Lớn</span>
+                    <span class="option-label">{{ t.fontLarge }}</span>
                   </label>
                 </div>
               </div>
@@ -161,8 +161,8 @@ import { CommonModule } from '@angular/common';
           <section class="info-section">
             <div class="section-header">
               <div>
-                <h2>Thông báo</h2>
-                <p class="section-note">Tùy chọn nhận thông báo</p>
+                <h2>{{ t.notificationSection }}</h2>
+                <p class="section-note">{{ t.notificationNote }}</p>
               </div>
             </div>
             <div class="form-list">
@@ -174,7 +174,7 @@ import { CommonModule } from '@angular/common';
                       <path d="M22 6l-10 7L2 6"></path>
                     </svg>
                   </span>
-                  Email khi có cập nhật
+                  {{ t.emailNotification }}
                 </span>
                 <span class="switch">
                   <input type="checkbox" checked />
@@ -191,7 +191,7 @@ import { CommonModule } from '@angular/common';
                       <path d="M3 5h18"></path>
                     </svg>
                   </span>
-                  Thông báo đẩy (push)
+                  {{ t.pushNotification }}
                 </span>
                 <span class="switch">
                   <input type="checkbox" />
@@ -205,7 +205,7 @@ import { CommonModule } from '@angular/common';
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                   </span>
-                  Tin nhắn từ hệ thống
+                  {{ t.systemMessage }}
                 </span>
                 <span class="switch">
                   <input type="checkbox" checked />
@@ -359,10 +359,80 @@ import { CommonModule } from '@angular/common';
 })
 export class SettingsComponent {
   currentTheme: 'light' | 'dark' = 'light';
+  currentLanguage: 'vi' | 'en' = 'vi';
+  
+  // Translation object
+  translations = {
+    vi: {
+      pageTitle: 'Cài đặt hệ thống',
+      pageSubtitle: 'Các tùy chọn cơ bản cho ứng dụng',
+      generalSection: 'Chung',
+      generalNote: 'Ngôn ngữ và định dạng ngày giờ',
+      languageLabel: 'Ngôn ngữ',
+      vietnamese: 'Tiếng Việt',
+      english: 'English',
+      dateFormatLabel: 'Định dạng ngày',
+      timeFormatLabel: 'Định dạng giờ',
+      time24h: '24 giờ',
+      time12h: '12 giờ (AM/PM)',
+      interfaceSection: 'Giao diện',
+      interfaceNote: 'Chủ đề và hiển thị',
+      themeLabel: 'Chủ đề',
+      lightTheme: 'Sáng',
+      darkTheme: 'Tối',
+      fontSizeLabel: 'Kích thước chữ',
+      fontDefault: 'Mặc định',
+      fontSmall: 'Nhỏ',
+      fontLarge: 'Lớn',
+      notificationSection: 'Thông báo',
+      notificationNote: 'Tùy chọn nhận thông báo',
+      emailNotification: 'Email khi có cập nhật',
+      pushNotification: 'Thông báo đẩy (push)',
+      systemMessage: 'Tin nhắn từ hệ thống'
+    },
+    en: {
+      pageTitle: 'System Settings',
+      pageSubtitle: 'Basic options for the application',
+      generalSection: 'General',
+      generalNote: 'Language and date-time format',
+      languageLabel: 'Language',
+      vietnamese: 'Tiếng Việt',
+      english: 'English',
+      dateFormatLabel: 'Date Format',
+      timeFormatLabel: 'Time Format',
+      time24h: '24 hour',
+      time12h: '12 hour (AM/PM)',
+      interfaceSection: 'Interface',
+      interfaceNote: 'Theme and display',
+      themeLabel: 'Theme',
+      lightTheme: 'Light',
+      darkTheme: 'Dark',
+      fontSizeLabel: 'Font Size',
+      fontDefault: 'Default',
+      fontSmall: 'Small',
+      fontLarge: 'Large',
+      notificationSection: 'Notifications',
+      notificationNote: 'Notification preferences',
+      emailNotification: 'Email on updates',
+      pushNotification: 'Push notifications',
+      systemMessage: 'System messages'
+    }
+  };
+
+  get t() {
+    return this.translations[this.currentLanguage];
+  }
 
   ngOnInit() {
     const saved = (localStorage.getItem('appTheme') as 'light' | 'dark') || 'light';
     this.applyTheme(saved);
+    const savedLang = (localStorage.getItem('appLanguage') as 'vi' | 'en') || 'vi';
+    this.currentLanguage = savedLang;
+  }
+  
+  changeLanguage(lang: 'vi' | 'en') {
+    this.currentLanguage = lang;
+    localStorage.setItem('appLanguage', lang);
   }
 
   applyTheme(theme: 'light' | 'dark') {
