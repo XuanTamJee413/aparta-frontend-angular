@@ -12,6 +12,13 @@
     </mat-toolbar>
 
     <mat-nav-list (click)="closeSidenavOnMobile()">
+      <h3 mat-subheader class="list-subheader">Tổng quan</h3>
+      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link">
+        <mat-icon>dashboard</mat-icon>
+        <span>Bảng điều khiển</span>
+      </a>
+
+      <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Gói dịch vụ</h3>
       <a mat-list-item routerLink="subscription/list" routerLinkActive="active-link">
         <mat-icon>card_membership</mat-icon>

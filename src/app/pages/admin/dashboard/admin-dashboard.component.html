@@ -1,0 +1,181 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Admin Dashboard</h1>
+    <p class="dashboard-subtitle">Tổng quan hệ thống quản lý</p>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Overview Cards Section -->
+  <div class="overview-cards" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-card-icon project-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 7L12 13L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Tổng số dự án</h3>
+        <p class="stat-card-value">{{ formatNumber(totalProjects) }}</p>
+        <p class="stat-card-meta">{{ activeProjects }} đang hoạt động</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-icon building-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 21H21M5 21V7L12 3L19 7V21M9 9V21M15 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Tổng số tòa nhà</h3>
+        <p class="stat-card-value">{{ formatNumber(totalBuildings) }}</p>
+        <p class="stat-card-meta">Trên toàn hệ thống</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-icon manager-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Quản lý viên</h3>
+        <p class="stat-card-value">{{ formatNumber(totalManagers) }}</p>
+        <p class="stat-card-meta">Đang hoạt động</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-icon subscription-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Gói đăng ký</h3>
+        <p class="stat-card-value">{{ formatNumber(totalSubscriptions) }}</p>
+        <p class="stat-card-meta">{{ activeSubscriptions }} đang hoạt động</p>
+      </div>
+    </div>
+
+    <div class="stat-card highlight-card">
+      <div class="stat-card-icon revenue-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-card-content">
+        <h3 class="stat-card-label">Tổng doanh thu</h3>
+        <p class="stat-card-value">{{ formatCurrency(totalRevenue) }}</p>
+        <p class="stat-card-meta">Từ subscription</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section" *ngIf="!loading">
+    <!-- Row 1: Project Status & Building Distribution -->
+    <div class="chart-row">
+      <div class="chart-card medium-chart">
+        <h2 class="chart-title">Trạng thái dự án</h2>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="projectStatusChartData"
+            [options]="projectStatusChartOptions"
+            type="doughnut">
+          </canvas>
+        </div>
+        <div class="chart-summary">
+          <div class="summary-item">
+            <span class="summary-label">Tổng số dự án:</span>
+            <span class="summary-value">{{ formatNumber(totalProjects) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card medium-chart">
+        <h2 class="chart-title">Số tòa nhà theo dự án</h2>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="buildingsPerProjectChartData"
+            [options]="buildingsPerProjectChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+        <div class="chart-summary">
+          <div class="summary-item">
+            <span class="summary-label">Tổng số tòa nhà:</span>
+            <span class="summary-value">{{ formatNumber(totalBuildings) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Subscription Status & Revenue -->
+    <div class="chart-row">
+      <div class="chart-card medium-chart">
+        <h2 class="chart-title">Trạng thái subscription</h2>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="subscriptionStatusChartData"
+            [options]="subscriptionStatusChartOptions"
+            type="doughnut">
+          </canvas>
+        </div>
+        <div class="chart-summary">
+          <div class="summary-item">
+            <span class="summary-label">Tổng số subscription:</span>
+            <span class="summary-value">{{ formatNumber(totalSubscriptions) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card medium-chart">
+        <h2 class="chart-title">Doanh thu subscription (12 tháng)</h2>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="subscriptionRevenueChartData"
+            [options]="subscriptionRevenueChartOptions"
+            type="line">
+          </canvas>
+        </div>
+        <div class="chart-summary">
+          <div class="summary-item">
+            <span class="summary-label">Tổng doanh thu:</span>
+            <span class="summary-value revenue-highlight">{{ formatCurrency(totalRevenue) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Manager Assignment (Full Width) -->
+    <div class="chart-row">
+      <div class="chart-card full-chart">
+        <h2 class="chart-title">Phân công quản lý viên (Top 10)</h2>
+        <div class="chart-container large-chart">
+          <canvas baseChart
+            [data]="managerAssignmentChartData"
+            [options]="managerAssignmentChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+        <div class="chart-summary">
+          <div class="summary-item">
+            <span class="summary-label">Tổng số quản lý viên:</span>
+            <span class="summary-value">{{ formatNumber(totalManagers) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
