@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+// Các module Material vẫn cần thiết cho logic modal và datepicker, tab
+import { MatButtonModule } from '@angular/material/button'; 
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+
 import { 
   SubscriptionService, 
   SubscriptionDto, 
@@ -29,9 +28,6 @@ import { DeleteConfirmationDialogComponent } from '../delete-confirmation-dialog
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatDialogModule
@@ -45,9 +41,18 @@ export class SubscriptionListComponent implements OnInit {
   isLoading = false;
   
   // Filter options
-  selectedStatus: string = '';
-  createdAtStart: Date | null = null;
-  createdAtEnd: Date | null = null;
+  selectedStatus: string = 'All';
+  selectedDateType: string = 'created';
+  fromDate: Date | null = null;
+  toDate: Date | null = null;
+
+  // Options cho Dropdown loại ngày
+  dateTypeOptions = [
+    { value: 'created', label: 'Ngày tạo' },
+    { value: 'payment', label: 'Ngày thanh toán' },
+    { value: 'expired', label: 'Ngày hết hạn' },
+    { value: 'start', label: 'Ngày bắt đầu' }
+  ];
   
   // Pagination
   currentPage = 1;
@@ -57,13 +62,16 @@ export class SubscriptionListComponent implements OnInit {
   
   // Current tab: 'main' or 'draft'
   currentTab: 'main' | 'draft' = 'main';
-  
+
   statusOptions = [
-    { value: '', label: 'Tất cả' },
+    { value: 'All', label: '-- Tất cả trạng thái --' },
     { value: 'Active', label: 'Hoạt động' },
     { value: 'Expired', label: 'Đã hết hạn' },
     { value: 'Cancelled', label: 'Đã hủy' }
   ];
+
+  // Helper cho template
+  Math = Math;
 
   constructor(
     private subscriptionService: SubscriptionService,
@@ -92,19 +100,18 @@ export class SubscriptionListComponent implements OnInit {
 
   loadSubscriptions(): void {
     this.isLoading = true;
-
     const queryParams: SubscriptionQueryParameters = {
       status: this.currentTab === 'draft' ? 'Draft' : (this.selectedStatus || undefined),
-      createdAtStart: this.createdAtStart || undefined,
-      createdAtEnd: this.createdAtEnd || undefined,
+      fromDate: this.fromDate || undefined,
+      toDate: this.toDate || undefined,
+      dateType: this.selectedDateType,
       skip: (this.currentPage - 1) * this.pageSize,
       take: this.pageSize
     };
 
     // If on main tab and no status filter, exclude Draft
     if (this.currentTab === 'main' && !this.selectedStatus) {
-      // Load both Active and Expired (exclude Draft)
-      queryParams.status = undefined; // Will load all, then filter on client side if needed
+      queryParams.status = 'All';
     }
 
     this.subscriptionService.getAllSubscriptions(queryParams).subscribe({
@@ -134,15 +141,14 @@ export class SubscriptionListComponent implements OnInit {
 
   onTabChange(index: number): void {
     this.currentTab = index === 0 ? 'main' : 'draft';
-    this.currentPage = 1;
-    this.selectedStatus = '';
-    this.loadSubscriptions();
+    // Clear filters when switching tabs
+    this.clearFilter();
   }
 
   applyFilter(): void {
     // Validate date range
-    if (this.createdAtStart && this.createdAtEnd) {
-      if (this.createdAtStart > this.createdAtEnd) {
+    if (this.fromDate && this.toDate) {
+      if (this.fromDate > this.toDate) {
         this.showError('Từ ngày phải trước hoặc bằng đến ngày');
         return;
       }
@@ -153,9 +159,10 @@ export class SubscriptionListComponent implements OnInit {
   }
 
   clearFilter(): void {
-    this.selectedStatus = '';
-    this.createdAtStart = null;
-    this.createdAtEnd = null;
+    this.selectedStatus = 'All';
+    this.fromDate = null;
+    this.toDate = null;
+    this.selectedDateType = this.currentTab === 'draft' ? 'created' : 'payment';
     this.currentPage = 1;
     this.loadSubscriptions();
   }
@@ -165,7 +172,6 @@ export class SubscriptionListComponent implements OnInit {
       width: '700px',
       data: { mode: 'create', subscription: null }
     });
-
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadSubscriptions();
@@ -178,7 +184,6 @@ export class SubscriptionListComponent implements OnInit {
       width: '700px',
       data: { mode: 'edit', subscription: subscription }
     });
-
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadSubscriptions();
@@ -198,7 +203,6 @@ export class SubscriptionListComponent implements OnInit {
       width: '400px',
       data: { subscription: subscription }
     });
-
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.deleteSubscription(subscription.subscriptionId);
@@ -248,61 +252,52 @@ export class SubscriptionListComponent implements OnInit {
     return pages;
   }
 
-  getProjectName(projectId: string): string {
-    const project = this.projects.find(p => p.projectId === projectId);
-    return project ? project.name || project.projectCode || projectId : projectId;
-  }
-
   calculateStartDate(subscription: SubscriptionDto): Date | null {
     if (!subscription.expiredAt || !subscription.numMonths) {
       return null;
     }
-
-    // Convert to Date if it's a string
     const expiredDate = new Date(subscription.expiredAt);
-    
-    // Subtract numMonths from expiredAt
     const startDate = new Date(expiredDate);
     startDate.setMonth(startDate.getMonth() - subscription.numMonths);
-    
-    // Add 1 day
-    startDate.setDate(startDate.getDate() + 1);
     
     return startDate;
   }
 
   getStatusLabel(status: string): string {
     const option = this.statusOptions.find(o => o.value === status);
-    return option ? option.label : status;
+    if (option) return option.label;
+    
+    // Mapping thêm cho trường hợp Draft
+    if (status === 'Draft') return 'Nháp';
+    return status;
   }
 
+  // Cập nhật để trả về đúng class mới trong CSS
   getStatusClass(status: string): string {
     switch(status) {
-      case 'Active': return 'badge-success';
-      case 'Expired': return 'badge-danger';
-      case 'Draft': return 'badge-warning';
-      default: return 'badge-secondary';
+      case 'Active': return 'status-active';
+      case 'Expired': return 'status-expired';
+      case 'Draft': return 'status-draft';
+      case 'Cancelled': return 'status-cancelled';
+      default: return 'status-cancelled';
     }
   }
 
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Đóng', {
       duration: 3000,
-      horizontalPosition: 'center',
+      horizontalPosition: 'right', // Đổi về right cho giống Building List
       verticalPosition: 'top',
-      panelClass: ['success-snackbar']
+      panelClass: ['bg-success', 'text-white'] // Dùng style bootstrap cho snackbar nếu có, hoặc custom class
     });
   }
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Đóng', {
       duration: 5000,
-      horizontalPosition: 'center',
+      horizontalPosition: 'right',
       verticalPosition: 'top',
-      panelClass: ['error-snackbar']
+      panelClass: ['bg-danger', 'text-white']
     });
   }
-
-  // Helper method for template
-  Math = Math;
 }

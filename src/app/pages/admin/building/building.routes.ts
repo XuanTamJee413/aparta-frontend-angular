@@ -5,19 +5,19 @@ export const BUILDING_ROUTES: Routes = [
     path: 'list',
     loadComponent: () => import('./view-building-list/building-list.component')
       .then(m => m.BuildingListComponent),
-    title: 'Building List'
+    title: 'Quản lý Tòa nhà'
   },
   {
     path: 'create',
     loadComponent: () => import('./create-building/building-create.component')
       .then(m => m.BuildingCreateComponent),
-    title: 'Create Building'
+    title: 'Tạo Tòa nhà'
   },
   {
     path: 'edit/:id',
     loadComponent: () => import('./update-building/building-edit.component')
       .then(m => m.BuildingEditComponent),
-    title: 'Edit Building'
+    title: 'Chỉnh sửa Tòa nhà'
   },
   {
     path: '',

@@ -90,6 +90,6 @@ export class ManagerListComponent implements OnInit {
     if (value === 'active' || value === 'hoạt động' || value === 'enabled') {
       return 'Hoạt động';
     }
-    return 'Không hoạt động';
+    return 'Vô hiệu hóa';
   }
 }
