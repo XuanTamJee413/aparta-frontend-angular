@@ -1,38 +1,46 @@
-<div class="toolbar">
-  <h2>Danh sách Role</h2>
-  <button mat-button color="primary" (click)="openCreateDialog()">
-    <mat-icon>add</mat-icon>
-    Tạo Role
-  </button>
-</div>
+<div class="container">
+  <div class="card">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Quản lý Phân quyền</h1>
+          <p>Danh sách Role hệ thống và tùy chỉnh</p>
+        </div>
+        <button type="button" class="btn-primary" (click)="openCreateDialog()" title="Tạo Role mới">
+          <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Tạo Role
+        </button>
+      </div>
+    </header>
 
-<div class="sort-controls">
-  <div class="group">
-    <span>Sắp xếp:</span>
-    <button mat-button [disabled]="sortMode() === 'name' && sortDir() === 'asc'" (click)="setSortByName('asc')">
-      A → Z
-    </button>
-    <button mat-button [disabled]="sortMode() === 'name' && sortDir() === 'desc'" (click)="setSortByName('desc')">
-      Z → A
-    </button>
-    <button mat-button [disabled]="sortMode() === 'system' && systemFirst()" (click)="setSortBySystem(true)">Hệ thống trước</button>
-    <button mat-button [disabled]="sortMode() === 'system' && !systemFirst()" (click)="setSortBySystem(false)">Hệ thống sau</button>
-  </div>
-</div>
-
-<ul class="role-items">
-  <li *ngFor="let r of sortedRoles()">
-    <div class="info">
-      <div class="name">{{ r.roleName }}</div>
-      <div class="meta">
-        <span [class.badge]="true" [class.system]="r.isSystemDefined">{{ r.isSystemDefined ? 'System' : 'Custom' }}</span>
-        <span class="badge" [class.active]="r.isActive">{{ r.isActive ? 'Active' : 'Inactive' }}</span>
+    <div class="sort-controls">
+      <div class="group">
+        <span class="sort-label">Sắp xếp:</span>
+        <button class="btn-sort" [disabled]="sortMode() === 'name' && sortDir() === 'asc'" (click)="setSortByName('asc')">A → Z</button>
+        <button class="btn-sort" [disabled]="sortMode() === 'name' && sortDir() === 'desc'" (click)="setSortByName('desc')">Z → A</button>
+        <button class="btn-sort" [disabled]="sortMode() === 'system' && systemFirst()" (click)="setSortBySystem(true)">Hệ thống trước</button>
+        <button class="btn-sort" [disabled]="sortMode() === 'system' && !systemFirst()" (click)="setSortBySystem(false)">Hệ thống sau</button>
       </div>
     </div>
-    <div class="actions">
-      <button mat-button (click)="managePermissions(r)"><mat-icon>shield</mat-icon> Quyền</button>
-      <button mat-button (click)="openRenameDialog(r)" [disabled]="r.isSystemDefined"><mat-icon>edit</mat-icon> Cập nhật</button>
-      <button mat-button color="warn" (click)="confirmDelete(r)" [disabled]="r.isSystemDefined || !r.isActive"><mat-icon>delete</mat-icon> Xóa</button>
-    </div>
-  </li>
-</ul>
+
+    <ul class="role-items">
+      <li *ngFor="let r of sortedRoles()" class="role-item">
+        <div class="info">
+          <div class="name">{{ r.roleName }}</div>
+          <div class="meta">
+            <span class="badge" [ngClass]="r.isSystemDefined ? 'badge-system' : 'badge-custom'">{{ r.isSystemDefined ? 'System' : 'Custom' }}</span>
+            <span class="badge" [ngClass]="r.isActive ? 'badge-active' : 'badge-inactive'">{{ r.isActive ? 'Hoạt động' : 'Không hoạt động' }}</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn-action" (click)="managePermissions(r)"><mat-icon>shield</mat-icon>Quyền</button>
+          <button type="button" class="btn-action" (click)="openRenameDialog(r)" [disabled]="r.isSystemDefined"><mat-icon>edit</mat-icon>Cập nhật</button>
+          <button type="button" class="btn-action btn-danger" (click)="confirmDelete(r)" [disabled]="r.isSystemDefined || !r.isActive"><mat-icon>delete</mat-icon>Xóa</button>
+        </div>
+      </li>
+      <li *ngIf="sortedRoles().length === 0" class="empty-state">Không có role nào.</li>
+    </ul>
+  </div>
+</div>

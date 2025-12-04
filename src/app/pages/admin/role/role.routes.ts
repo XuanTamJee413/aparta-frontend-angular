@@ -7,14 +7,14 @@ export const ROLE_ROUTES: Routes = [
     canActivate: [roleCanActivate('admin')],
     loadComponent: () => import('./view-role-list/role-list.component')
       .then(m => m.RoleListComponent),
-    title: 'Role List'
+    title: 'Quản lý Phân quyền'
   },
   {
     path: 'edit/:id',
     canActivate: [roleCanActivate('admin')],
     loadComponent: () => import('./update-role/role-edit.component')
       .then(m => m.RoleEditComponent),
-    title: 'Edit Role'
+    title: 'Chỉnh sửa Role'
   },
   {
     path: '',

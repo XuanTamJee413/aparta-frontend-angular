@@ -53,9 +53,9 @@ export class InvoiceService {
 
   /**
    * Create payment link for an invoice
-   * POST /api/Invoice/{invoiceId}/pay
+   * POST /api/Payos/payment/create/{invoiceId}
    */
   createPayment(invoiceId: string): Observable<ApiResponse<string>> {
-    return this.http.post<ApiResponse<string>>(`${this.apiUrl}/${invoiceId}/pay`, {});
+    return this.http.post<ApiResponse<string>>(`${environment.apiUrl}/Payos/payment/create/${invoiceId}`, {});
   }
 }

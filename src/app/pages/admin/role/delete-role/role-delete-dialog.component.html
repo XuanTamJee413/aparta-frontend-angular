@@ -1,8 +1,13 @@
-<h2 mat-dialog-title>Xóa Role</h2>
-<div mat-dialog-content>
-  <p>Bạn có chắc chắn muốn xóa role "{{ data.role.roleName }}"?</p>
+<div mat-dialog-title class="dialog-title-bar">
+  <h2 class="dialog-title" tabindex="-1" cdkFocusInitial style="outline: none;">Xóa Role</h2>
+  <button type="button" class="dialog-close-btn" (click)="cancel()" aria-label="Đóng">×</button>
 </div>
-<div mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Hủy</button>
-  <button mat-button color="warn" (click)="confirm()" [disabled]="data.role.isSystemDefined || !data.role.isActive">Xóa</button>
+<div mat-dialog-content class="dialog-content">
+  <p class="dialog-text">Bạn có chắc chắn muốn xóa role "<strong>{{ data.role.roleName }}</strong>"?</p>
+  <div class="dialog-note">Lưu ý: Không thể xóa Role hệ thống hoặc Role đang không hoạt động.</div>
+  
+</div>
+<div mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" class="btn-dialog-cancel" (click)="cancel()">Hủy</button>
+  <button mat-button type="button" class="btn-dialog-danger" color="warn" (click)="confirm()" [disabled]="data.role.isSystemDefined || !data.role.isActive">Xóa</button>
 </div>

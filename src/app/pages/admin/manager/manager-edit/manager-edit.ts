@@ -32,8 +32,8 @@ export class ManagerEditComponent implements OnInit {
 
   allBuildings$!: Observable<BuildingDto[]>;
   statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' }
+    { value: 'active', label: 'Hoạt động' },
+    { value: 'inactive', label: 'Vô hiệu hóa' }
   ];
 
   loading = false;

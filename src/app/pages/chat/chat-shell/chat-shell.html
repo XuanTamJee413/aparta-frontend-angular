@@ -8,8 +8,12 @@
                 <mat-label>Bắt đầu chat với...</mat-label>
                 <mat-select [(ngModel)]="selectedPartnerId" (selectionChange)="onPartnerSelect($event.value)">
                     <mat-option [value]="null">Chọn đối tác...</mat-option>
+
                     <mat-option *ngFor="let partner of partnersToChat" [value]="partner.userId">
-                        {{ partner.fullName }} ({{ partner.role }})
+                        {{ partner.fullName }}
+                        <span class="small text-muted">
+                            ({{ partner.apartmentCode ? partner.apartmentCode : partner.role }})
+                        </span>
                     </mat-option>
                 </mat-select>
             </mat-form-field>

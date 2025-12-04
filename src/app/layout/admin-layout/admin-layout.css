@@ -1,3 +1,9 @@
+.sidenav-container,
+:host {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #111827;
+}
+
 .content-container {
   display: flex;
   flex-direction: column;
@@ -7,16 +13,16 @@
 .content-wrapper {
   flex: 1;
   overflow-y: auto;
-  padding: 0; 
-  background-color: #f4f7fa; 
+  padding: 0;
+  background-color: #f9fafb;
 }
 
 .layout-footer {
   padding: 12px 24px;
   background-color: #ffffff;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #e5e7eb;
   text-align: center;
-  color: #757575;
+  color: #6b7280;
   font-size: 0.85rem;
   flex-shrink: 0;
 }
@@ -27,24 +33,33 @@
 
 .sidenav {
   width: 260px;
-  background-color: lightgray;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  border-radius: 0;
 }
 
 .sidenav-toolbar {
-  background: rgb(161, 161, 161);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12); 
-  font-weight: 600; 
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 12px;
   padding-left: 20px;
+  border-radius: 0;
+}
+
+.sidenav-toolbar .toolbar-logo {
+  color: #4f46e5;
 }
 
 .main-toolbar {
   position: sticky;
   top: 0;
-  z-index: 100; 
-  background-color: white;
+  z-index: 100;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  color: #111827;
 }
 
 .spacer {
@@ -52,8 +67,9 @@
 }
 
 a[mat-list-item] mat-icon {
-  margin-right: 16px;
+  margin-right: 12px;
   vertical-align: middle;
+  color: #6b7280;
 }
 
 button[mat-menu-item] mat-icon {
@@ -63,22 +79,28 @@ button[mat-menu-item] mat-icon {
 .list-subheader {
   font-size: 0.75rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.54);
+  color: #6b7280;
   text-transform: uppercase;
   margin-top: 16px;
   letter-spacing: 0.5px;
 }
 
+a[mat-list-item] {
+  border-radius: 0;
+  color: #374151;
+}
+
 a[mat-list-item]:not(.active-link):hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: #f3f4f6;
 }
 
 .active-link {
-  background-color: rgba(63, 81, 181, 0.1); 
-  color: #3f51b5; 
-  font-weight: 500;
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-weight: 600;
+  border-radius: 0;
 }
 
 .active-link mat-icon {
-  color: #3f51b5;
+  color: #4f46e5;
 }

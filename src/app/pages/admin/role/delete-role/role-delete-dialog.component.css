@@ -1,1 +1,25 @@
-p{margin:0 0 8px}
+/* Dialog layout */
+.dialog-title { margin: 0; font-size: 1.5rem; font-weight: 600; color: #dc2626; }
+.dialog-content { padding-top: 0.25rem; }
+.dialog-actions { padding-top: 0.5rem; }
+.dialog-title-bar { display: flex; align-items: center; justify-content: space-between; position: relative; }
+.dialog-close-btn { background: transparent; border: none; padding: 4px 8px; font-size: 2rem; line-height: 1; cursor: pointer; color: #9ca3af; border-radius: 6px; }
+.dialog-close-btn:hover { background: #f3f4f6; color: #374151; }
+.dialog-close-btn:focus { outline: 2px solid #dc2626; outline-offset: 2px; }
+
+.dialog-text { margin: 0 0 8px; color: #374151; }
+.dialog-note { font-size: 0.85rem; color: #6b7280; background: #f9fafb; border: 1px solid #e5e7eb; padding: 8px 10px; border-radius: 6px; }
+
+/* Buttons */
+.btn-dialog-cancel { padding: 0.5rem 1rem; background-color: #fff; border: 1px solid #d1d5db; border-radius: 0.375rem; color: #374151; font-weight: 500; cursor: pointer; }
+.btn-dialog-cancel:hover { background-color: #f3f4f6; }
+.btn-dialog-danger { padding: 0.5rem 1rem; background-color: #dc2626; border: 1px solid #dc2626; border-radius: 0.375rem; color: white; font-weight: 500; cursor: pointer; }
+.btn-dialog-danger:hover { background-color: #b91c1c; border-color: #b91c1c; }
+
+/* Prevent unintended focus/hover effect on cancel when dialog opens */
+.btn-dialog-cancel:focus { background-color: #fff; border-color: #d1d5db; box-shadow: none; }
+:host ::ng-deep .btn-dialog-cancel .mat-mdc-button-focus-overlay { opacity: 0 !important; }
+
+/* Override Angular Material default button label color inside this dialog */
+:host ::ng-deep .btn-dialog-cancel.mat-mdc-button:not(:disabled) { color: #374151 !important; }
+:host ::ng-deep .btn-dialog-danger.mat-mdc-button:not(:disabled) { color: #ffffff !important; }

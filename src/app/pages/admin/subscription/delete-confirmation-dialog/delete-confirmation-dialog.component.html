@@ -1,7 +1,8 @@
-<h2 mat-dialog-title class="dialog-title">
-  <mat-icon class="warning-icon">warning</mat-icon>
-  Xác nhận Xóa
-</h2>
+<div mat-dialog-title class="dialog-title-bar">
+  <h2 class="dialog-title" tabindex="-1" cdkFocusInitial style="outline: none;">Xác nhận Xóa</h2>
+  <button type="button" class="dialog-close-btn" (click)="onCancel()" aria-label="Đóng">×</button>
+  
+</div>
 
 <mat-dialog-content>
   <div class="dialog-content">
@@ -9,7 +10,7 @@
       Bạn có chắc chắn muốn xóa bản nháp này không?
     </p>
     
-    <div class="subscription-info">
+    <div class="subscription-info info-box">
       <div class="info-row">
         <span class="label">Mã gói:</span>
         <span class="value"><code>{{ subscription.subscriptionCode }}</code></span>
@@ -31,12 +32,8 @@
   </div>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">
-    <mat-icon>close</mat-icon> Hủy
-  </button>
-  <button mat-raised-button color="warn" (click)="onConfirm()">
-    <mat-icon>delete</mat-icon> Xóa
-  </button>
+<mat-dialog-actions align="end" class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+  <button type="button" class="btn btn-secondary" (click)="onCancel()">Hủy</button>
+  <button type="button" class="btn btn-dialog-danger" (click)="onConfirm()">Xóa</button>
 </mat-dialog-actions>
 

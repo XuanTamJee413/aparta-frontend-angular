@@ -6,8 +6,9 @@
   border: 1px solid #e5e7eb;
   position: sticky;
   top: 2rem;
-  max-height: calc(100vh - 4rem);
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
+  height: auto;
 }
 
 .preview-header {
@@ -170,7 +171,6 @@
   .preview-card {
     position: relative;
     top: 0;
-    max-height: none;
   }
 }
 

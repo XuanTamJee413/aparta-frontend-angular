@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 export interface SubscriptionDto {
   subscriptionId: string;
   projectId: string;
+  projectName?: string; 
+  projectCode?: string;
   subscriptionCode: string;
   status: string; // "Draft", "Active", "Expired"
   amount: number;
@@ -32,8 +34,9 @@ export interface SubscriptionCreateOrUpdateDto {
 }
 
 export interface SubscriptionQueryParameters {
-  createdAtStart?: Date;
-  createdAtEnd?: Date;
+  fromDate?: Date;
+  toDate?: Date;
+  dateType?: string; // 'created' | 'payment' | 'expired' | 'start'
   status?: string; // "Draft", "Active", "Expired"
   skip?: number;
   take?: number;
@@ -58,27 +61,23 @@ export class SubscriptionService {
 
   constructor(private http: HttpClient) {}
 
+  private toLocalISOString(date: Date): string {
+    const copy = new Date(date);
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(copy.getTime() - tzOffset)).toISOString();
+    return localISOTime;
+  }
+
   getAllSubscriptions(query?: SubscriptionQueryParameters): Observable<ApiResponse<PaginatedResult<SubscriptionDto>>> {
     let params = new HttpParams();
-    
     if (query) {
-      if (query.createdAtStart) {
-        params = params.set('createdAtStart', query.createdAtStart.toISOString());
-      }
-      if (query.createdAtEnd) {
-        params = params.set('createdAtEnd', query.createdAtEnd.toISOString());
-      }
-      if (query.status) {
-        params = params.set('status', query.status);
-      }
-      if (query.skip !== undefined) {
-        params = params.set('skip', query.skip.toString());
-      }
-      if (query.take !== undefined) {
-        params = params.set('take', query.take.toString());
-      }
+      if (query.fromDate) params = params.set('fromDate', this.toLocalISOString(query.fromDate));
+      if (query.toDate) params = params.set('toDate', this.toLocalISOString(query.toDate));
+      if (query.dateType) params = params.set('dateType', query.dateType);
+      if (query.status) params = params.set('status', query.status);
+      if (query.skip !== undefined) params = params.set('skip', query.skip.toString());
+      if (query.take !== undefined) params = params.set('take', query.take.toString());
     }
-
     return this.http.get<ApiResponse<PaginatedResult<SubscriptionDto>>>(this.apiUrl, { params });
   }
 

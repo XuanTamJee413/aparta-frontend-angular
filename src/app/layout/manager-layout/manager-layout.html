@@ -9,11 +9,11 @@
     </mat-toolbar>
 
     <mat-nav-list (click)="closeSidenavOnMobile()">
-      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link" *ngIf="isManager$ | async">
+      <a mat-list-item routerLink="dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon>
         <span>Dashboard</span>
       </a>
-      <mat-divider *ngIf="isManager$ | async"></mat-divider>
+      <mat-divider></mat-divider>
       <h3 mat-subheader class="list-subheader">Quản lý</h3>
       <a mat-list-item routerLink="manage-apartment" routerLinkActive="active-link">
           <mat-icon>apartment</mat-icon>
@@ -21,7 +21,7 @@
       </a>
       <a mat-list-item routerLink="user-management" routerLinkActive="active-link"> 
         <mat-icon>group</mat-icon>
-        <span>Quản lý người dùng</span>
+        <span>Quản lý Tài khoản</span>
       </a>
       <a mat-list-item routerLink="manage-asset" routerLinkActive="active-link">
           <mat-icon>inventory_2</mat-icon>
@@ -117,10 +117,6 @@
       <a mat-list-item routerLink="profile" routerLinkActive="active-link">
         <mat-icon>person_outline</mat-icon>
         <span>Hồ sơ cá nhân</span>
-      </a>
-      <a mat-list-item routerLink="settings" routerLinkActive="active-link">
-        <mat-icon>settings_outline</mat-icon>
-        <span>Cài đặt</span>
       </a>
     </mat-nav-list>
   </mat-sidenav>

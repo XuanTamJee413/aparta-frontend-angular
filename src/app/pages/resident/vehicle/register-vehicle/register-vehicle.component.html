@@ -13,10 +13,38 @@
           type="text"
           class="form-control"
           formControlName="vehicleNumber"
-          placeholder="Ví dụ: 29-A1 123.45"
+          [placeholder]="vehiclePlaceholder"
         />
-        @if (form.controls.vehicleNumber.invalid && (form.controls.vehicleNumber.dirty || form.controls.vehicleNumber.touched)) {
-          <div class="form-error">Biển số xe là bắt buộc.</div>
+
+        @if (
+          (form.controls.vehicleNumber.invalid ||
+            form.errors?.['plateFormat'] ||
+            form.errors?.['bikePlateFormat']) &&
+          (form.controls.vehicleNumber.dirty || form.controls.vehicleNumber.touched)
+        ) {
+          <div class="form-error">
+            @if (form.controls.vehicleNumber.errors?.['required']) {
+              Biển số xe là bắt buộc.
+            } @else if (form.value.info === 'Xe đạp' && form.errors?.['bikePlateFormat']) {
+              Biển số/mã xe không đúng định dạng.
+              Với xe đạp, hãy nhập theo dạng:
+              <strong>{{ apartmentCode || 'MãCănHộ' }}-XX</strong>,
+              ví dụ:
+              <strong>{{ apartmentCode || 'TX201' }}-01</strong>.
+            } @else if (form.errors?.['plateFormat']) {
+              Biển số xe không đúng định dạng.
+              Định dạng đúng: <strong>XXY-XXXXX</strong>,
+              trong đó <strong>X</strong> là số (0–9),
+              <strong>Y</strong> là chữ cái (A–Z).
+              Ví dụ: <strong>29A-12345</strong>.
+            }
+          </div>
+        } @else if (form.value.info === 'Xe đạp') {
+          <div class="form-hint">
+            Với xe đạp, bạn có thể dùng
+            <strong>mã căn hộ của bạn kèm 2 số</strong>.
+
+          </div>
         }
       </div>
 
@@ -33,12 +61,20 @@
         }
       </div>
 
-      @if (success()) { <div class="alert-success">{{ success() }}</div> }
-      @if (error()) { <div class="alert-danger">{{ error() }}</div> }
+      @if (success()) {
+        <div class="alert-success">{{ success() }}</div>
+      }
+      @if (error()) {
+        <div class="alert-danger">{{ error() }}</div>
+      }
 
       <div class="form-actions">
         <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting()">
-          @if (submitting()) { <span>Đang gửi...</span> } @else { <span>Đăng ký</span> }
+          @if (submitting()) {
+            <span>Đang gửi...</span>
+          } @else {
+            <span>Đăng ký</span>
+          }
         </button>
       </div>
     </form>
@@ -83,7 +119,9 @@
                   </td>
                 </tr>
               } @empty {
-                <tr><td colspan="4" class="no-results">Bạn chưa đăng ký phương tiện nào.</td></tr>
+                <tr>
+                  <td colspan="4" class="no-results">Bạn chưa đăng ký phương tiện nào.</td>
+                </tr>
               }
             </tbody>
           </table>
