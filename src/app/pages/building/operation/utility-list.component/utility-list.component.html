@@ -30,6 +30,7 @@
         <tr>
           <th>Tên Tiện ích</th>
           <th>Vị trí</th>
+          <th>Giờ mở cửa</th>
           <th>Thời gian (kỳ)</th>
           <th>Trạng thái</th>
           <th>Hành động</th>
@@ -39,6 +40,12 @@
         <tr *ngFor="let utility of utilities">
           <td>{{ utility.name }}</td>
           <td>{{ utility.location }}</td>
+          <td>
+          <span *ngIf="utility.openTime && utility.closeTime">
+            {{ utility.openTime | slice:0:5 }} - {{ utility.closeTime | slice:0:5 }}
+          </span>
+          <span *ngIf="!utility.openTime" class="text-muted">24/7</span>
+        </td>
           <td>{{ utility.periodTime }}</td> 
           <td>
             <span class="status-badge status-{{ utility.status | lowercase }}">
@@ -47,7 +54,7 @@
           </td>
           <td class="action-cell">
             <button class="btn btn-edit" (click)="openEditModal(utility)">Sửa</button>
-            <button class="btn btn-delete" (click)="deleteUtility(utility.utilityId)">Xóa</button>
+            <!-- <button class="btn btn-delete" (click)="deleteUtility(utility.utilityId)">Xóa</button> -->
           </td>
         </tr>
         <tr *ngIf="utilities.length === 0" class="empty-row"> <td colspan="5">Không có tiện ích nào.</td> </tr>
@@ -103,6 +110,17 @@
         </small>
       </div>
       
+      <div class="form-row-group" style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="openTime">Giờ mở cửa</label>
+                <input id="openTime" type="time" formControlName="openTime">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="closeTime">Giờ đóng cửa</label>
+                <input id="closeTime" type="time" formControlName="closeTime">
+            </div>
+      </div>
+
       <div class="form-group">
         <label for="periodTime">Thời gian (kỳ)</label>
         <input id="periodTime" type="number" step="any" formControlName="periodTime">

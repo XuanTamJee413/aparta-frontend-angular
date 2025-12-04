@@ -10,6 +10,10 @@
       <h3>{{ u.name }}</h3>
       <p><strong>Vị trí:</strong> {{ u.location }}</p>
       <p><strong>Thời gian tối đa:</strong> {{ u.periodTime }} giờ/lần</p>
+      <p>
+        <strong>Giờ mở cửa:</strong> 
+        {{ u.openTime | slice:0:5 }} - {{ u.closeTime | slice:0:5 }}
+      </p>
       <button class="btn-book" (click)="openBookingModal(u)">Đặt Ngay</button>
     </div>
     
