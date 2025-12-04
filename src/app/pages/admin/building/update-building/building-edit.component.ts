@@ -111,7 +111,8 @@ export class BuildingEditComponent implements OnInit {
     this.projectService.getProjectById(projectId).subscribe({
       next: (res) => {
         if (res.succeeded && res.data) {
-          this.projectName = `${res.data.name} (${res.data.projectCode})`;
+          const status = res.data.isActive ? 'Hoạt động' : 'Đã dừng';
+          this.projectName = `${res.data.name} - ${res.data.projectCode} (${status})`;
         } else {
           this.projectName = 'Không xác định';
         }
