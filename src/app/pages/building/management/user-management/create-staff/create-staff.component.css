@@ -1,0 +1,33 @@
+.dialog-content {
+  padding-top: 10px;
+  min-width: 500px;
+  overflow-y: visible; /* Fix lỗi bị cắt shadow của material select */
+}
+
+.staff-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.col {
+  flex: 1;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 600px) {
+  .dialog-content {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

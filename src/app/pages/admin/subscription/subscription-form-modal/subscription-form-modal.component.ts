@@ -1,6 +1,8 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,6 +13,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { 
   SubscriptionService, 
   SubscriptionDto, 
@@ -23,6 +26,7 @@ import { ProjectService, ProjectDto } from '../../../../services/admin/project.s
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -33,7 +37,8 @@ import { ProjectService, ProjectDto } from '../../../../services/admin/project.s
     MatNativeDateModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatAutocompleteModule
   ],
   templateUrl: './subscription-form-modal.component.html',
   styleUrls: ['./subscription-form-modal.component.css']
@@ -41,6 +46,8 @@ import { ProjectService, ProjectDto } from '../../../../services/admin/project.s
 export class SubscriptionFormModalComponent implements OnInit {
   subscriptionForm: FormGroup;
   projects: ProjectDto[] = [];
+  projectSearchControl!: FormControl;
+  filteredProjects$!: Observable<ProjectDto[]>;
   isSubmitting = false;
   isLoadingProjects = false;
   mode: 'create' | 'edit' | 'view' = 'create';
@@ -62,6 +69,7 @@ export class SubscriptionFormModalComponent implements OnInit {
   ) {
     this.mode = data.mode;
     this.subscription = data.subscription;
+    this.projectSearchControl = this.fb.control('');
 
     this.subscriptionForm = this.fb.group({
       projectId: [{ value: '', disabled: this.mode === 'edit' || this.mode === 'view' }, [Validators.required]],
@@ -78,6 +86,15 @@ export class SubscriptionFormModalComponent implements OnInit {
   ngOnInit(): void {
     this.loadProjects();
     
+    // Setup autocomplete filter
+    this.filteredProjects$ = this.projectSearchControl.valueChanges.pipe(
+      startWith(''),
+      map((value: string | ProjectDto | null) => {
+        const name = typeof value === 'string' ? value : (value as ProjectDto)?.name;
+        return name ? this._filterProjects(name as string) : this.projects.slice();
+      })
+    );
+    
     if (this.subscription && (this.mode === 'edit' || this.mode === 'view')) {
       this.subscriptionForm.patchValue({
         projectId: this.subscription.projectId,
@@ -86,13 +103,24 @@ export class SubscriptionFormModalComponent implements OnInit {
         amount: this.subscription.amount,
         amountPaid: this.subscription.amountPaid,
         paymentMethod: this.subscription.paymentMethod,
-        paymentDate: this.subscription.paymentDate,
+        // Convert to yyyy-MM-dd string for native date input
+        paymentDate: this.formatDateForInput(this.subscription.paymentDate),
         paymentNote: this.subscription.paymentNote
       });
     }
 
     // Auto-suggest subscription code when project is selected
     this.setupSubscriptionCodeSuggestion();
+  }
+
+  private formatDateForInput(dateValue: any): string | null {
+    if (!dateValue) return null;
+    const d = typeof dateValue === 'string' || typeof dateValue === 'number' ? new Date(dateValue) : dateValue as Date;
+    if (isNaN(d.getTime())) return null;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private setupSubscriptionCodeSuggestion(): void {
@@ -131,11 +159,22 @@ export class SubscriptionFormModalComponent implements OnInit {
 
   loadProjects(): void {
     this.isLoadingProjects = true;
-    this.projectService.getAllProjects({ isActive: true }).subscribe({
+    this.projectService.getAllProjects({}).subscribe({
       next: (response) => {
         this.isLoadingProjects = false;
         if (response.succeeded && response.data) {
           this.projects = response.data;
+          
+          // Set initial value for search control if editing
+          if (this.subscription && this.subscription.projectId) {
+            const selectedProject = this.projects.find(p => p.projectId === this.subscription?.projectId);
+            if (selectedProject) {
+              this.projectSearchControl.setValue(selectedProject as any);
+            }
+          }
+          
+          // Trigger update
+          this.projectSearchControl.updateValueAndValidity({ emitEvent: true });
         }
       },
       error: (error) => {
@@ -146,10 +185,32 @@ export class SubscriptionFormModalComponent implements OnInit {
     });
   }
 
+  private _filterProjects(value: string): ProjectDto[] {
+    const filterValue = value.toLowerCase();
+    return this.projects.filter(project => 
+      (project.name && project.name.toLowerCase().includes(filterValue)) || 
+      (project.projectCode && project.projectCode.toLowerCase().includes(filterValue))
+    );
+  }
+
+  displayProjectFn = (project: ProjectDto): string => {
+    return project && project.name ? `${project.projectCode} - ${project.name}` : '';
+  }
+
+  onProjectSelected(event: any): void {
+    const selectedProject = event.option.value as ProjectDto;
+    this.subscriptionForm.patchValue({ projectId: selectedProject.projectId });
+    
+    if (selectedProject.projectCode) {
+      const suggestedCode = this.generateSubscriptionCode(selectedProject.projectCode);
+      this.subscriptionForm.patchValue({ subscriptionCode: suggestedCode });
+    }
+  }
+
   getTitle(): string {
     if (this.mode === 'view') return 'Xem Gia hạn Gói dịch vụ';
     if (this.mode === 'edit') return 'Chỉnh sửa Gia hạn Gói dịch vụ';
-    return 'Thêm mới Gia hạn Gói dịch vụ';
+    return 'Gia hạn mới Gói dịch vụ';
   }
 
   isFieldInvalid(fieldName: string): boolean {
@@ -252,7 +313,8 @@ export class SubscriptionFormModalComponent implements OnInit {
       amount: formValue.amount,
       amountPaid: formValue.amountPaid || undefined,
       paymentMethod: formValue.paymentMethod || undefined,
-      paymentDate: formValue.paymentDate || undefined,
+      // Convert yyyy-MM-dd string back to Date for API if needed
+      paymentDate: formValue.paymentDate ? new Date(formValue.paymentDate) : undefined,
       paymentNote: formValue.paymentNote || undefined,
       isApproved: isApproved
     };

@@ -1,9 +1,57 @@
-.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.role-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.role-items li{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #eee;border-radius:8px;padding:12px 16px}
-.info .name{font-weight:600}
-.meta{display:flex;gap:8px;margin-top:4px}
-.badge{padding:2px 8px;border-radius:999px;background:#e0e0e0;font-size:.75rem}
-.badge.active{background:#c8e6c9}
-.badge.system{background:#bbdefb}
-.actions button{margin-left:4px}
+/* Container & Card */
+.container { background-color: #f9fafb; min-height: 100vh; padding: 2rem; }
+.card { max-width: 1280px; margin: 0 auto; background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); padding: 2rem; }
+
+/* Header */
+header .header-row { display: flex; justify-content: space-between; align-items: center; }
+header h1 { font-size: 1.875rem; font-weight: 700; color: #1f2937; margin: 0; }
+header p { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
+
+/* Primary create button */
+.btn-primary { background-color: #4f46e5; color: #fff; font-weight: 600; padding: 0.625rem 1.25rem; border-radius: 0.5rem; border: none; display: inline-flex; align-items: center; cursor: pointer; transition: background-color 0.2s; }
+.btn-primary:hover { background-color: #4338ca; }
+.btn-primary .btn-icon { height: 1.25rem; width: 1.25rem; margin-right: 0.5rem; }
+
+/* Sort controls */
+.sort-controls { margin-top: 1.25rem; }
+.sort-controls .group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sort-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-right: 4px; }
+.btn-sort { background: #ffffff; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: background-color .15s, border-color .15s; }
+.btn-sort:hover:not(:disabled) { background-color: #f3f4f6; }
+.btn-sort:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Role list */
+.role-items { list-style: none; margin: 1.25rem 0 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.role-item { display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.875rem 1.25rem; }
+.role-item:hover { background: #f9fafb; }
+.info { display: flex; flex-direction: column; }
+.info .name { font-weight: 600; font-size: 0.95rem; color: #111827; }
+.meta { display: flex; gap: 6px; margin-top: 4px; }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 8px; font-size: 0.65rem; font-weight: 500; border-radius: 9999px; letter-spacing: 0.02em; }
+.badge-system { background: #eef2ff; color: #4338ca; }
+.badge-custom { background: #e0f2fe; color: #075985; }
+.badge-active { background: #d1fae5; color: #065f46; }
+.badge-inactive { background: #fee2e2; color: #991b1b; }
+
+/* Actions */
+.actions { display: flex; align-items: center; gap: 8px; }
+.btn-action { background: #ffffff; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background-color .15s, border-color .15s; }
+.btn-action mat-icon { font-size: 18px; height: 18px; width: 18px; }
+.btn-action:hover:not(:disabled) { background: #f3f4f6; border-color: #9ca3af; }
+.btn-action:disabled { opacity: .45; cursor: not-allowed; }
+.btn-danger { color: #b91c1c; border-color: #fecaca; }
+.btn-danger:hover:not(:disabled) { background: #dc2626; border-color: #dc2626; color: #ffffff; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 2rem; font-size: 0.875rem; color: #6b7280; background: #ffffff; border: 1px dashed #d1d5db; border-radius: 0.5rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+	.container { padding: 1rem; }
+	.card { padding: 1rem; }
+	header .header-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
+	.role-item { flex-direction: column; align-items: stretch; gap: 10px; }
+	.actions { justify-content: flex-start; flex-wrap: wrap; }
+}

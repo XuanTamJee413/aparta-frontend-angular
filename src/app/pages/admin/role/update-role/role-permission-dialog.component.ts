@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { finalize } from 'rxjs/operators';
 import { Permission, Role, RoleService } from '../../../../services/admin/role.service';
 
@@ -13,7 +14,7 @@ interface GroupedPermission {
 @Component({
   selector: 'app-role-permission-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatSlideToggleModule],
   templateUrl: './role-permission-dialog.component.html',
   styleUrls: ['./role-permission-dialog.component.css']
 })

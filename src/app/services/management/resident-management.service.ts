@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> {
   succeeded: boolean;
@@ -53,8 +54,8 @@ export interface ApartmentMemberUpdateDto {
   providedIn: 'root'
 })
 export class ResidentManagementService {
-  private apiUrl = 'http://localhost:5175/api/ApartmentMembers';
-  private apartmentApiUrl = 'http://localhost:5175/api/Apartments';
+  private apiUrl = `${environment.apiUrl}/apartmentmembers`;
+  private apartmentApiUrl = `${environment.apiUrl}/apartments`;
 
   constructor(private http: HttpClient) {}
 
@@ -81,8 +82,36 @@ export class ResidentManagementService {
     return this.http.get<ApiResponse<ApartmentMember[]>>(this.apiUrl, { params });
   }
 
+  getMyMembers(query: ApartmentMemberQueryParameters): Observable<ApiResponse<ApartmentMember[]>> {
+    let params = new HttpParams();
+
+    if (query.searchTerm) {
+      params = params.append('SearchTerm', query.searchTerm);
+    }
+    if (query.isOwned !== null && query.isOwned !== undefined) {
+      params = params.append('IsOwned', query.isOwned);
+    }
+    if (query.sortBy) {
+      params = params.append('SortBy', query.sortBy);
+    }
+    if (query.sortOrder) {
+      params = params.append('SortOrder', query.sortOrder);
+    }
+
+    return this.http.get<ApiResponse<ApartmentMember[]>>(
+      `${this.apiUrl}/my-buildings`,
+      { params }
+    );
+  }
+
   getApartments(): Observable<ApiResponse<Apartment[]>> {
     return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
+  }
+
+  getMyApartments(): Observable<ApiResponse<Apartment[]>> {
+    return this.http.get<ApiResponse<Apartment[]>>(
+      `${this.apartmentApiUrl}/my-buildings`
+    );
   }
 
   getApartmentById(id: string): Observable<Apartment> {
@@ -92,7 +121,8 @@ export class ResidentManagementService {
   updateMember(id: string, payload: ApartmentMemberUpdateDto): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}`, payload);
   }
-    updateMemberAvatar(id: string, file: File): Observable<ApiResponse<string>> {
+
+  updateMemberAvatar(id: string, file: File): Observable<ApiResponse<string>> {
     const formData = new FormData();
     formData.append('faceImageFile', file);
 
@@ -101,5 +131,4 @@ export class ResidentManagementService {
       formData
     );
   }
-
 }

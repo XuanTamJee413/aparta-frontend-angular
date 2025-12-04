@@ -58,7 +58,7 @@
               <th (click)="onSort('updatedAt')" class="sortable">
                 Cập nhật <span class="sort-icon">{{ getSortIcon('updatedAt') }}</span>
               </th>
-              <th>Hành động</th>
+              <th class="text-center">Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -72,9 +72,11 @@
                   {{ p.address ? p.address + ', ' : '' }}{{ p.city || '-' }}
                 </div>
               </td>
-              <td>
-                <span class="badge bg-info text-dark">{{ p.numBuildings }} Tòa</span>
-                <span class="badge bg-secondary ms-1">{{ p.numApartments }} Căn</span>
+              <td class="scale-cell">
+                <div class="badge-row">
+                  <span class="badge-compact badge-tower">{{ p.numBuildings }} Tòa</span>
+                  <span class="badge-compact badge-unit">{{ p.numApartments }} Căn</span>
+                </div>
               </td>
               <td class="text-nowrap status-cell">
                 <span class="status-badge" [ngClass]="p.isActive ? 'status-available' : 'status-unavailable'">

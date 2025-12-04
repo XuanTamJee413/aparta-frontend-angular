@@ -21,9 +21,14 @@
       <select id="filter-status" name="statusFilter" class="form-select filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
         <option value="">-- Tất cả Trạng thái --</option>
         <option value="true">Hoạt động</option>
-        <option value="false">Ngừng hoạt động</option>
+        <option value="false">Đã dừng</option>
       </select>
-      <a routerLink="/admin/building/create" class="btn-add-new">+ Thêm Tòa Nhà</a>
+      <a routerLink="/admin/building/create" class="btn-primary">
+        <svg class="create-btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Tạo Tòa nhà mới
+      </a>
     </div>
 
     <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
@@ -37,11 +42,11 @@
             <tr>
               <th (click)="onSort('buildingCode')" class="sortable">Mã Tòa <span class="sort-icon">{{ getSortIcon('buildingCode') }}</span></th>
               <th (click)="onSort('name')" class="sortable">Tên Tòa nhà <span class="sort-icon">{{ getSortIcon('name') }}</span></th>
-              <th (click)="onSort('totalFloors')" class="sortable">Cấu trúc <span class="sort-icon">{{ getSortIcon('totalFloors') }}</span></th>
-              <th (click)="onSort('handoverDate')" class="sortable">Bảo hành <span class="sort-icon">{{ getSortIcon('handoverDate') }}</span></th>
-              <th>Chốt số (Ngày)</th>
+              <th (click)="onSort('totalFloors')" class="sortable text-center">Cấu trúc <span class="sort-icon">{{ getSortIcon('totalFloors') }}</span></th>
+              <th (click)="onSort('handoverDate')" class="sortable text-center">Bảo hành <span class="sort-icon">{{ getSortIcon('handoverDate') }}</span></th>
+              <th class="text-center">Chốt số (Ngày)</th>
               <th>Trạng thái</th>
-              <th>Hành động</th>
+              <th class="text-center">Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -51,9 +56,11 @@
                 <div style="font-weight: 600;">{{ b.name }}</div>
                 <div style="font-size: 0.8rem; color: #666;">{{ b.numApartments }} căn - {{ b.numResidents }} dân</div>
               </td>
-              <td>
-                <span style="background: #e0f2f1; color: #00695c; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">{{ b.totalFloors }} Tầng</span>
-                <span style="background: #eceff1; color: #455a64; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 4px;">{{ b.totalBasements }} Hầm</span>
+              <td class="structure-cell">
+                <div class="badge-row">
+                  <span class="badge-compact badge-floor">{{ b.totalFloors }} Tầng</span>
+                  <span class="badge-compact badge-basement">{{ b.totalBasements }} Hầm</span>
+                </div>
               </td>
               <td>
                 <span [class.status-available]="b.warrantyStatus === 'Còn bảo hành'" [class.status-unavailable]="b.warrantyStatus !== 'Còn bảo hành'" class="status-badge">
@@ -63,7 +70,7 @@
                   BG: {{ b.handoverDate | date:'dd/MM/yyyy' }}
                 </div>
               </td>
-              <td>
+              <td class="text-center">
                 <span style="color: #4f46e5; font-weight: bold;">{{ b.readingWindowStart }}</span> 
                 <span style="margin: 0 4px;">→</span> 
                 <span style="color: #4f46e5; font-weight: bold;">{{ b.readingWindowEnd }}</span>

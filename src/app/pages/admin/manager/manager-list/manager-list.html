@@ -58,9 +58,9 @@
               <th>Email</th>
               <th>Số điện thoại</th>
               <th>Avatar</th>
-              <th>Building quản lý</th>
+              <th>Trực thuộc</th>
               <th>Trạng thái</th>
-              <th>Thao tác</th>
+              <th>Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -93,15 +93,15 @@
                 <span class="status-badge"
                   [ngClass]="{
                     'status-active': manager.status && manager.status.toLowerCase() === 'active',
-                    'status-inactive': manager.status && manager.status.toLowerCase() !== 'active'
+                    'status-inactive': !manager.status || manager.status.toLowerCase() !== 'active'
                   }">
                   <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
                     <circle cx="4" cy="4" r="3" />
                   </svg>
-                  {{ manager.status }}
+                  {{ getStatusLabel(manager.status) }}
                 </span>
               </td>
-              <td class="actions actions-cell">
+              <td>
                 <button class="action-edit-btn" [routerLink]="['/admin/manager/edit', manager.userId]">
                   <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />

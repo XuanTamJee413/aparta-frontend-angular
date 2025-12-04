@@ -26,7 +26,7 @@ export const ADMIN_ROUTES: Routes = [
 
   {
     path: 'settings', // URL: /admin/settings
-    loadComponent: () => import('../common/settings.component')
+    loadComponent: () => import('../common/settings/settings.component')
       .then(m => m.SettingsComponent),
     title: 'Settings'
   },
@@ -38,8 +38,15 @@ export const ADMIN_ROUTES: Routes = [
   },
 
   {
+    path: 'dashboard',
+    loadComponent: () => import('./dashboard/admin-dashboard.component')
+      .then(m => m.AdminDashboardComponent),
+    title: 'Admin Dashboard'
+  },
+  
+  {
     path: '', 
-    redirectTo: 'project/list', 
+    redirectTo: 'dashboard', 
     pathMatch: 'full'
   }
 ];

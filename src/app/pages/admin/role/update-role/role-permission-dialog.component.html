@@ -1,31 +1,27 @@
-<h2 mat-dialog-title>Phân quyền: {{ (role() || {}).roleName }}</h2>
-<div mat-dialog-content>
+<div mat-dialog-title class="dialog-title-bar">
+  <h2 class="dialog-title" tabindex="-1" cdkFocusInitial style="outline: none;">Phân quyền: {{ (role() || {}).roleName }}</h2>
+  <button type="button" class="dialog-close-btn" (click)="close()" aria-label="Đóng">×</button>
+</div>
+<div mat-dialog-content class="dialog-content">
   <div *ngIf="loading(); else contentTpl">Đang tải...</div>
   <ng-template #contentTpl>
     <div class="groups">
       <div class="group" *ngFor="let g of groups()">
-        <h3>{{ g.groupName }}</h3>
+        <div class="group-header">{{ g.groupName }}</div>
         <div class="perm" *ngFor="let p of g.permissions">
-          <label>
-            <!-- <input type="checkbox"
-                   [checked]="selected().has(p.permissionId)"
-                   (change)="toggle(p.permissionId, $event.target.checked)"
-                   [disabled]="role()?.isSystemDefined"
-            /> -->
-            <input type="checkbox"
-                   [checked]="selected().has(p.permissionId)"
-                   (change)="toggle(p.permissionId, $event.target.checked)"
-            />
-            <span>{{ p.name }}</span>
-          </label>
+          <div class="perm-name">{{ p.name }}</div>
+          <mat-slide-toggle
+            color="primary"
+            [checked]="selected().has(p.permissionId)"
+            (change)="toggle(p.permissionId, $event.checked)">
+          </mat-slide-toggle>
         </div>
       </div>
     </div>
   </ng-template>
 </div>
-<div mat-dialog-actions align="end">
-  <button mat-button (click)="close()">Đóng</button>
-  <!-- <button mat-button color="primary" [disabled]="role()?.isSystemDefined || saving()" (click)="save()">Lưu</button> -->
-  <button mat-button color="primary" [disabled]="saving()" (click)="save()">Lưu</button>
+<div mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" class="btn-dialog-cancel" (click)="close()">Đóng</button>
+  <button mat-button type="button" class="btn-dialog-confirm" color="primary" [disabled]="saving()" (click)="save()">Lưu</button>
 </div>
 <!-- Tạm thời tắt -->

@@ -79,7 +79,7 @@ export class LoginComponent {
 
   private navigateByRole(): void {
     if (this.auth.hasRole('custom')) {
-      this.router.navigateByUrl('/manager/manage-apartment');
+      this.router.navigateByUrl('/manager/dashboard');
       return;
     }
     if (this.auth.hasRole('admin')) {
@@ -91,7 +91,7 @@ export class LoginComponent {
       return;
     }
     if (this.auth.hasRole('staff')) {
-      this.router.navigateByUrl('/manager/manage-apartment');
+      this.router.navigateByUrl('/manager/dashboard');
       return;
     }
     // Missing/unknown role

@@ -1,130 +1,140 @@
-<h2 mat-dialog-title>{{ getTitle() }}</h2>
+<div mat-dialog-title>
+  <h2 class="dialog-title" tabindex="-1" cdkFocusInitial style="outline: none;">{{ getTitle() }}</h2>
+  <p class="dialog-subtitle text-muted small">Nhập thông tin gói dịch vụ và thanh toán</p>
+</div>
 
 <mat-dialog-content>
   <form [formGroup]="subscriptionForm" class="subscription-form">
+    <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Thông tin gói</h5>
     <!-- Project Dropdown -->
-    <mat-form-field appearance="outline" class="w-100">
-      <mat-label>Dự án *</mat-label>
-      <mat-select formControlName="projectId">
-        <mat-option *ngFor="let project of projects" [value]="project.projectId">
-          {{ project.projectCode }} - {{ project.name }}
-        </mat-option>
-      </mat-select>
-      <mat-icon matSuffix>business</mat-icon>
-      <mat-error *ngIf="isFieldInvalid('projectId')">
+    <div class="mb-3">
+      <label class="form-label fw-bold">Dự án <span class="text-danger">*</span></label>
+      
+      <div class="select2-wrapper" [class.disabled]="mode === 'edit' || mode === 'view'">
+        <input type="text" 
+               class="form-control select2-input" 
+               placeholder="Nhập mã hoặc tên dự án để tìm kiếm..."
+               [formControl]="projectSearchControl" 
+               [matAutocomplete]="auto"
+               [readonly]="mode === 'edit' || mode === 'view'">
+        
+        <mat-icon class="select2-arrow">arrow_drop_down</mat-icon>
+
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProjectFn" (optionSelected)="onProjectSelected($event)">
+          <mat-option *ngIf="(filteredProjects$ | async)?.length === 0" disabled>
+            <span class="text-muted small">Không tìm thấy dự án nào</span>
+          </mat-option>
+
+          <mat-optgroup label="Hoạt động">
+            <ng-container *ngFor="let project of (filteredProjects$ | async)">
+              <mat-option *ngIf="project.isActive" [value]="project">
+                <span class="fw-medium">{{ project.projectCode }}</span> - {{ project.name }}
+              </mat-option>
+            </ng-container>
+          </mat-optgroup>
+
+          <mat-optgroup label="Không hoạt động">
+             <ng-container *ngFor="let project of (filteredProjects$ | async)">
+              <mat-option *ngIf="!project.isActive" [value]="project" class="text-muted">
+                <span class="fw-medium">{{ project.projectCode }}</span> - {{ project.name }} (Đã khóa)
+              </mat-option>
+            </ng-container>
+          </mat-optgroup>
+        </mat-autocomplete>
+      </div>
+
+      <div *ngIf="isFieldInvalid('projectId')" class="text-danger small mt-1">
         {{ getErrorMessage('projectId') }}
-      </mat-error>
-      <mat-hint *ngIf="mode === 'edit'">Không thể thay đổi dự án khi chỉnh sửa</mat-hint>
-    </mat-form-field>
+      </div>
+      <div *ngIf="mode === 'edit'" class="form-text text-muted small">Không thể thay đổi dự án khi chỉnh sửa</div>
+    </div>
 
     <!-- Subscription Code -->
-    <mat-form-field appearance="outline" class="w-100">
-      <mat-label>Mã gói *</mat-label>
-      <input matInput formControlName="subscriptionCode" placeholder="VD: SUB001">
-      <mat-icon matSuffix>confirmation_number</mat-icon>
-      <mat-hint *ngIf="mode === 'create'">Mã tự động tạo khi chọn/đổi dự án. Bạn có thể sửa lại nếu muốn.</mat-hint>
-      <mat-error *ngIf="isFieldInvalid('subscriptionCode')">
+    <div class="mb-3">
+      <label class="form-label">Mã gói <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" formControlName="subscriptionCode" placeholder="VD: SUB001">
+      <div *ngIf="mode === 'create'" class="form-text text-muted small">Mã tự động tạo khi chọn/đổi dự án. Bạn có thể sửa lại nếu muốn.</div>
+      <div *ngIf="isFieldInvalid('subscriptionCode')" class="text-danger small mt-1">
         {{ getErrorMessage('subscriptionCode') }}
-      </mat-error>
-    </mat-form-field>
+      </div>
+    </div>
 
-    <div class="row g-3">
+    <div class="row">
       <!-- Number of Months -->
-      <div class="col-md-6">
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Số tháng *</mat-label>
-          <input matInput type="number" formControlName="numMonths" min="1" placeholder="1">
-          <mat-icon matSuffix>calendar_today</mat-icon>
-          <mat-error *ngIf="isFieldInvalid('numMonths')">
-            {{ getErrorMessage('numMonths') }}
-          </mat-error>
-        </mat-form-field>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Số tháng <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" formControlName="numMonths" min="1" placeholder="1">
+        <div *ngIf="isFieldInvalid('numMonths')" class="text-danger small mt-1">
+          {{ getErrorMessage('numMonths') }}
+        </div>
       </div>
 
       <!-- Amount -->
-      <div class="col-md-6">
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Giá gốc gói (VNĐ) *</mat-label>
-          <input matInput type="number" formControlName="amount" min="0" placeholder="0">
-          <mat-icon matSuffix>attach_money</mat-icon>
-          <mat-error *ngIf="isFieldInvalid('amount')">
-            {{ getErrorMessage('amount') }}
-          </mat-error>
-        </mat-form-field>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Giá gốc gói (VNĐ) <span class="text-danger">*</span></label>
+        <input type="number" class="form-control" formControlName="amount" min="0" placeholder="0">
+        <div *ngIf="isFieldInvalid('amount')" class="text-danger small mt-1">
+          {{ getErrorMessage('amount') }}
+        </div>
       </div>
     </div>
 
     <!-- Payment Information Section -->
-    <div class="payment-section">
-      <h4 class="section-title">Thông tin thanh toán</h4>
-      <p class="section-subtitle">Các thông tin này bắt buộc khi "Lưu & Duyệt"</p>
+    <div>
+      <h5 class="mb-3 mt-4 text-primary border-bottom pb-2">Thông tin thanh toán</h5>
+      <p class="text-muted small">Các thông tin này bắt buộc khi Lưu & Duyệt</p>
 
-      <div class="row g-3">
+      <div class="row">
         <!-- Amount Paid -->
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Số tiền đã thanh toán (VNĐ)</mat-label>
-            <input matInput type="number" formControlName="amountPaid" min="0" placeholder="0">
-            <mat-icon matSuffix>payment</mat-icon>
-            <mat-error *ngIf="isFieldInvalid('amountPaid')">
-              {{ getErrorMessage('amountPaid') }}
-            </mat-error>
-          </mat-form-field>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Số tiền đã thanh toán (VNĐ) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" formControlName="amountPaid" min="0" placeholder="0">
+          <div *ngIf="isFieldInvalid('amountPaid')" class="text-danger small mt-1">
+            {{ getErrorMessage('amountPaid') }}
+          </div>
         </div>
 
         <!-- Payment Date -->
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Ngày thanh toán</mat-label>
-            <input matInput [matDatepicker]="paymentPicker" formControlName="paymentDate">
-            <mat-datepicker-toggle matSuffix [for]="paymentPicker"></mat-datepicker-toggle>
-            <mat-datepicker #paymentPicker></mat-datepicker>
-            <mat-error *ngIf="isFieldInvalid('paymentDate')">
-              {{ getErrorMessage('paymentDate') }}
-            </mat-error>
-          </mat-form-field>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Ngày thanh toán <span class="text-danger">*</span></label>
+          <input type="date" class="form-control" formControlName="paymentDate">
+          <div *ngIf="isFieldInvalid('paymentDate')" class="text-danger small mt-1">
+            {{ getErrorMessage('paymentDate') }}
+          </div>
         </div>
       </div>
 
       <!-- Payment Method -->
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Phương thức thanh toán</mat-label>
-        <mat-select formControlName="paymentMethod">
-          <mat-option *ngFor="let method of paymentMethodOptions" [value]="method.value">
+      <div class="mb-3">
+        <label class="form-label">Phương thức thanh toán <span class="text-danger">*</span></label>
+        <select class="form-control" formControlName="paymentMethod">
+          <option [ngValue]="''">Chọn phương thức</option>
+          <option *ngFor="let method of paymentMethodOptions" [ngValue]="method.value">
             {{ method.label }}
-          </mat-option>
-        </mat-select>
-        <mat-icon matSuffix>account_balance_wallet</mat-icon>
-        <mat-error *ngIf="isFieldInvalid('paymentMethod')">
+          </option>
+        </select>
+        <div *ngIf="isFieldInvalid('paymentMethod')" class="text-danger small mt-1">
           {{ getErrorMessage('paymentMethod') }}
-        </mat-error>
-      </mat-form-field>
+        </div>
+      </div>
 
       <!-- Payment Note -->
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Ghi chú thanh toán</mat-label>
-        <textarea matInput formControlName="paymentNote" rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
-        <mat-icon matSuffix>note</mat-icon>
-      </mat-form-field>
+      <div class="mb-3">
+        <label class="form-label">Ghi chú thanh toán</label>
+        <textarea class="form-control" formControlName="paymentNote" rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
+      </div>
     </div>
   </form>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
-    <mat-icon>close</mat-icon> Hủy
-  </button>
+<mat-dialog-actions align="end" class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+  <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSubmitting">Hủy</button>
 
-  <div *ngIf="mode !== 'view'">
-    <button mat-stroked-button color="primary" (click)="onSaveDraft()" [disabled]="isSubmitting">
-      <mat-icon>save</mat-icon> Lưu Nháp
-    </button>
-    
-    <button mat-raised-button color="primary" (click)="onSaveAndApprove()" [disabled]="isSubmitting">
-      <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
-      <mat-icon *ngIf="!isSubmitting">check_circle</mat-icon>
+  <ng-container *ngIf="mode !== 'view'">
+    <button type="button" class="btn btn-outline-primary" (click)="onSaveDraft()" [disabled]="isSubmitting">Lưu Nháp</button>
+    <button type="button" class="btn btn-primary" (click)="onSaveAndApprove()" [disabled]="isSubmitting">
       {{ isSubmitting ? 'Đang xử lý...' : 'Lưu & Duyệt' }}
     </button>
-  </div>
+  </ng-container>
 </mat-dialog-actions>
 

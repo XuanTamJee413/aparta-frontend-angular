@@ -1,11 +1,24 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../../../services/auth.service';
-import { Vehicle, VehicleCreateDto, VehicleQueryParameters, VehicleService } from '../../../../services/operation/vehicle.service';
+import {
+  Vehicle,
+  VehicleCreateDto,
+  VehicleQueryParameters,
+  VehicleService,
+  Apartment
+} from '../../../../services/operation/vehicle.service';
 
 @Component({
   selector: 'app-register-vehicle',
@@ -27,6 +40,7 @@ export class RegisterVehicle implements OnInit {
   success = signal<string | null>(null);
 
   apartmentId: string | undefined = this.authService.user()?.apartment_id;
+  apartmentCode: string | null = null;
 
   myVehicles = signal<Vehicle[]>([]);
   isLoadingList = signal(false);
@@ -36,13 +50,71 @@ export class RegisterVehicle implements OnInit {
     info: ['', [Validators.required]]
   });
 
+  get vehiclePlaceholder(): string {
+    const type = this.form.value.info;
+    if (type === 'Xe đạp') {
+      const code = this.apartmentCode ?? 'MãCănHộ';
+      return `Ví dụ: ${code}-01 (xe đạp: Mã căn hộ của bạn -2 số)`;
+    }
+    return 'Ví dụ: 29A-12345';
+  }
+
   ngOnInit(): void {
     if (!this.apartmentId) {
-      this.error.set('Không tìm thấy thông tin căn hộ. Vui lòng đăng nhập lại bằng tài khoản cư dân.');
+      this.error.set(
+        'Không tìm thấy thông tin căn hộ. Vui lòng đăng nhập lại bằng tài khoản cư dân.'
+      );
       this.form.disable();
     } else {
+      this.loadApartmentInfo();
       this.loadMyVehicles();
     }
+
+    this.form.setValidators(this.vehiclePlateValidator());
+  }
+
+  private vehiclePlateValidator(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const type = group.get('info')?.value as string | null;
+      const raw = ((group.get('vehicleNumber')?.value as string) || '').trim();
+
+      if (!raw || !type) {
+        return null;
+      }
+
+      if (type === 'Xe đạp') {
+        if (!this.apartmentCode) {
+          return null;
+        }
+        const bikeRegex = new RegExp(`^${this.apartmentCode}-\\d{2}$`);
+        if (!bikeRegex.test(raw)) {
+          return { bikePlateFormat: true };
+        }
+        return null;
+      }
+
+      const otherRegex = /^\d{2}[A-Za-z]-\d{5}$/;
+      if (!otherRegex.test(raw)) {
+        return { plateFormat: true };
+      }
+
+      return null;
+    };
+  }
+
+  loadApartmentInfo(): void {
+    if (!this.apartmentId) return;
+
+    this.vehicleService.getApartmentById(this.apartmentId).subscribe({
+      next: (apt: Apartment) => {
+        this.apartmentCode = apt.code;
+        this.form.updateValueAndValidity();
+      },
+      error: (err) => {
+        console.error('Không lấy được thông tin căn hộ:', err);
+        this.apartmentCode = null;
+      }
+    });
   }
 
   loadMyVehicles(): void {
@@ -84,10 +156,34 @@ export class RegisterVehicle implements OnInit {
     this.error.set(null);
     this.success.set(null);
 
+    const vehicleNumberRaw = this.form.value.vehicleNumber!.trim();
+    const vehicleType = this.form.value.info!;
+
+    if (vehicleType === 'Xe đạp' && this.apartmentCode) {
+      const regex = new RegExp(`^${this.apartmentCode}-\\d{2}$`);
+      if (!regex.test(vehicleNumberRaw)) {
+        this.submitting.set(false);
+        this.error.set(
+          `Đối với xe đạp, biển số phải có dạng ${this.apartmentCode}-XX. ` +
+            `Ví dụ: ${this.apartmentCode}-01 (XX là 2 số tự chọn).`
+        );
+        return;
+      }
+    } else if (vehicleType !== 'Xe đạp') {
+      const otherRegex = /^\d{2}[A-Za-z]-\d{5}$/;
+      if (!otherRegex.test(vehicleNumberRaw)) {
+        this.submitting.set(false);
+        this.error.set(
+          'Biển số xe không đúng định dạng. Định dạng đúng: XXY-XXXXX. Ví dụ: 29A-12345.'
+        );
+        return;
+      }
+    }
+
     const payload: VehicleCreateDto = {
       apartmentId: this.apartmentId,
-      vehicleNumber: this.form.value.vehicleNumber!.trim(),
-      info: this.form.value.info!,
+      vehicleNumber: vehicleNumberRaw,
+      info: vehicleType,
       status: 'Chờ duyệt'
     };
 
@@ -113,7 +209,6 @@ export class RegisterVehicle implements OnInit {
         this.success.set(null);
         console.error('Lỗi khi đăng ký xe:', err);
       }
-
     });
   }
 }
