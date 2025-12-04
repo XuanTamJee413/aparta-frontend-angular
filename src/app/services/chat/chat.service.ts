@@ -5,11 +5,24 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 
+export interface ApiResponse<T> {
+    succeeded: boolean;
+    message: string;
+    data: T;
+}
+
+export interface PagedList<T> {
+    items: T[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+}
 export interface PartnerDto {
     userId: string;
     fullName: string;
     avatarUrl: string | null;
     role: string;
+    apartmentCode?: string;
 }
 export interface InitiateInteractionDto {
     interactionId: string;
@@ -115,13 +128,13 @@ export class ChatService {
         interactionId: string,
         pageNumber: number = 1,
         pageSize: number = 10
-    ): Observable<MessageDetailDto[]> {
+    ): Observable<ApiResponse<PagedList<MessageDetailDto>>> { // <--- Đổi kiểu trả về
 
         let params = new HttpParams()
             .set('pageNumber', pageNumber.toString())
             .set('pageSize', pageSize.toString());
 
-        return this.http.get<MessageDetailDto[]>(
+        return this.http.get<ApiResponse<PagedList<MessageDetailDto>>>( // <--- Đổi kiểu generic
             `${this.apiUrl}/interactions/${interactionId}/messages`,
             { params }
         );

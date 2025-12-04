@@ -1,5 +1,3 @@
-/* --- File: src/app/pages/building/management/user-management/user-management.component.ts --- */
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -20,7 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Đã import
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // Services & RXJS
 import { PagedList, UserAccountDto, UserManagementService, UserQueryParams } from '../../../../services/management/user-management.service';
@@ -49,7 +47,7 @@ import { CreateStaffComponent } from './create-staff/create-staff.component';
     MatInputModule,
     MatSelectModule,
     MatSortModule,
-    MatDialogModule // Cần thêm module này vào imports
+    MatDialogModule
   ],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.css']
@@ -102,7 +100,7 @@ export class UserManagementComponent implements OnInit {
   constructor(
     private userService: UserManagementService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog // [FIX] Đã thêm Inject Dialog
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -125,7 +123,6 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  // [FIX] Hàm loadData tổng quát (để gọi lại sau khi đóng dialog)
   loadData(): void {
     if (this.activeTab === 'staffs') {
       this.loadStaffs();
@@ -134,39 +131,37 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
-  openCreateStaffDialog() {
+  openStaffDialog(staff?: UserAccountDto) {
     const dialogRef = this.dialog.open(CreateStaffComponent, {
-      width: '600px',
+      width: '700px', // Tăng chiều rộng một chút
       disableClose: true,
-      autoFocus: false
+      autoFocus: false,
+      data: { staff: staff } // Truyền data sang dialog
     });
 
-    // [FIX] Thêm kiểu boolean cho result để tránh lỗi implicit any
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
-        this.snackBar.open('Thêm nhân viên thành công!', 'Đóng', { duration: 3000, panelClass: ['success-snackbar'] });
-        this.loadData(); // Reload lại dữ liệu
+        // Nếu trả về true nghĩa là có thay đổi -> reload data
+        this.loadData();
       }
     });
   }
 
-  // --- Xử lý Tabs ---
   setActiveTab(tab: 'staffs' | 'residents'): void {
     this.activeTab = tab;
-    if (tab === 'staffs' && this.staffs.length === 0) {
-      this.loadStaffs();
-    } else if (tab === 'residents' && this.residents.length === 0) {
-      this.loadResidents();
+    // Reset data if needed or just switch
+    if (tab === 'staffs') {
+        if (this.staffs.length === 0) this.loadStaffs();
+    } else {
+        if (this.residents.length === 0) this.loadResidents();
     }
   }
 
-  // --- Xử lý Search Input ---
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchSubject.next(input.value);
   }
 
-  // --- Xử lý Filter Status ---
   onStatusChange(): void {
     if (this.activeTab === 'staffs') {
       this.staffQueryParams.pageNumber = 1;
@@ -177,15 +172,17 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
-  // --- Xử lý Sort ---
   onSortChange(sortState: Sort): void {
+    // Chuyển đổi Sort Direction của Angular Material ('asc' | 'desc' | '') sang API
+    const direction = sortState.direction === '' ? undefined : sortState.direction;
+    
     if (this.activeTab === 'staffs') {
       this.staffQueryParams.sortColumn = sortState.active;
-      this.staffQueryParams.sortDirection = sortState.direction === '' ? undefined : sortState.direction;
+      this.staffQueryParams.sortDirection = direction;
       this.loadStaffs();
     } else {
       this.residentQueryParams.sortColumn = sortState.active;
-      this.residentQueryParams.sortDirection = sortState.direction === '' ? undefined : sortState.direction;
+      this.residentQueryParams.sortDirection = direction;
       this.loadResidents();
     }
   }
@@ -206,7 +203,7 @@ export class UserManagementComponent implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          this.snackBar.open('Lỗi hệ thống.', 'Đóng', { duration: 3000 });
+          this.snackBar.open('Lỗi hệ thống khi tải danh sách nhân viên.', 'Đóng', { duration: 3000 });
         }
       });
   }
@@ -226,12 +223,11 @@ export class UserManagementComponent implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          this.snackBar.open('Lỗi hệ thống.', 'Đóng', { duration: 3000 });
+          this.snackBar.open('Lỗi hệ thống khi tải danh sách cư dân.', 'Đóng', { duration: 3000 });
         }
       });
   }
 
-  // --- Pagination ---
   onStaffPageChange(pageIndex: number): void {
     this.staffQueryParams.pageNumber = pageIndex + 1;
     this.loadStaffs();
@@ -242,7 +238,6 @@ export class UserManagementComponent implements OnInit {
     this.loadResidents();
   }
   
-  // --- Toggle Status ---
   toggleStatus(user: UserAccountDto): void {
     const isCurrentlyActive = user.status.toLowerCase() === 'active';
     const newStatus = isCurrentlyActive ? 'Inactive' : 'Active';
@@ -252,15 +247,17 @@ export class UserManagementComponent implements OnInit {
     }
     
     this.isLoading = true;
-    this.userService.toggleUserStatus(user.userId, { status: newStatus as 'Active' | 'Inactive' })
+    // Gọi API với string status trực tiếp (Service sẽ đóng gói thành object)
+    this.userService.toggleUserStatus(user.userId, newStatus)
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (response) => {
           if (response.succeeded) {
-            user.status = newStatus.toLowerCase(); 
+            // Update UI
+            user.status = response.data.status; 
             this.snackBar.open('Cập nhật trạng thái thành công.', 'Đóng', { duration: 3000 });
           } else {
-            this.snackBar.open('Cập nhật thất bại.', 'Đóng', { duration: 3000 });
+            this.snackBar.open(response.message || 'Cập nhật thất bại.', 'Đóng', { duration: 3000 });
           }
         },
         error: () => this.snackBar.open('Lỗi kết nối.', 'Đóng', { duration: 3000 })
