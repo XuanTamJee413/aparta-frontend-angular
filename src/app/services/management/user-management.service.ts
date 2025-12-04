@@ -1,12 +1,9 @@
-/* --- File: src/app/services/user-management.service.ts (Đã sửa) --- */
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-// Import environment
 import { environment } from '../../../environments/environment';
 
-// [NOTE] Các Interfaces được giữ nguyên như bạn đã cung cấp
+// --- Interfaces ---
 export interface PagedList<T> {
   items: T[];
   pageNumber: number;
@@ -16,7 +13,14 @@ export interface PagedList<T> {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
-
+export interface StaffCreateDto {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  roleId: string;
+  staffCode?: string;
+}
 export interface UserAccountDto {
   userId: string;
   name: string;
@@ -35,7 +39,6 @@ export interface ApiResponse<T> {
   message: string;
   code: string;
   data: T;
-  totalRecords?: number;
 }
 
 export interface UserQueryParams {
@@ -46,15 +49,17 @@ export interface UserQueryParams {
   sortColumn?: string;
   sortDirection?: 'asc' | 'desc';
 }
-
-
+export interface RoleDto {
+  roleId: string;
+  roleName: string;
+  isSystemDefined?: boolean;
+  isActive?: boolean;
+}
 @Injectable({
   providedIn: 'root'
 })
 export class UserManagementService {
-  // FIX: Sử dụng environment.apiUrl để tạo URL
   private apiUrl = environment.apiUrl + '/UserManagement';
-
   constructor(private http: HttpClient) { }
 
   private buildParams(params: UserQueryParams): HttpParams {
@@ -78,20 +83,31 @@ export class UserManagementService {
     return httpParams;
   }
 
-  // API lấy danh sách Nhân viên
+  // 1. Lấy danh sách Nhân viên
   getStaffAccounts(params: UserQueryParams): Observable<ApiResponse<PagedList<UserAccountDto>>> {
     const httpParams = this.buildParams(params);
     return this.http.get<ApiResponse<PagedList<UserAccountDto>>>(`${this.apiUrl}/staffs`, { params: httpParams });
   }
 
-  // API lấy danh sách Cư dân
+  // 2. Lấy danh sách Cư dân
   getResidentAccounts(params: UserQueryParams): Observable<ApiResponse<PagedList<UserAccountDto>>> {
     const httpParams = this.buildParams(params);
     return this.http.get<ApiResponse<PagedList<UserAccountDto>>>(`${this.apiUrl}/residents`, { params: httpParams });
   }
   
-  // API Toggle Status
+  // 3. Toggle Status
   toggleUserStatus(userId: string, status: { status: 'Active' | 'Inactive' }): Observable<ApiResponse<UserAccountDto>> {
     return this.http.put<ApiResponse<UserAccountDto>>(`${this.apiUrl}/${userId}/status`, status);
+  }
+
+  // 4. Tạo Staff Mới (Thêm hàm này)
+  // DTO StaffCreateDto nên được import hoặc định nghĩa. Ở đây dùng any cho linh hoạt nếu chưa có file model
+  // CREATE Staff
+  createStaffAccount(dto: StaffCreateDto): Observable<ApiResponse<UserAccountDto>> {
+    return this.http.post<ApiResponse<UserAccountDto>>(`${this.apiUrl}/staffs`, dto);
+  }
+  getAllRoles(): Observable<ApiResponse<RoleDto[]>> {
+    // Gọi vào: api/Roles (Method GET)
+    return this.http.get<ApiResponse<RoleDto[]>>(this.apiUrl);
   }
 }
