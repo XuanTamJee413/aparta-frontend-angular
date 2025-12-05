@@ -27,6 +27,48 @@ export class AuthService {
   readonly user = computed<JwtPayload | null>(() => this.decodeToken(this.tokenSig()));
   readonly isAuthenticated = computed(() => this.isTokenValid(this.tokenSig()));
 
+  constructor() {
+    // Listen for localStorage changes from other tabs
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === this.storageKey) {
+          // Token was changed/removed in another tab
+          const newToken = event.newValue;
+          this.tokenSig.set(newToken);
+          
+          if (newToken) {
+            const payload = this.decodeToken(newToken);
+            this.extractPermissionsFromPayload(payload);
+          } else {
+            this.userPermissions = [];
+          }
+        }
+      });
+
+      // Periodically check if token still exists in localStorage
+      setInterval(() => {
+        const currentInMemory = this.tokenSig();
+        const currentInStorage = localStorage.getItem(this.storageKey);
+        
+        // If token was removed from storage but still in memory
+        if (currentInMemory && !currentInStorage) {
+          this.tokenSig.set(null);
+          this.userPermissions = [];
+        }
+        // If token in storage doesn't match memory
+        else if (currentInStorage !== currentInMemory) {
+          this.tokenSig.set(currentInStorage);
+          if (currentInStorage) {
+            const payload = this.decodeToken(currentInStorage);
+            this.extractPermissionsFromPayload(payload);
+          } else {
+            this.userPermissions = [];
+          }
+        }
+      }, 1000); // Check every second
+    }
+  }
+
   setToken(token: string | null): void {
     if (token) {
       localStorage.setItem(this.storageKey, token);
@@ -52,7 +94,7 @@ export class AuthService {
     if (r === 'admin') return 'admin';
     if (r === 'resident') return 'resident';
 
-    if (r === 'manager') return 'custom';
+    if (r === 'manager') return 'staff';
 
     if (['finance_staff', 'maintenance_staff', 'operation_staff'].includes(r)) {
       return 'staff';
@@ -81,10 +123,12 @@ export class AuthService {
     if (!payload) return false;
 
     const normalized = this.normalizeRole(payload.role);
-    if (normalized === 'admin' || normalized === 'custom') {
+    // Only admin has full permission bypass
+    if (normalized === 'admin') {
       return true;
     }
 
+    // For custom/manager and staff, check actual permissions
     if (this.userPermissions.length > 0) {
       return this.userPermissions.includes(requiredPermission);
     }

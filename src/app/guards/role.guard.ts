@@ -17,7 +17,7 @@ export function roleCanMatch(expected: UserRole[] | UserRole): CanMatchFn {
     }
     const user = auth.user();
     const role = String(user?.role || '').trim().toLowerCase();
-    const redirect = role === 'admin' ? '/admin' : role === 'custom' ? '/manager' : role === 'staff' ? '/manager' : '/home';
+    const redirect = role === 'admin' ? '/admin' : role === 'custom' ? '/manager/manage-resident' : role === 'staff' ? '/manager' : '/home';
     return router.parseUrl(redirect);
   };
 }
@@ -48,7 +48,7 @@ export function roleCanActivate(expected: UserRole[] | UserRole): CanActivateFn 
         if (isAdmin) return router.parseUrl('/admin');
         if (isStaff) return router.parseUrl('/manager');
         if (isResident) return router.parseUrl('/home');
-        if (isCustom) return router.parseUrl('/manager');
+        if (isCustom) return router.parseUrl('/manager/manage-resident');
       }
       return true;
     }
@@ -58,9 +58,9 @@ export function roleCanActivate(expected: UserRole[] | UserRole): CanActivateFn 
       if (isAdmin) return router.parseUrl('/admin');
       if (isStaff) return router.parseUrl('/manager');
       if (isResident) return router.parseUrl('/home');
-      if (isCustom) return router.parseUrl('/manager');
+      if (isCustom) return router.parseUrl('/manager/manage-resident');
     }
-    return router.parseUrl('/not-found');
+    return router.parseUrl('/forbidden');
   };
 }
 

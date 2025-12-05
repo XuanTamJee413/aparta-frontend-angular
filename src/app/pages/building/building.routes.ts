@@ -113,5 +113,5 @@ export const MANAGER_ROUTES: Routes = [
   },
   // --- END OPERATION  ---
 
-  { path: '', redirectTo: 'manage-apartment', pathMatch: 'full' }
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
 ];
