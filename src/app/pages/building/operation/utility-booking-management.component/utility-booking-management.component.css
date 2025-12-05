@@ -1,3 +1,34 @@
+.btn-reject {
+  background-color: #dc3545; /* Màu đỏ */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reject:hover {
+  background-color: #bb2d3b;
+}
+
+/* Text expired */
+.text-expired {
+  color: #dc3545;
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+/* Header Dialog Reject */
+.bg-danger-light {
+  background-color: #fff5f5;
+  border-bottom: 1px solid #dc3545;
+}
+
+.bg-danger-light h3 {
+  color: #dc3545;
+}
+
 
 .card {
   background: #fff;
@@ -110,7 +141,10 @@ tr:hover {
 
 .action-cell {
   display: flex;
+  align-items: center;
   gap: 8px;
+  height: 100%;     /* full height của ô */
+  min-height: 89px; /* tùy chỉnh theo UI của bạn */
 }
 
 .empty-row td {
@@ -412,11 +446,10 @@ dialog::backdrop {
 /* Dùng chung với ServiceList / TaskList */
 .note-cell {
   max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.9rem;
-  color: #555;
+  white-space: normal; /* CHO PHÉP XUỐNG DÒNG */
+  word-wrap: break-word; /* TỰ NGẮT DÒNG NẾU TỪ QUÁ DÀI */
+  overflow: visible; /* KHÔNG ẨN NỮA */
+  text-overflow: initial; /* BỎ ... */
 }
 
 .text-danger {

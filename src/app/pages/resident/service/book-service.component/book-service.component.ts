@@ -1,12 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+
 import { ServiceDto } from '../../../../models/service.model';
+import { ServiceBookingCreateDto, ServiceBookingDto } from '../../../../models/service-booking.model';
+
 import { ServiceBookingService } from '../../../../services/resident/service-booking.service';
-import { ServiceBookingCreateDto } from '../../../../models/service-booking.model';
-
-// Import service và model
-
 
 @Component({
   selector: 'app-book-service',
@@ -18,13 +18,16 @@ import { ServiceBookingCreateDto } from '../../../../models/service-booking.mode
 export class BookServiceComponent implements OnInit {
 
   @ViewChild('bookingDialog') dialog!: ElementRef<HTMLDialogElement>;
-  
+
   availableServices: ServiceDto[] = [];
   bookingForm: FormGroup;
   selectedService: ServiceDto | null = null;
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+
+  myBookings: ServiceBookingDto[] = [];
+  isHistoryLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -38,6 +41,7 @@ export class BookServiceComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAvailableServices();
+    this.loadHistory();
   }
 
   loadAvailableServices(): void {
@@ -78,31 +82,60 @@ export class BookServiceComponent implements OnInit {
 
     this.isLoading = true;
     const formValue = this.bookingForm.value;
+    const serviceName = this.selectedService.name;
 
     const bookingDto: ServiceBookingCreateDto = {
       serviceId: this.selectedService.serviceId,
-      bookingDate: new Date(formValue.bookingDate).toISOString(), // Đảm bảo là ISO string
+      bookingDate: new Date(formValue.bookingDate).toISOString(),
       residentNote: formValue.residentNote
     };
 
     this.bookingService.createBooking(bookingDto).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.successMessage = `Successfully booked service: ${response.serviceName}!`;
-        setTimeout(() => this.closeDialog(), 2000); 
+        this.successMessage = `Đặt dịch vụ "${serviceName}" thành công!`;
+        
+        setTimeout(() => {
+          this.closeDialog();
+          this.successMessage = '';
+        }, 1500);
+
+        this.loadHistory();
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage = err.error?.message || 'Failed to create booking.';
+        this.errorMessage = err.error?.message || 'Lỗi khi đặt dịch vụ.';
         this.isLoading = false;
       }
     });
   }
 
-  // Helper lấy ISO string cho input datetime-local
+  loadHistory(): void {
+    this.isHistoryLoading = true;
+    this.bookingService.getMyBookings().subscribe({
+      next: (data) => {
+        this.myBookings = data;
+        this.isHistoryLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isHistoryLoading = false;
+      }
+    });
+  }
+
+  getStatusLabel(status: string): string {
+    const map: { [key: string]: string } = {
+      Pending: 'Chờ duyệt',
+      Approved: 'Đã duyệt',
+      Rejected: 'Bị từ chối',
+      Cancelled: 'Đã hủy'
+    };
+    return map[status] || status;
+  }
+
   private getNowISO(): string {
     const now = new Date();
-    // Trừ đi múi giờ (timezone offset) để hiển thị đúng giờ địa phương
     const offset = now.getTimezoneOffset() * 60000;
     const localDate = new Date(now.getTime() - offset);
     return localDate.toISOString().slice(0, 16); 
