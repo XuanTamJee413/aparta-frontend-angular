@@ -119,10 +119,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let reading of getFlatReadingsList(); let i = index"
-                [class.row-not-recorded]="reading.status === 'Chưa ghi'"
-                [class.row-locked]="reading.status === 'Đã ghi - Đã khóa'"
-                [class.row-open]="reading.status === 'Đã ghi - Mở'">
+            <tr *ngFor="let reading of getFlatReadingsList(); let i = index">
               <td class="font-medium" *ngIf="isFirstReadingInApartment(reading, i)">
                 {{ reading.apartmentCode }}
               </td>

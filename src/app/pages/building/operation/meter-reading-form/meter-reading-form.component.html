@@ -245,7 +245,7 @@
                           placeholder="Nhập chỉ số">
                       </div>
                       <div class="field-hint" *ngIf="getLatestReadingValue(service.feeType) !== null">
-                        Chỉ số trước: {{ getLatestReadingValue(service.feeType) }}
+                        Chỉ số tháng trước: {{ getLatestReadingValue(service.feeType) }}
                       </div>
                       <div class="field-error" *ngIf="getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.hasError('required') && getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.touched">
                         Vui lòng nhập chỉ số
@@ -262,14 +262,6 @@
           </div>
 
           <div class="form-actions">
-            <!-- Debug info -->
-            <div style="font-size: 12px; color: #666; margin-bottom: 8px; padding: 8px; background: #f0f0f0; border-radius: 4px;">
-              Form valid: {{ meterReadingForm.valid }}, 
-              Form invalid: {{ meterReadingForm.invalid }}, 
-              Saving: {{ saving }},
-              Readings count: {{ readingsFormArray.length }},
-              Services count: {{ services.length }}
-            </div>
             <button type="submit" [disabled]="meterReadingForm.invalid || saving || readingsFormArray.length === 0" class="submit-btn">
               <div class="spinner-small" *ngIf="saving"></div>
               <svg *ngIf="!saving" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
