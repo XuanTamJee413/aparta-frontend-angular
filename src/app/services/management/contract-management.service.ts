@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> {
   statusCode: number;
@@ -74,8 +75,8 @@ interface ApartmentListItemFromApi {
 })
 export class ContractManagementService {
 
-  private apiUrl = 'http://localhost:5175/api/Contracts';
-  private apartmentApiUrl = 'http://localhost:5175/api/Apartments';
+  private apiUrl = `${environment.apiUrl}/Contracts`;
+  private apartmentApiUrl = `${environment.apiUrl}/Apartments`;
 
   constructor(private http: HttpClient) { }
 

@@ -12,7 +12,6 @@ import {
   ResidentManagementService,
   ApiResponse
 } from '../../../../../services/management/resident-management.service';
-import { AuthService } from '../../../../../services/auth.service';
 
 @Component({
   selector: 'app-resident-list',
@@ -45,43 +44,40 @@ export class ResidentList implements OnInit {
 
   private searchDebouncer = new Subject<string>();
 
-  isManagerView = false;
-
   constructor(
-    private residentService: ResidentManagementService,
-    private auth: AuthService
+    private residentService: ResidentManagementService
   ) {}
 
   ngOnInit(): void {
-
-    this.isManagerView =
-      this.auth.hasRole('admin') ||
-      this.auth.hasRole('custom');
-
     this.loadApartments();
-    this.loadMembers();
-
     this.searchDebouncer
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => this.loadMembers());
   }
 
-  loadApartments(): void {
-    const apartments$ = this.isManagerView
-      ? this.residentService.getApartments()
-      : this.residentService.getMyApartments();
 
-    apartments$.subscribe({
+  loadApartments(): void {
+    this.apartmentCodeMap = {};
+    this.isLoading = true;
+    this.error = null;
+
+    this.residentService.getMyApartments().subscribe({
       next: (res) => {
         if (res?.succeeded && Array.isArray(res.data)) {
           this.apartmentCodeMap = res.data.reduce((acc, a) => {
             if (a?.apartmentId && a?.code) acc[a.apartmentId] = a.code;
             return acc;
           }, {} as Record<string, string>);
+        } else {
+          console.warn('Không có căn hộ trả về hoặc lỗi message:', res?.message);
         }
+        this.loadMembers();
       },
       error: (err) => {
-        console.error('Lỗi tải danh sách căn hộ:', err);
+        this.error = 'Không thể tải được dữ liệu Căn hộ. Vui lòng thử lại.';
+        this.isLoading = false;
+        console.error('Lỗi tải danh sách căn hộ (my-buildings):', err);
+        this.loadMembers();
       }
     });
   }
@@ -93,13 +89,12 @@ export class ResidentList implements OnInit {
     this.query.searchTerm = this.searchTerm || null;
     this.query.isOwned = this.selectedOwnerStatus;
 
-    const members$ = this.isManagerView
-      ? this.residentService.getMembers(this.query)
-      : this.residentService.getMyMembers(this.query);
-
-    members$.subscribe({
+    this.residentService.getMyMembers(this.query).subscribe({
       next: (response: ApiResponse<ApartmentMember[]>) => {
         if (response.succeeded) {
+          response.data.forEach((m) => {
+            (m as any).apartmentCode = this.apartmentCodeMap[m.apartmentId] || m.apartmentId;
+          });
           this.allMembers = response.data;
         } else {
           this.allMembers = [];
@@ -115,7 +110,7 @@ export class ResidentList implements OnInit {
         this.isLoading = false;
         this.allMembers = [];
         this.applyPagination();
-        console.error('Lỗi khi gọi API:', err);
+        console.error('Lỗi khi gọi API members (my-buildings):', err);
       }
     });
   }
