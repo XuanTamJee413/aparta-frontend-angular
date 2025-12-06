@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { ProjectService, ProjectDto, ProjectListResponse } from '../../../../services/admin/project.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MatDialogModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatDialogModule, MatIconModule, MatButtonModule, MatSnackBarModule],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css']
 })
@@ -174,8 +174,9 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   private showNotification(message: string, type: 'success' | 'error') {
     this.snackBar.open(message, 'Đóng', {
-      duration: 3000,
-      panelClass: type === 'success' ? ['success-snackbar'] : ['error-snackbar']
+      duration: type === 'success' ? 3000 : 4000,
+      panelClass: type === 'success' ? ['success-snackbar'] : ['error-snackbar'],
+      verticalPosition: 'top'
     });
   }
 }

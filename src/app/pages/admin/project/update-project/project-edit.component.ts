@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProjectService, ProjectDto, ProjectDetailResponse, ProjectBasicResponse } from '../../../../services/admin/project.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MatSnackBarModule],
   templateUrl: './project-edit.component.html',
   styleUrls: ['./project-edit.component.css']
 })
@@ -34,7 +34,11 @@ export class ProjectEditComponent implements OnInit {
       projectCode: [{value: '', disabled: true}],
       
       // Editable
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', [
+        Validators.required, 
+        Validators.minLength(3),
+        Validators.pattern('^[a-zA-ZÀ-ỹĐđ0-9\\s!_-]+$') // Chỉ cho phép chữ cái, số, khoảng trắng, !, _, -
+      ]],
       isActive: [true],
       
       address: [''],
@@ -229,10 +233,9 @@ export class ProjectEditComponent implements OnInit {
 
   private showNotification(message: string, type: 'success' | 'error') {
     this.snackBar.open(message, 'Đóng', {
-      duration: 3000,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
-      panelClass: type === 'success' ? ['mat-toolbar', 'mat-primary'] : ['mat-toolbar', 'mat-warn']
+      duration: type === 'success' ? 3000 : 4000,
+      panelClass: type === 'success' ? ['success-snackbar'] : ['error-snackbar'],
+      verticalPosition: 'top'
     });
   }
 }

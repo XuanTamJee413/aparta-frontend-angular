@@ -9,9 +9,6 @@
       <p class="text-primary">Đang tải dữ liệu...</p>
     </div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
-    <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
-
     <form [formGroup]="editForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading && currentBuilding" class="mt-4">
       
       <h5 class="mb-3 text-primary border-bottom pb-2">Thông tin chung</h5>
@@ -35,18 +32,33 @@
         <div class="col-md-3 mb-3">
           <label class="form-label">Số tầng nổi <span class="text-danger">*</span></label>
           <input type="number" class="form-control" formControlName="totalFloors" min="1">
+          <div *ngIf="editForm.get('totalFloors')?.invalid && editForm.get('totalFloors')?.touched" class="text-danger small mt-1">
+            Số tầng nổi phải từ 1 trở lên.
+          </div>
         </div>
         <div class="col-md-3 mb-3">
           <label class="form-label">Số tầng hầm <span class="text-danger">*</span></label>
           <input type="number" class="form-control" formControlName="totalBasements" min="0">
+          <div *ngIf="editForm.get('totalBasements')?.invalid && editForm.get('totalBasements')?.touched" class="text-danger small mt-1">
+            Số tầng hầm phải từ 0 trở lên.
+          </div>
         </div>
         <div class="col-md-3 mb-3">
           <label class="form-label">Tổng diện tích (m²)</label>
-          <input type="number" class="form-control" formControlName="totalArea">
+          <input type="number" class="form-control" formControlName="totalArea" min="0">
+          <div *ngIf="editForm.get('totalArea')?.invalid && editForm.get('totalArea')?.touched" class="text-danger small mt-1">
+            Diện tích phải là số dương.
+          </div>
         </div>
         <div class="col-md-3 mb-3">
           <label class="form-label">Ngày bàn giao</label>
           <input type="date" class="form-control" formControlName="handoverDate">
+          <div *ngIf="editForm.get('handoverDate')?.hasError('tooOld') && editForm.get('handoverDate')?.touched" class="text-danger small mt-1">
+            Ngày bàn giao không hợp lệ (Phải từ năm 1990 trở đi).
+          </div>
+          <div *ngIf="editForm.get('handoverDate')?.hasError('tooFuture') && editForm.get('handoverDate')?.touched" class="text-danger small mt-1">
+            Ngày bàn giao không hợp lệ (Quá xa trong tương lai).
+          </div>
         </div>
       </div>
 
@@ -54,7 +66,10 @@
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Hotline Sảnh Lễ tân</label>
-          <input type="text" class="form-control" formControlName="receptionPhone">
+          <input type="text" class="form-control" formControlName="receptionPhone" placeholder="VD: 024...">
+          <div *ngIf="editForm.get('receptionPhone')?.invalid && editForm.get('receptionPhone')?.touched" class="text-danger small mt-1">
+            Hotline phải là số từ 8-15 chữ số.
+          </div>
         </div>
         <div class="col-12 mb-3">
           <label class="form-label">Mô tả / Ghi chú</label>

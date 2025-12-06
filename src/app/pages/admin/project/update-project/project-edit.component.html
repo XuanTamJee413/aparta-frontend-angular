@@ -14,6 +14,11 @@
         <div class="col-md-8 mb-3">
           <label class="form-label fw-bold">Tên dự án <span class="text-danger">*</span></label>
           <input type="text" class="form-control" formControlName="name">
+          <div *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" class="text-danger small mt-1">
+            <span *ngIf="editForm.get('name')?.hasError('required')">Tên dự án là bắt buộc.</span>
+            <span *ngIf="editForm.get('name')?.hasError('minlength')">Tên dự án phải có ít nhất 3 ký tự.</span>
+            <span *ngIf="editForm.get('name')?.hasError('pattern')">Tên dự án chỉ được chứa chữ, số và các ký tự: ! _ -</span>
+          </div>
         </div>
 
         <div class="col-md-4 mb-3">
