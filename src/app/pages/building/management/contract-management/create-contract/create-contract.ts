@@ -65,7 +65,6 @@ export class CreateContract implements OnInit {
       apartmentId: [null, [Validators.required]],
       startDate: ['', [Validators.required, futureDateValidator()]],
 
-
       ownerName: ['', [Validators.required, Validators.maxLength(100)]],
       ownerEmail: ['', [Validators.required, Validators.email]],
       ownerPhoneNumber: [
@@ -94,7 +93,7 @@ export class CreateContract implements OnInit {
     this.apartmentsLoading.set(true);
     this.apartmentsError.set(null);
 
-    this.contractService.getAvailableApartments()
+    this.contractService.getAvailableApartmentsForMyBuildings()
       .pipe(finalize(() => this.apartmentsLoading.set(false)))
       .subscribe({
         next: (response) => {
@@ -122,7 +121,7 @@ export class CreateContract implements OnInit {
     }
 
     if (!this.availableApartments().length) {
-      this.submitError.set('Hiện không còn căn hộ trống để tạo hợp đồng.');
+      this.submitError.set('Hiện không còn căn hộ trống để tạo hợp đồng (trong tòa nhà bạn quản lý).');
       return;
     }
 
