@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { InvoiceService } from '../../../services/finance/invoice.service';
+import { InvoicePdfService } from '../../../services/finance/invoice-pdf.service';
 import { AuthService } from '../../../services/auth.service';
 import { InvoiceDto } from '../../../models/invoice.model';
 
@@ -20,6 +21,7 @@ export class InvoiceComponent implements OnInit {
 
   constructor(
     private invoiceService: InvoiceService,
+    private invoicePdfService: InvoicePdfService,
     private authService: AuthService,
     private router: Router
   ) {}
@@ -114,8 +116,11 @@ export class InvoiceComponent implements OnInit {
   }
 
   downloadPDF(invoice: InvoiceDto): void {
-    // TODO: Implement PDF download
-    console.log('Download PDF for invoice:', invoice.invoiceId);
+    try {
+      this.invoicePdfService.printInvoice(invoice);
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : 'Không thể in hóa đơn';
+    }
   }
 
   viewDetail(invoiceId: string): void {
