@@ -80,5 +80,16 @@ export class InvoiceManagementService {
       `${this.apiUrl}/Invoice/${invoiceId}`
     );
   }
+
+  /**
+   * Cập nhật ngày kết thúc thanh toán cho hóa đơn quá hạn
+   * PUT /api/invoice/{id}/update-end-date
+   */
+  updateInvoiceEndDate(invoiceId: string, endDate: string): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(
+      `${this.apiUrl}/Invoice/${invoiceId}/update-end-date`,
+      { endDate }
+    );
+  }
 }
 

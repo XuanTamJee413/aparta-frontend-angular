@@ -48,6 +48,13 @@ export class InvoiceManagementComponent implements OnInit {
   confirmModalType: 'delete' | 'markPaid' | null = null;
   pendingInvoiceId: string | null = null;
   successMessage: string | null = null;
+
+  // Edit End Date modal state
+  showEditEndDateModal = false;
+  selectedInvoiceForEdit: InvoiceDto | null = null;
+  newEndDate: string = '';
+  editEndDateError: string | null = null;
+  isUpdatingEndDate = false;
   
   statusOptions: { value: string; label: string }[] = [
     { value: 'Tất cả', label: 'Tất cả' },
@@ -423,6 +430,113 @@ export class InvoiceManagementComponent implements OnInit {
     this.showConfirmModal = false;
     this.pendingInvoiceId = null;
     this.confirmModalType = null;
+  }
+
+  //Kiểm tra xem invoice có quá hạn không
+  isInvoiceOverdue(endDate: string): boolean {
+    if (!endDate) return false;
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dueDate = new Date(endDate);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate < today;
+    } catch {
+      return false;
+    }
+  }
+
+  // Helper: Parse date string thành Date (tránh timezone issues)
+  private parseDateStr(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('T')[0].split('-');
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    }
+    return new Date(dateStr);
+  }
+
+  // Helper: Format date thành YYYY-MM-DD
+  private formatDateStr(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  // Xử lý khi thay đổi ngày trong input date
+  onEndDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.value) {
+      this.newEndDate = input.value;
+      this.editEndDateError = null;
+    }
+  }
+
+  // Mở modal sửa ngày kết thúc
+  openEditEndDateModal(invoice: InvoiceDto): void {
+    this.selectedInvoiceForEdit = invoice;
+    const currentEndDate = this.parseDateStr(invoice.endDate?.toString() || '');
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    
+    const defaultDate = new Date(currentEndDate < today ? today : currentEndDate);
+    defaultDate.setDate(defaultDate.getDate() + (currentEndDate < today ? 7 : 1));
+    this.newEndDate = this.formatDateStr(defaultDate);
+    this.editEndDateError = null;
+    this.showEditEndDateModal = true;
+  }
+
+  // Đóng modal sửa ngày kết thúc
+  closeEditEndDateModal(): void {
+    this.showEditEndDateModal = false;
+    this.selectedInvoiceForEdit = null;
+    this.newEndDate = '';
+    this.editEndDateError = null;
+    this.isUpdatingEndDate = false;
+  }
+
+  // Lấy ngày tối thiểu cho input date
+  getMinDate(): string {
+    if (!this.selectedInvoiceForEdit) return '';
+    const currentEndDate = this.parseDateStr(this.selectedInvoiceForEdit.endDate?.toString() || '');
+    const tomorrow = new Date(currentEndDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return this.formatDateStr(tomorrow);
+  }
+
+  // Lưu ngày kết thúc mới
+  saveEndDate(): void {
+    if (!this.selectedInvoiceForEdit || !this.newEndDate) {
+      this.editEndDateError = 'Vui lòng chọn ngày kết thúc mới';
+      return;
+    }
+
+    const newDate = this.parseDateStr(this.newEndDate);
+    const currentEndDate = this.parseDateStr(this.selectedInvoiceForEdit.endDate?.toString() || '');
+    
+    if (newDate <= currentEndDate) {
+      this.editEndDateError = 'Ngày kết thúc mới phải sau ngày kết thúc hiện tại';
+      return;
+    }
+
+    this.isUpdatingEndDate = true;
+    this.editEndDateError = null;
+
+    this.invoiceService.updateInvoiceEndDate(this.selectedInvoiceForEdit.invoiceId, this.newEndDate).subscribe({
+      next: (response) => {
+        if (response.succeeded) {
+          this.successMessage = 'Cập nhật ngày kết thúc thanh toán thành công';
+          setTimeout(() => this.successMessage = null, 3000);
+          this.closeEditEndDateModal();
+          this.activeTab === 'monthly' ? this.loadInvoices() : this.loadOneTimeInvoices();
+        } else {
+          this.editEndDateError = response.message || 'Có lỗi xảy ra khi cập nhật';
+          this.isUpdatingEndDate = false;
+        }
+      },
+      error: (error) => {
+        this.editEndDateError = error.error?.message || 'Có lỗi xảy ra khi cập nhật';
+        this.isUpdatingEndDate = false;
+      }
+    });
   }
 
 }

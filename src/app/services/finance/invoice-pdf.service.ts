@@ -299,10 +299,6 @@ export class InvoicePdfService {
           <span class="info-label">Loại phí:</span>
           <span class="info-value">${feeType}</span>
         </div>
-        <div class="info-row">
-          <span class="info-label">Ngày đến hạn:</span>
-          <span class="info-value">${dueDate}</span>
-        </div>
       </div>
     </div>
 
