@@ -1,3 +1,4 @@
+// src/app/pages/building/management/apartment-list/apartment-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -65,13 +66,15 @@ export class ApartmentList implements OnInit {
   loadBuildings(): void {
     this.buildingsLoading.set(true);
     this.buildingsError.set(null);
-    this.apartmentService.getBuildings().subscribe({
-      next: (list) => {
+
+    // <-- use getMyBuildings so only buildings current account manages
+    this.apartmentService.getMyBuildings().subscribe({
+      next: (list: BuildingOption[]) => {
         this.buildings.set(list ?? []);
         this.buildingsLoading.set(false);
       },
-      error: (err) => {
-        console.error('Lỗi load buildings:', err);
+      error: (err: any) => {
+        console.error('Lỗi load buildings (my-buildings):', err);
         this.buildingsError.set('Không thể tải danh sách tòa nhà.');
         this.buildingsLoading.set(false);
       }
@@ -86,7 +89,8 @@ export class ApartmentList implements OnInit {
     this.query.status = this.selectedStatus;
     this.query.buildingId = this.selectedBuildingId;
 
-    this.apartmentService.getApartments(this.query).subscribe({
+    // <-- use getMyApartments so results are scoped to buildings the account manages
+    this.apartmentService.getMyApartments(this.query).subscribe({
       next: (response) => {
         if (response.succeeded) {
           this.apartments.set(response.data ?? []);

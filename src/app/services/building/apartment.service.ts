@@ -1,3 +1,4 @@
+// src/app/services/building/apartment.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
@@ -25,7 +26,6 @@ export interface Apartment {
   status: string;
   area: number;
   createdAt: string;
-
 }
 
 export interface ApartmentCreateDto {
@@ -87,6 +87,18 @@ export class ApartmentService {
     return this.http.get<ApiResponse<Apartment[]>>(this.apiUrl, { params });
   }
 
+  // NEW: scoped apartments for buildings current account manages
+  getMyApartments(query: ApartmentQueryParameters): Observable<ApiResponse<Apartment[]>> {
+    let params = new HttpParams();
+    if (query.searchTerm) params = params.append('SearchTerm', query.searchTerm);
+    if (query.status) params = params.append('Status', query.status);
+    if (query.buildingId) params = params.append('BuildingId', query.buildingId);
+    if (query.sortBy) params = params.append('SortBy', query.sortBy);
+    if (query.sortOrder) params = params.append('SortOrder', query.sortOrder);
+
+    return this.http.get<ApiResponse<Apartment[]>>(`${this.apiUrl}/my-buildings`, { params });
+  }
+
   getApartmentById(id: string): Observable<Apartment> {
     return this.http.get<Apartment>(`${this.apiUrl}/${id}`);
   }
@@ -110,6 +122,14 @@ export class ApartmentService {
       .pipe(map(res => res.data.items));
   }
 
+  // NEW: buildings scoped to current account
+  getMyBuildings(): Observable<BuildingOption[]> {
+    const params = new HttpParams().set('PageNumber', '1').set('PageSize', '100');
+    return this.http
+      .get<ApiResponse<PaginatedResult<BuildingOption>>>(`${this.buildingApiUrl}/my-buildings`, { params })
+      .pipe(map(res => res.data.items));
+  }
+
   isCodeUniqueInBuilding(
     buildingId: string,
     code: string,
@@ -124,6 +144,8 @@ export class ApartmentService {
       buildingId: buildingId
     } as ApartmentQueryParameters;
 
+    // NOTE: use getMyApartments? keep using getApartments so validator checks across all apartments
+    // but you can switch to getMyApartments if you want uniqueness check only within managed buildings
     return this.getApartments(params).pipe(
       map(res => {
         const list = res.data || [];
