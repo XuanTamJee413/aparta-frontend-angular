@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ApiResponse<T> {
   statusCode: number;
@@ -74,10 +75,11 @@ interface ApartmentListItemFromApi {
 })
 export class ContractManagementService {
 
-  private apiUrl = 'http://localhost:5175/api/Contracts';
-  private apartmentApiUrl = 'http://localhost:5175/api/Apartments';
+  private apiUrl = `${environment.apiUrl}/Contracts`;
+  private apartmentApiUrl = `${environment.apiUrl}/Apartments`;
 
   constructor(private http: HttpClient) { }
+
 
   getContracts(query: ContractQueryParameters | null): Observable<ApiResponse<ContractDto[]>> {
     let params = new HttpParams();
@@ -97,6 +99,25 @@ export class ContractManagementService {
     return this.http.get<ApiResponse<ContractDto[]>>(this.apiUrl, { params });
   }
 
+
+  getMyContracts(query: ContractQueryParameters | null): Observable<ApiResponse<ContractDto[]>> {
+    let params = new HttpParams();
+
+    if (query) {
+      if (query.apartmentId) {
+        params = params.set('apartmentId', query.apartmentId);
+      }
+      if (query.sortBy) {
+        params = params.set('sortBy', query.sortBy);
+      }
+      if (query.sortOrder) {
+        params = params.set('sortOrder', query.sortOrder);
+      }
+    }
+
+    return this.http.get<ApiResponse<ContractDto[]>>(`${this.apiUrl}/my-buildings`, { params });
+  }
+
   getContractById(id: string): Observable<ContractDto> {
     return this.http.get<ContractDto>(`${this.apiUrl}/${id}`);
   }
@@ -105,19 +126,20 @@ export class ContractManagementService {
     return this.http.post<ContractDto>(this.apiUrl, dto);
   }
 
-  getAvailableApartments(): Observable<ApiResponse<AvailableApartmentDto[]>> {
+
+  getAvailableApartmentsForMyBuildings(): Observable<ApiResponse<AvailableApartmentDto[]>> {
     const params = new HttpParams()
       .set('status', 'Còn Trống')
       .set('sortBy', 'code')
       .set('sortOrder', 'asc');
 
     return this.http
-      .get<ApiResponse<ApartmentListItemFromApi[]>>(this.apartmentApiUrl, { params })
+      .get<ApiResponse<ApartmentListItemFromApi[]>>(`${this.apartmentApiUrl}/my-buildings`, { params })
       .pipe(
         map(res => ({
-          statusCode: res.statusCode,
+          statusCode: (res as any).statusCode ?? 0,
           succeeded: res.succeeded,
-          messageCode: res.messageCode,
+          messageCode: (res as any).messageCode ?? '',
           message: res.message,
           data: (res.data || []).map(a => ({
             apartmentId: a.apartmentId,

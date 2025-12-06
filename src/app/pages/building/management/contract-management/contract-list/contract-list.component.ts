@@ -70,7 +70,7 @@ export class ContractList implements OnInit {
       sortOrder: this.sortOrder
     };
 
-    this.contractService.getContracts(query).subscribe({
+    this.contractService.getMyContracts(query).subscribe({
       next: (response) => {
         if (response.succeeded && response.data) {
           this.allContracts = response.data;
@@ -161,7 +161,6 @@ export class ContractList implements OnInit {
     this.currentPage = 1;
   }
 
-
   onAdd(): void {
     this.router.navigate(['/manager/manage-contract/create']);
   }
@@ -173,7 +172,6 @@ export class ContractList implements OnInit {
   onEdit(id: string): void {
     this.router.navigate(['/manager/manage-contract/update', id]);
   }
-
 
   isHistorical(contract: ContractDto): boolean {
     const code = contract.apartmentCode ?? '';
