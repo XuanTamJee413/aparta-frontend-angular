@@ -37,7 +37,7 @@
         <div class="actions">
           <button type="button" class="btn-action" (click)="managePermissions(r)"><mat-icon>shield</mat-icon>Quyền</button>
           <button type="button" class="btn-action" (click)="openRenameDialog(r)" [disabled]="r.isSystemDefined"><mat-icon>edit</mat-icon>Cập nhật</button>
-          <button type="button" class="btn-action btn-danger" (click)="confirmDelete(r)" [disabled]="r.isSystemDefined || !r.isActive"><mat-icon>delete</mat-icon>Xóa</button>
+          <button type="button" class="btn-action btn-danger" (click)="confirmDelete(r)" [disabled]="r.isSystemDefined || !r.isActive"><mat-icon>block</mat-icon>Tắt</button>
         </div>
       </li>
       <li *ngIf="sortedRoles().length === 0" class="empty-state">Không có role nào.</li>

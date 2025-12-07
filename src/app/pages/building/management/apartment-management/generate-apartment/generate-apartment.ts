@@ -102,7 +102,7 @@ export class GenerateApartment implements OnInit {
 
 
   ngOnInit(): void {
-    this.aptService.getBuildings()
+    this.aptService.getMyBuildings()
       .pipe(
         catchError(err => {
           console.error(err);

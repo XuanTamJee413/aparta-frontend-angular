@@ -14,8 +14,6 @@ import {
   Apartment
 } from '../../../../../services/operation/vehicle.service';
 
-import { AuthService } from '../../../../../services/auth.service';
-
 @Component({
   selector: 'app-vehicle-list',
   standalone: true,
@@ -51,20 +49,11 @@ export class VehicleList implements OnInit {
 
   private apartmentNameMap = new Map<string, string>();
 
-  isManagerView = false;
-
   constructor(
-    private vehicleService: VehicleService,
-    private auth: AuthService
+    private vehicleService: VehicleService
   ) {}
 
   ngOnInit(): void {
-
-    this.isManagerView =
-      this.auth.hasRole('admin') ||
-
-      this.auth.hasRole('custom');
-
     this.loadInitialData();
 
     this.searchDebouncer
@@ -74,28 +63,28 @@ export class VehicleList implements OnInit {
       });
   }
 
+
   loadInitialData(): void {
     this.isLoading = true;
     this.error = null;
     this.editingVehicleId = null;
+    this.apartmentNameMap.clear();
 
-    const apartment$ = this.isManagerView
-      ? this.vehicleService.getApartments()
-      : this.vehicleService.getMyApartments();
-
-    apartment$.subscribe({
+    this.vehicleService.getMyApartments().subscribe({
       next: (aptResponse) => {
         if (aptResponse.succeeded) {
           aptResponse.data.forEach((apt: Apartment) => {
             this.apartmentNameMap.set(apt.apartmentId, apt.code);
           });
+        } else {
+          console.warn('Không có căn hộ trả về hoặc lỗi message:', aptResponse.message);
         }
         this.loadVehicles();
       },
       error: (err) => {
         this.error = 'Không thể tải được dữ liệu Căn hộ. Vui lòng thử lại.';
         this.isLoading = false;
-        console.error('Lỗi khi gọi API Căn hộ:', err);
+        console.error('Lỗi khi gọi API Căn hộ (my-buildings):', err);
       }
     });
   }
@@ -109,11 +98,7 @@ export class VehicleList implements OnInit {
     this.query.searchTerm = this.searchTerm || null;
     this.query.status = this.selectedStatus;
 
-    const vehicle$ = this.isManagerView
-      ? this.vehicleService.getVehicles(this.query)
-      : this.vehicleService.getMyVehicles(this.query);
-
-    vehicle$.subscribe({
+    this.vehicleService.getMyVehicles(this.query).subscribe({
       next: (vehicleResponse: ApiResponse<Vehicle[]>) => {
         if (vehicleResponse.succeeded) {
           vehicleResponse.data.forEach((vehicle) => {
@@ -135,7 +120,7 @@ export class VehicleList implements OnInit {
         this.isLoading = false;
         this.allVehicles = [];
         this.applyPagination();
-        console.error('Lỗi khi gọi API Phương tiện:', err);
+        console.error('Lỗi khi gọi API Phương tiện (my-buildings):', err);
       }
     });
   }

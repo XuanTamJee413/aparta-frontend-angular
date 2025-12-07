@@ -8,7 +8,7 @@ export const authCanActivate: CanActivateFn = (route: ActivatedRouteSnapshot, st
   // Handle /login explicitly
   if (state.url.startsWith('/login')) {
     if (!auth.isAuthenticated()) return true;
-    const home = auth.hasRole('admin') ? '/admin' : auth.hasRole('custom') ? '/manager' : auth.hasRole('staff') ? '/manager' : auth.hasRole('resident') ? '/home' : '/not-found';
+    const home = auth.hasRole('admin') ? '/admin' : auth.hasRole('custom') ? '/manager/manage-resident' : auth.hasRole('staff') ? '/manager' : auth.hasRole('resident') ? '/home' : '/not-found';
     return router.parseUrl(home);
   }
   if (auth.isAuthenticated()) return true;
@@ -22,7 +22,7 @@ export const authCanMatch: CanMatchFn = (route: Route, segments: UrlSegment[]) =
   // Handle /login explicitly
   if (url.startsWith('/login')) {
     if (!auth.isAuthenticated()) return true;
-    const home = auth.hasRole('admin') ? '/admin' : auth.hasRole('custom') ? '/manager' : auth.hasRole('staff') ? '/manager' : auth.hasRole('resident') ? '/home' : '/not-found';
+    const home = auth.hasRole('admin') ? '/admin' : auth.hasRole('custom') ? '/manager/manage-resident' : auth.hasRole('staff') ? '/manager' : auth.hasRole('resident') ? '/home' : '/not-found';
     return router.parseUrl(home);
   }
   if (auth.isAuthenticated()) return true;
