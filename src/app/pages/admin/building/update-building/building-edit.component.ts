@@ -7,6 +7,7 @@ import { ProjectService } from '../../../../services/admin/project.service';
 // [QUAN TRỌNG] Thêm các import cho Dialog và Icon
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-building-edit',
@@ -16,7 +17,8 @@ import { MatIconModule } from '@angular/material/icon';
     ReactiveFormsModule, 
     RouterModule,
     MatDialogModule, // Thêm Module này
-    MatIconModule    // Thêm Module này
+    MatIconModule,    // Thêm Module này
+    MatSnackBarModule // Thêm Module này
   ],
   templateUrl: './building-edit.component.html',
   styleUrls: ['./building-edit.component.css']
@@ -29,8 +31,6 @@ export class BuildingEditComponent implements OnInit {
   
   isLoading = false; 
   isSubmitting = false;
-  errorMessage = '';
-  successMessage = '';
 
   // [MỚI] Biến để xử lý Dialog
   @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
@@ -41,16 +41,17 @@ export class BuildingEditComponent implements OnInit {
     private projectService: ProjectService,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog // Inject MatDialog
+    private dialog: MatDialog, // Inject MatDialog
+    private snackBar: MatSnackBar // Inject MatSnackBar
   ) {
     this.editForm = this.fb.group({
       buildingCode: [{value: '', disabled: true}],
       name: ['', Validators.required],
-      // [CHÚ Ý] Đã xóa isActive khỏi form vì xử lý riêng
+      // [CHÚ Í] Đã xóa isActive khỏi form vì xử lý riêng
       totalFloors: [1, [Validators.required, Validators.min(1), Validators.max(200)]],
       totalBasements: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
-      totalArea: [null, [Validators.min(0)]],
-      handoverDate: [null],
+      totalArea: [null, [Validators.min(0.01)]],
+      handoverDate: [null, [this.dateRangeValidator.bind(this)]],
       description: [''],
       receptionPhone: ['', [Validators.pattern('^[0-9]*$'), Validators.minLength(8), Validators.maxLength(15)]],
       readingWindowStart: [1, [Validators.required, Validators.min(1), Validators.max(31)]],
@@ -95,12 +96,20 @@ export class BuildingEditComponent implements OnInit {
           this.editForm.patchValue(buildingData);
           this.loadProjectName(res.data.projectId);
         } else {
-          this.errorMessage = 'Không tìm thấy tòa nhà.';
+          this.snackBar.open('Không tìm thấy tòa nhà.', 'Đóng', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+            verticalPosition: 'top'
+          });
         }
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'Lỗi khi tải dữ liệu.';
+        this.snackBar.open('Lỗi khi tải dữ liệu.', 'Đóng', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        });
         this.isLoading = false;
       }
     });
@@ -149,16 +158,30 @@ export class BuildingEditComponent implements OnInit {
         this.isLoading = false;
         if (res.succeeded) {
           if (this.currentBuilding) this.currentBuilding.isActive = newStatus;
-          this.successMessage = newStatus ? 'Đã kích hoạt tòa nhà.' : 'Đã ngưng hoạt động tòa nhà.';
-          // Tự tắt thông báo sau 3s
-          setTimeout(() => this.successMessage = '', 3000);
+          this.snackBar.open(
+            newStatus ? 'Đã kích hoạt tòa nhà.' : 'Đã ngưng hoạt động tòa nhà.',
+            'Đóng',
+            {
+              duration: 3000,
+              panelClass: ['success-snackbar'],
+              verticalPosition: 'top'
+            }
+          );
         } else {
-          this.errorMessage = res.message || 'Lỗi cập nhật trạng thái.';
+          this.snackBar.open(res.message || 'Lỗi cập nhật trạng thái.', 'Đóng', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+            verticalPosition: 'top'
+          });
         }
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Lỗi hệ thống khi cập nhật trạng thái.';
+        this.snackBar.open('Lỗi hệ thống khi cập nhật trạng thái.', 'Đóng', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        });
       }
     });
   }
@@ -171,12 +194,15 @@ export class BuildingEditComponent implements OnInit {
 
     const formValue = this.editForm.getRawValue();
     if (formValue.readingWindowStart >= formValue.readingWindowEnd) {
-        this.errorMessage = 'Ngày bắt đầu chốt số phải nhỏ hơn ngày kết thúc.';
+        this.snackBar.open('Ngày bắt đầu chốt số phải nhỏ hơn ngày kết thúc.', 'Đóng', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        });
         return;
     }
 
     this.isSubmitting = true;
-    this.errorMessage = '';
 
     const updateDto = {
       name: formValue.name,
@@ -197,15 +223,27 @@ export class BuildingEditComponent implements OnInit {
       next: (res: BuildingBasicResponse) => {
         this.isSubmitting = false;
         if (res.succeeded) {
-          this.successMessage = 'Cập nhật thông tin thành công!';
+          this.snackBar.open('Cập nhật thông tin thành công!', 'Đóng', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+            verticalPosition: 'top'
+          });
           setTimeout(() => this.router.navigate(['/admin/building/list']), 1500);
         } else {
-          this.errorMessage = res.message || 'Lỗi cập nhật.';
+          this.snackBar.open(res.message || 'Lỗi cập nhật.', 'Đóng', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+            verticalPosition: 'top'
+          });
         }
       },
       error: (err: any) => {
         this.isSubmitting = false;
-        this.errorMessage = err.error?.message || 'Lỗi hệ thống.';
+        this.snackBar.open(err.error?.message || 'Lỗi hệ thống.', 'Đóng', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        });
       }
     });
   }
@@ -262,6 +300,23 @@ export class BuildingEditComponent implements OnInit {
       start: startDay != null && startDay > daysInMonth,
       end: endDay != null && endDay > daysInMonth && endDay >= this.editForm.get('readingWindowStart')?.value
     };
+  }
+
+  // Validator cho ngày bàn giao: phải từ năm 1990 và không quá 50 năm trong tương lai
+  private dateRangeValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null; // Cho phép để trống
+
+    const selectedDate = new Date(control.value);
+    const currentYear = new Date().getFullYear();
+    const selectedYear = selectedDate.getFullYear();
+
+    if (selectedYear < 1990) {
+      return { tooOld: true };
+    }
+    if (selectedYear > currentYear + 50) {
+      return { tooFuture: true };
+    }
+    return null;
   }
 
 }

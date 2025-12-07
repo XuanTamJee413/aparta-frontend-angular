@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, catchError, of, switchMap } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 
 export interface ApiResponse<T> {
   succeeded: boolean;
   message: string;
   data: T;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  totalCount: number;
 }
 
 export interface AssetQueryParameters {
@@ -40,14 +36,14 @@ export interface AssetUpdateDto {
   quantity?: number | null;
 }
 
-export interface AssetView extends AssetDto {
-  buildingName: string;
-}
-
 export interface BuildingDto {
   buildingId: string;
   buildingCode: string | null;
   name: string | null;
+}
+
+export interface AssetView extends AssetDto {
+  buildingName: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -62,6 +58,56 @@ export class AssetManagementService {
     const message = res?.message ?? res?.Message ?? '';
     const data = (res?.data ?? res?.Data) as T;
     return { succeeded, message, data };
+  }
+
+
+  getAssets(query: AssetQueryParameters): Observable<ApiResponse<AssetDto[]>> {
+    let params = new HttpParams();
+    if (query.buildingId) params = params.set('buildingId', query.buildingId);
+    if (query.searchTerm) params = params.set('searchTerm', query.searchTerm);
+    if (query.sortBy) params = params.set('sortBy', query.sortBy);
+    if (query.sortOrder) params = params.set('sortOrder', query.sortOrder);
+
+    return this.http.get<any>(this.assetApiUrl, { params }).pipe(
+      map(res => this.normalizeApiResponse<AssetDto[]>(res)),
+      catchError(() => of<ApiResponse<AssetDto[]>>({ succeeded: false, message: 'API_ERROR', data: [] }))
+    );
+  }
+
+  getMyAssets(query: AssetQueryParameters): Observable<ApiResponse<AssetDto[]>> {
+    let params = new HttpParams();
+    if (query.buildingId) params = params.set('buildingId', query.buildingId);
+    if (query.searchTerm) params = params.set('searchTerm', query.searchTerm);
+    if (query.sortBy) params = params.set('sortBy', query.sortBy);
+    if (query.sortOrder) params = params.set('sortOrder', query.sortOrder);
+
+    return this.http.get<any>(`${this.assetApiUrl}/my-buildings`, { params }).pipe(
+      map(res => this.normalizeApiResponse<AssetDto[]>(res)),
+      catchError(() => of<ApiResponse<AssetDto[]>>({ succeeded: false, message: 'API_ERROR', data: [] }))
+    );
+  }
+
+
+  getAssetById(id: string): Observable<AssetDto | AssetView | null> {
+    return this.http.get<any>(`${this.assetApiUrl}/${id}`).pipe(
+      map(res => this.extractSingle<AssetDto | AssetView>(res)),
+      switchMap(parsed =>
+        parsed !== null
+          ? of(parsed)
+          :
+            this.http
+              .get<any>(this.assetApiUrl, { params: new HttpParams().set('id', id) })
+              .pipe(map(res2 => this.extractSingle<AssetDto | AssetView>(res2)))
+      ),
+      catchError(() =>
+        this.http
+          .get<any>(this.assetApiUrl, { params: new HttpParams().set('id', id) })
+          .pipe(
+            map(res2 => this.extractSingle<AssetDto | AssetView>(res2)),
+            catchError(() => of<AssetDto | AssetView | null>(null))
+          )
+      )
+    );
   }
 
   private extractSingle<T>(res: any): T | null {
@@ -92,43 +138,34 @@ export class AssetManagementService {
     return null;
   }
 
-  getAssetById(id: string): Observable<AssetDto | AssetView | null> {
-    return this.http.get<any>(`${this.assetApiUrl}/${id}`).pipe(
-      map(res => this.extractSingle<AssetDto | AssetView>(res)),
-      switchMap(parsed =>
-        parsed !== null
-          ? of(parsed)
-          : this.http
-              .get<any>(this.assetApiUrl, { params: new HttpParams().set('id', id) })
-              .pipe(map(res2 => this.extractSingle<AssetDto | AssetView>(res2)))
-      ),
-      catchError(() =>
-        this.http
-          .get<any>(this.assetApiUrl, { params: new HttpParams().set('id', id) })
-          .pipe(
-            map(res2 => this.extractSingle<AssetDto | AssetView>(res2)),
-            catchError(() => of(null))
-          )
-      )
-    );
-  }
-
-  getAssets(query: AssetQueryParameters): Observable<ApiResponse<AssetDto[]>> {
-    let params = new HttpParams();
-    if (query.buildingId) params = params.set('buildingId', query.buildingId);
-    if (query.searchTerm) params = params.set('searchTerm', query.searchTerm);
-    if (query.sortBy) params = params.set('sortBy', query.sortBy);
-    if (query.sortOrder) params = params.set('sortOrder', query.sortOrder);
-
-    return this.http.get<any>(this.assetApiUrl, { params }).pipe(
-      map(res => this.normalizeApiResponse<AssetDto[]>(res))
-    );
-  }
 
   getBuildings(): Observable<BuildingDto[]> {
     const params = new HttpParams().set('Skip', '0').set('Take', '1000');
 
     return this.http.get<any>(this.buildingApiUrl, { params }).pipe(
+      map(res => {
+        const data = res?.data ?? res?.Data ?? {};
+        const items = (data?.items ?? data?.Items ?? []) as BuildingDto[];
+        return items
+          .map(b => ({
+            ...b,
+            buildingCode: b?.buildingCode ?? (b as any)?.BuildingCode ?? null,
+            name: b?.name ?? (b as any)?.Name ?? null,
+            buildingId: b?.buildingId ?? (b as any)?.BuildingId
+          }))
+          .sort((a, b) => (a.buildingCode ?? '').localeCompare(b.buildingCode ?? ''));
+      }),
+      catchError(() => of<BuildingDto[]>([]))
+    );
+  }
+
+  /**
+   * Get buildings user manages (scoped).
+   */
+  getMyBuildings(): Observable<BuildingDto[]> {
+    const params = new HttpParams().set('Skip', '0').set('Take', '1000');
+
+    return this.http.get<any>(`${this.buildingApiUrl}/my-buildings`, { params }).pipe(
       map(res => {
         const data = res?.data ?? res?.Data ?? {};
         const items = (data?.items ?? data?.Items ?? []) as BuildingDto[];
@@ -157,9 +194,10 @@ export class AssetManagementService {
     return this.http.delete(`${this.assetApiUrl}/${id}`);
   }
 
-  checkAssetExists(buildingId: string, info: string): Observable<boolean>;
-  checkAssetExists(buildingId: string, info: string, excludeAssetId?: string): Observable<boolean>;
-
+  /**
+   * checkAssetExists(buildingId, info, excludeAssetId?)
+   * returns Observable<boolean>
+   */
   checkAssetExists(buildingId: string, info: string, excludeAssetId?: string): Observable<boolean> {
     const norm = (s: string) => (s ?? '').toString().trim().replace(/\s+/g, ' ').toLowerCase();
 

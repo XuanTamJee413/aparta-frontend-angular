@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ProjectService, ProjectDetailResponse } from '../../../../services/admin/project.service';
-import { Subject, takeUntil } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MatSnackBarModule],
   templateUrl: './project-create.component.html',
   styleUrls: ['./project-create.component.css']
 })
@@ -19,6 +19,12 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
   isValidatingPayOS = false;
   payOSValidationMessage = '';
   payOSValidationStatus: 'idle' | 'valid' | 'invalid' = 'idle';
+  
+  // Project Code duplicate check
+  isCheckingProjectCode = false;
+  projectCodeCheckMessage = '';
+  projectCodeExists = false;
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -29,7 +35,11 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
   ) {
     this.createForm = this.fb.group({
       // 1. Thông tin chung
-      name: ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', [
+        Validators.required, 
+        Validators.minLength(3),
+        Validators.pattern('^[a-zA-ZÀ-ỹĐđ0-9\\s!_-]+$') // Chỉ cho phép chữ cái, số, khoảng trắng, !, _, -
+      ]],
       projectCode: ['', [Validators.required, Validators.pattern('^[A-Z0-9_]+$')]],
       
       // 2. Địa chỉ
@@ -52,17 +62,22 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Set bankName mặc định là "PayOS"
-    this.createForm.patchValue({
-      bankName: 'PayOS'
-    });
-    // Disable bankName field
-    this.createForm.get('bankName')?.disable();
-
     // Lắng nghe sự thay đổi của Tên dự án để sinh Mã dự án
     this.createForm.get('name')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(value => {
         this.generateProjectCode(value);
+      });
+
+    // Lắng nghe sự thay đổi của Mã dự án để check trùng
+    this.createForm.get('projectCode')?.valueChanges
+      .pipe(
+        debounceTime(500), // Chờ 500ms sau khi người dùng ngừng gõ
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(code => {
+        this.checkProjectCodeExists(code);
       });
   }
 
@@ -72,7 +87,9 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
   }
 
   private generateProjectCode(name: string): void {
-    if (!name) {
+    if (!name || name.trim() === '') {
+      // Nếu tên dự án trống, xóa luôn mã dự án
+      this.createForm.get('projectCode')?.setValue('');
       return;
     }
 
@@ -84,20 +101,70 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     this.createForm.get('projectCode')?.setValue(autoCode);
   }
 
+  // Xóa tên dự án
+  clearProjectName() {
+    this.createForm.get('name')?.setValue('');
+  }
+
   // 1. Hàm chuyển đổi sang Latin không dấu
   private toLatin(str: string): string {
     if (!str) return '';
     
     // Thay thế thủ công Đ/đ trước khi chuẩn hóa NFD
-    let result = str.replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    const strNoDSign = str.replace(/Đ/g, 'D').replace(/đ/g, 'd');
     
-    // Chuẩn hóa NFD và loại bỏ dấu
-    result = result.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    
-    // Loại bỏ các ký tự đặc biệt (giữ lại chữ, số và khoảng trắng)
-    result = result.replace(/[^a-zA-Z0-9\s]/g, '');
-    
-    return result;
+    return strNoDSign
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s]/g, '');
+  }
+
+  // Kiểm tra mã dự án có bị trùng không
+  private checkProjectCodeExists(code: string): void {
+    // Reset trạng thái
+    this.projectCodeExists = false;
+    this.projectCodeCheckMessage = '';
+
+    // Nếu mã trống hoặc không hợp lệ, không kiểm tra
+    if (!code || code.trim().length < 2) {
+      return;
+    }
+
+    // Kiểm tra pattern trước
+    const pattern = /^[A-Z0-9_]+$/;
+    if (!pattern.test(code)) {
+      return; // Để validator pattern xử lý
+    }
+
+    this.isCheckingProjectCode = true;
+    this.projectCodeCheckMessage = 'Đang kiểm tra...';
+
+    // Gọi API lấy danh sách dự án để kiểm tra trùng mã
+    this.projectService.getProjects({ searchTerm: code }).subscribe({
+      next: (res: any) => {
+        this.isCheckingProjectCode = false;
+        if (res.succeeded && res.data) {
+          // Kiểm tra xem có dự án nào có mã trùng không (so sánh chính xác, không phân biệt hoa thường)
+          const existingProject = res.data.find((p: any) => 
+            p.projectCode.toUpperCase() === code.toUpperCase()
+          );
+          
+          if (existingProject) {
+            this.projectCodeExists = true;
+            this.projectCodeCheckMessage = `⚠️ Mã "${code}" đã tồn tại (Dự án: ${existingProject.name})`;
+          } else {
+            this.projectCodeExists = false;
+            this.projectCodeCheckMessage = '✓ Mã dự án hợp lệ';
+          }
+        } else {
+          this.projectCodeCheckMessage = '';
+        }
+      },
+      error: () => {
+        this.isCheckingProjectCode = false;
+        this.projectCodeCheckMessage = '';
+      }
+    });
   }
 
   // 2. Hàm lấy chữ cái đầu từ chuỗi đã chuyển Latin
@@ -129,20 +196,11 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Validate PayOS credentials - chỉ chạy khi user click nút
   validatePayOS() {
     const clientId = this.createForm.get('payOSClientId')?.value;
     const apiKey = this.createForm.get('payOSApiKey')?.value;
     const checksumKey = this.createForm.get('payOSChecksumKey')?.value;
 
-    // Nếu không có PayOS settings, bỏ qua validation
-    if (!clientId && !apiKey && !checksumKey) {
-      this.payOSValidationStatus = 'idle';
-      this.payOSValidationMessage = '';
-      return;
-    }
-
-    // Kiểm tra có đủ 3 trường không
     if (!clientId || !apiKey || !checksumKey) {
       this.payOSValidationStatus = 'invalid';
       this.payOSValidationMessage = 'Vui lòng nhập đầy đủ 3 thông tin PayOS (Client ID, API Key, Checksum Key)';
@@ -194,6 +252,12 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Kiểm tra mã dự án có bị trùng không
+    if (this.projectCodeExists) {
+      this.showNotification('Mã dự án đã tồn tại. Vui lòng chọn mã khác.', 'error');
+      return;
+    }
+
     // Kiểm tra PayOS validation nếu có nhập PayOS settings
     const hasPayOS = this.createForm.get('payOSClientId')?.value || 
                      this.createForm.get('payOSApiKey')?.value || 
@@ -240,10 +304,9 @@ export class ProjectCreateComponent implements OnInit, OnDestroy {
 
   private showNotification(message: string, type: 'success' | 'error') {
     this.snackBar.open(message, 'Đóng', {
-      duration: 3000,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
-      panelClass: type === 'success' ? ['mat-toolbar', 'mat-primary'] : ['mat-toolbar', 'mat-warn']
+      duration: type === 'success' ? 3000 : 4000,
+      panelClass: type === 'success' ? ['success-snackbar'] : ['error-snackbar'],
+      verticalPosition: 'top'
     });
   }
 }

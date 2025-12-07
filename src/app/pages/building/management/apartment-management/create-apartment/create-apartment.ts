@@ -1,3 +1,4 @@
+// src/app/pages/building/management/create-apartment/create-apartment.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -98,7 +99,7 @@ export class CreateApartment implements OnInit {
   );
 
   ngOnInit(): void {
-    this.aptService.getBuildings()
+    this.aptService.getMyBuildings()
       .pipe(
         catchError(err => {
           console.error(err);

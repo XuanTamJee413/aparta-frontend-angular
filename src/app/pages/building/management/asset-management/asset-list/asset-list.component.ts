@@ -94,9 +94,9 @@ export class AssetList implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    const buildings$ = this.assetService.getBuildings().pipe(
+    const buildings$ = this.assetService.getMyBuildings().pipe(
       catchError(err => {
-        console.error('Lỗi tải Tòa nhà:', err);
+        console.error('Lỗi tải Tòa nhà (my-buildings):', err);
         if (err?.status === 403) {
           this.router.navigate(['/forbidden']);
         }
@@ -104,9 +104,9 @@ export class AssetList implements OnInit {
       })
     );
 
-    const assets$ = this.assetService.getAssets(this.query).pipe(
+    const assets$ = this.assetService.getMyAssets(this.query).pipe(
       catchError((err) => {
-        console.error('Lỗi tải Tài sản:', err);
+        console.error('Lỗi tải Tài sản (my-buildings):', err);
         if (err?.status === 403) {
           this.router.navigate(['/forbidden']);
           return of<ApiResponse<AssetDto[]>>({
@@ -161,7 +161,7 @@ export class AssetList implements OnInit {
     this.error.set(null);
     this.deletingAssetId.set(null);
 
-    this.assetService.getAssets(this.query).subscribe({
+    this.assetService.getMyAssets(this.query).subscribe({
       next: (resp) => {
         const noData = (resp.message ?? '').toUpperCase().includes('SM01');
         if (resp.succeeded) {
