@@ -135,9 +135,19 @@
                   </td>
                   <td>{{ formatDate(invoice.endDate) }}</td>
                   <td class="actions">
-                    <button class="action-view-btn" (click)="viewDetail(invoice.invoiceId)">
-                      Xem Chi tiết
-                    </button>
+                    <div class="action-buttons">
+                      <button class="action-view-btn" (click)="viewDetail(invoice.invoiceId)">
+                        Xem Chi tiết
+                      </button>
+                      <button 
+                        *ngIf="invoice.status === 'OVERDUE'"
+                        type="button"
+                        class="btn-edit"
+                        (click)="openEditEndDateModal(invoice)"
+                        title="Sửa ngày kết thúc">
+                        Sửa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -185,6 +195,14 @@
                     <div class="action-buttons">
                       <button class="action-view-btn" (click)="viewDetail(invoice.invoiceId)">
                         Xem Chi tiết
+                      </button>
+                      <button 
+                        *ngIf="invoice.status === 'OVERDUE'"
+                        type="button"
+                        class="btn-edit"
+                        (click)="openEditEndDateModal(invoice)"
+                        title="Sửa ngày kết thúc">
+                        Sửa
                       </button>
                       <button 
                         *ngIf="invoice.status === 'PENDING'"
@@ -236,6 +254,59 @@
             [class.btn-success]="confirmModalType === 'markPaid'"
             (click)="confirmAction()">
             Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Edit End Date Modal -->
+  @if (showEditEndDateModal) {
+    <div class="modal-overlay" (click)="closeEditEndDateModal()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Sửa ngày kết thúc thanh toán</h3>
+          <button class="modal-close" (click)="closeEditEndDateModal()">×</button>
+        </div>
+        <div class="modal-body">
+          @if (selectedInvoiceForEdit) {
+            <div class="form-group">
+              <label class="form-label">Mã căn hộ:</label>
+              <p class="form-value">{{ selectedInvoiceForEdit.apartmentCode }}</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ngày kết thúc hiện tại:</label>
+              <p class="form-value">{{ formatDate(selectedInvoiceForEdit.endDate) }}</p>
+            </div>
+            <div class="form-group">
+              <label for="newEndDate" class="form-label">Ngày kết thúc mới: <span class="required">*</span></label>
+              <input
+                type="date"
+                id="newEndDate"
+                class="form-input"
+                [value]="newEndDate"
+                (change)="onEndDateChange($event)"
+                [min]="getMinDate()"
+                required
+              />
+              <p class="form-hint">Định dạng: DD/MM/YYYY (ví dụ: 25/12/2025)</p>
+              @if (editEndDateError) {
+                <p class="error-message">{{ editEndDateError }}</p>
+              }
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeEditEndDateModal()">Hủy</button>
+          <button 
+            class="btn-confirm btn-primary" 
+            (click)="saveEndDate()"
+            [disabled]="!newEndDate || isUpdatingEndDate">
+            @if (isUpdatingEndDate) {
+              Đang lưu...
+            } @else {
+              Lưu
+            }
           </button>
         </div>
       </div>

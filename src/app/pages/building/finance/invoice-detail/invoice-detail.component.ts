@@ -189,5 +189,19 @@ export class InvoiceDetailComponent implements OnInit {
   viewEvidence(url: string): void {
     window.open(url, '_blank');
   }
+
+  //Kiểm tra xem invoice có quá hạn không
+  isInvoiceOverdue(endDate: string): boolean {
+    if (!endDate) return false;
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dueDate = new Date(endDate);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate < today;
+    } catch {
+      return false;
+    }
+  }
 }
 
