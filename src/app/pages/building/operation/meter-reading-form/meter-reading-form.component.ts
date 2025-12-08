@@ -88,10 +88,12 @@ export class MeterReadingFormComponent implements OnInit {
   }
 
   // Lấy billing period hiện tại (yyyy-MM)
+  // Lưu ý: billingPeriod = tháng trước vì ghi chỉ số cuối kỳ (tháng trước)
   getCurrentBillingPeriod(): string {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const year = previousMonth.getFullYear();
+    const month = String(previousMonth.getMonth() + 1).padStart(2, '0');
     return `${year}-${month}`;
   }
 
@@ -374,17 +376,25 @@ export class MeterReadingFormComponent implements OnInit {
     this.services.forEach(service => {
       const existingReading = this.existingReadings.get(service.feeType);
       
-      readingsArray.push(
-        this.fb.group({
-          feeType: [service.feeType, Validators.required],
-          readingValue: [
-            existingReading?.readingValue || null, 
-            [Validators.required, Validators.min(0)]
-          ],
-          readingId: [existingReading?.readingId || existingReading?.meterReadingId || null]
-        })
-      );
+      const formGroup = this.fb.group({
+        feeType: [service.feeType, Validators.required],
+        readingValue: [
+          existingReading?.readingValue || null, 
+          [Validators.required, Validators.min(0)]
+        ],
+        readingId: [existingReading?.readingId || existingReading?.meterReadingId || null]
+      });
+      
+      readingsArray.push(formGroup);
+      
+      // Nếu có giá trị, mark form control as touched để form có thể submit
+      if (existingReading?.readingValue) {
+        formGroup.get('readingValue')?.markAsTouched();
+      }
     });
+    
+    // Update form validity sau khi rebuild
+    this.meterReadingForm.updateValueAndValidity();
   }
 
   // Lấy chỉ số trước đó của loại phí
@@ -447,7 +457,7 @@ export class MeterReadingFormComponent implements OnInit {
           } else {
             const message = response.message || '';
             if (message.includes('tồn tại') || message.includes('exists') || message.includes('SM34')) {
-              this.submitMessage = 'Đã có chỉ số trong tháng này. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.';
+              this.submitMessage = 'Đã có chỉ số trong tháng trước. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.';
             } else {
               this.submitMessage = response.message || 'Lưu chỉ số thất bại';
             }
@@ -458,7 +468,7 @@ export class MeterReadingFormComponent implements OnInit {
         error: (error) => {
           const errorMessage = error.error?.message || error.error?.Message || '';
           if (errorMessage.includes('tồn tại') || errorMessage.includes('exists') || errorMessage.includes('SM34')) {
-            this.submitMessage = 'Đã có chỉ số trong tháng này. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.';
+            this.submitMessage = 'Đã có chỉ số trong tháng trước. Vui lòng liên hệ admin để cập nhật hoặc chọn tháng khác.';
           } else if (errorMessage.includes('too low') || errorMessage.includes('SM35')) {
             this.submitMessage = 'Giá trị chỉ số phải lớn hơn hoặc bằng chỉ số trước đó. ' + errorMessage;
           } else {
@@ -543,7 +553,7 @@ export class MeterReadingFormComponent implements OnInit {
               errorCount++;
               const message = response?.message || '';
               if (message.includes('tồn tại') || message.includes('exists') || message.includes('SM34')) {
-                lastError = 'Đã có chỉ số trong tháng này. ' + message;
+                lastError = 'Đã có chỉ số trong tháng trước. ' + message;
               } else if (message.includes('too low') || message.includes('SM35')) {
                 lastError = 'Giá trị chỉ số phải lớn hơn hoặc bằng chỉ số trước đó. ' + message;
               } else {
@@ -554,7 +564,7 @@ export class MeterReadingFormComponent implements OnInit {
             errorCount++;
             const errorMessage = error.error?.message || error.error?.Message || '';
             if (errorMessage.includes('tồn tại') || errorMessage.includes('exists') || errorMessage.includes('SM34')) {
-              lastError = 'Đã có chỉ số trong tháng này. ' + errorMessage;
+              lastError = 'Đã có chỉ số trong tháng trước. ' + errorMessage;
             } else if (errorMessage.includes('too low') || errorMessage.includes('SM35')) {
               lastError = 'Giá trị chỉ số phải lớn hơn hoặc bằng chỉ số trước đó. ' + errorMessage;
             } else {
@@ -580,7 +590,7 @@ export class MeterReadingFormComponent implements OnInit {
           } else {
             this.submitMessage = `Cập nhật ${successCount} thành công, ${errorCount} thất bại. ${lastError}`;
             this.submitMessageType = 'error';
-            this.checkExistingReadings();
+            // Không gọi checkExistingReadings nếu có lỗi để giữ nguyên form
           }
           this.saving = false;
         }).catch(() => {

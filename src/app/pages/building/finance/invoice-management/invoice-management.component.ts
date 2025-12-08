@@ -48,7 +48,7 @@ export class InvoiceManagementComponent implements OnInit {
   confirmModalType: 'delete' | 'markPaid' | null = null;
   pendingInvoiceId: string | null = null;
   successMessage: string | null = null;
-
+  
   // Edit End Date modal state
   showEditEndDateModal = false;
   selectedInvoiceForEdit: InvoiceDto | null = null;
