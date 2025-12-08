@@ -11,9 +11,20 @@
       <div class="row">
         <div class="col-md-8 mb-3">
           <label class="form-label fw-bold">Tên dự án <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" formControlName="name" placeholder="VD: Chung cư Times City">
+          <div class="position-relative">
+            <input type="text" class="form-control" formControlName="name" placeholder="VD: Chung cư Times City">
+            <span 
+              *ngIf="createForm.get('name')?.value" 
+              class="clear-icon" 
+              (click)="clearProjectName()"
+              title="Xóa tên dự án">
+              ×
+            </span>
+          </div>
           <div *ngIf="createForm.get('name')?.invalid && createForm.get('name')?.touched" class="text-danger small mt-1">
-            Tên dự án là bắt buộc (tối thiểu 3 ký tự).
+            <span *ngIf="createForm.get('name')?.hasError('required')">Tên dự án là bắt buộc.</span>
+            <span *ngIf="createForm.get('name')?.hasError('minlength')">Tên dự án phải có ít nhất 3 ký tự.</span>
+            <span *ngIf="createForm.get('name')?.hasError('pattern')">Tên dự án chỉ được chứa chữ, số và các ký tự: ! _ -</span>
           </div>
         </div>
 
@@ -21,8 +32,31 @@
           <label class="form-label fw-bold">Mã dự án <span class="text-danger">*</span></label>
           <input type="text" class="form-control" formControlName="projectCode" placeholder="VD: CCTC2024">
           <div class="form-text text-muted small">Tự động sinh theo tên (Có thể sửa)</div>
-          <div *ngIf="createForm.get('projectCode')?.invalid && createForm.get('projectCode')?.touched" class="text-danger small mt-1">
+          
+          <!-- Checking status -->
+          <div *ngIf="isCheckingProjectCode" class="text-primary small mt-1">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            {{ projectCodeCheckMessage }}
+          </div>
+          
+          <!-- Duplicate warning -->
+          <div *ngIf="!isCheckingProjectCode && projectCodeExists" class="text-danger small mt-1">
+            {{ projectCodeCheckMessage }}
+          </div>
+          
+          <!-- Valid message -->
+          <div *ngIf="!isCheckingProjectCode && !projectCodeExists && projectCodeCheckMessage && createForm.get('projectCode')?.value" class="text-success small mt-1">
+            {{ projectCodeCheckMessage }}
+          </div>
+          
+          <!-- Pattern validation -->
+          <div *ngIf="createForm.get('projectCode')?.hasError('pattern') && createForm.get('projectCode')?.touched" class="text-danger small mt-1">
             Mã không hợp lệ (Chỉ A-Z, 0-9, _).
+          </div>
+          
+          <!-- Required validation -->
+          <div *ngIf="createForm.get('projectCode')?.hasError('required') && createForm.get('projectCode')?.touched" class="text-danger small mt-1">
+            Mã dự án là bắt buộc.
           </div>
         </div>
       </div>

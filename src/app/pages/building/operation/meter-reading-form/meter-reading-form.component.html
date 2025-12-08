@@ -207,7 +207,7 @@
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
             </svg>
             <span class="create-mode-text">
-              Chế độ tạo mới: Nhập chỉ số cho tháng này
+              Chế độ tạo mới: Nhập chỉ số tháng trước
             </span>
           </div>
 
@@ -245,7 +245,7 @@
                           placeholder="Nhập chỉ số">
                       </div>
                       <div class="field-hint" *ngIf="getLatestReadingValue(service.feeType) !== null">
-                        Chỉ số tháng trước: {{ getLatestReadingValue(service.feeType) }}
+                        Chỉ số trước: {{ getLatestReadingValue(service.feeType) }}
                       </div>
                       <div class="field-error" *ngIf="getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.hasError('required') && getReadingFormGroup(getFormControlIndex(service)).get('readingValue')?.touched">
                         Vui lòng nhập chỉ số

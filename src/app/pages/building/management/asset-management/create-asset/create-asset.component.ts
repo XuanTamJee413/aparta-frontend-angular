@@ -74,15 +74,22 @@ export class CreateAsset implements OnInit {
     this.buildingsLoading.set(true);
     this.buildingsError.set(null);
 
-    this.assetService.getBuildings().subscribe({
-      next: (data) => {
-        this.buildings.set(data);
+    this.assetService.getMyBuildings().subscribe({
+      next: (data: BuildingDto[]) => {
+        this.buildings.set(data ?? []);
         this.buildingsLoading.set(false);
+
+        if (!data || data.length === 0) {
+          this.buildingsError.set('Tài khoản hiện không quản lý tòa nhà nào.');
+        } else {
+          this.buildingsError.set(null);
+        }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.buildingsLoading.set(false);
+        this.buildings.set([]);
         this.buildingsError.set('Không thể tải danh sách tòa nhà.');
-        console.error('Lỗi khi tải buildings:', err);
+        console.error('Lỗi khi tải buildings (my-buildings):', err);
       }
     });
   }
@@ -100,13 +107,18 @@ export class CreateAsset implements OnInit {
     this.assetForm.markAllAsTouched();
     if (this.assetForm.invalid) return;
 
+    if (!this.buildings() || this.buildings().length === 0) {
+      this.errorMessage.set('Bạn không được phân quyền tạo tài sản cho tòa nhà nào.');
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
     const createDto: AssetCreateDto = this.assetForm.value;
 
     this.assetService.checkAssetExists(createDto.buildingId, createDto.info).pipe(
-      switchMap(exists => {
+      switchMap((exists: boolean) => {
         if (exists) {
           this.isSubmitting.set(false);
           this.assetForm.get('info')?.setErrors({ assetExists: true });
@@ -115,32 +127,46 @@ export class CreateAsset implements OnInit {
           return of(null);
         }
         return this.assetService.createAsset(createDto);
+      }),
+      catchError((err: any) => {
+        return of({ error: err });
       })
     ).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (!res) return;
+        if (res && (res as any).error) {
+          const err = (res as any).error;
+          this.isSubmitting.set(false);
+          this.handleCreateError(err);
+          return;
+        }
+
         this.isSubmitting.set(false);
         this.router.navigate(['manager/manage-asset']);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting.set(false);
-        let specificError = 'Vui lòng thử lại.';
-        if (err.status === 400) {
-          if (err.error && typeof err.error.title === 'string' && err.error.title.includes('JSON')) {
-            specificError = 'Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại các trường (ví dụ: Số lượng phải là số nguyên).';
-          } else if (err.error && err.error.errors) {
-            specificError = Object.values(err.error.errors).flat().join(' ');
-          } else {
-            specificError = 'Dữ liệu gửi lên không hợp lệ (lỗi 400).';
-          }
-        } else if (err.error?.message) {
-          specificError = err.error.message;
-        } else if (err.message) {
-          specificError = err.message;
-        }
-        this.errorMessage.set(`Thêm mới thất bại. ${specificError}`);
-        console.error('Lỗi khi tạo asset:', err);
+        this.handleCreateError(err);
       }
     });
+  }
+
+  private handleCreateError(err: any) {
+    let specificError = 'Vui lòng thử lại.';
+    if (err && err.status === 400) {
+      if (err.error && typeof err.error.title === 'string' && err.error.title.includes('JSON')) {
+        specificError = 'Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại các trường (ví dụ: Số lượng phải là số nguyên).';
+      } else if (err.error && err.error.errors) {
+        specificError = Object.values(err.error.errors).flat().join(' ');
+      } else {
+        specificError = 'Dữ liệu gửi lên không hợp lệ (lỗi 400).';
+      }
+    } else if (err?.error?.message) {
+      specificError = err.error.message;
+    } else if (err?.message) {
+      specificError = err.message;
+    }
+    this.errorMessage.set(`Thêm mới thất bại. ${specificError}`);
+    console.error('Lỗi khi tạo asset:', err);
   }
 }

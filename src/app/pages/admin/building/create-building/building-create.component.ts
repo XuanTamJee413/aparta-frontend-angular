@@ -5,11 +5,12 @@ import { Router, RouterModule } from '@angular/router';
 import { BuildingService, BuildingDetailResponse } from '../../../../services/admin/building.service';
 import { ProjectService, ProjectDto } from '../../../../services/admin/project.service';
 import { Subject, takeUntil } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-building-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MatSnackBarModule],
   templateUrl: './building-create.component.html',
   styleUrls: ['./building-create.component.css']
 })
@@ -17,15 +18,14 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
   createForm: FormGroup;
   projects: ProjectDto[] = [];
   isSubmitting = false;
-  errorMessage = '';
-  successMessage = '';
   private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private buildingService: BuildingService,
     private projectService: ProjectService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.createForm = this.fb.group({
       projectId: ['', Validators.required],
@@ -34,8 +34,8 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
       name: ['', [Validators.required, Validators.minLength(3)]],
       totalFloors: [1, [Validators.required, Validators.min(1), Validators.max(200)]],
       totalBasements: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
-      totalArea: [null, [Validators.min(0)]], // Diện tích phải dương
-      handoverDate: [null],
+      totalArea: [null, [Validators.min(0.01)]], // Diện tích phải dương
+      handoverDate: [null, [this.dateRangeValidator.bind(this)]],
       description: [''],
       // Hotline: Chỉ số, độ dài 8-15
       receptionPhone: ['', [Validators.pattern('^[0-9]*$'), Validators.minLength(8), Validators.maxLength(15)]],
@@ -72,6 +72,16 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
       .subscribe(value => {
         this.generateBuildingCode(value);
       });
+
+    // Lắng nghe thay đổi projectId để cập nhật mã tòa nhà với đuôi dự án
+    this.createForm.get('projectId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        const currentName = this.createForm.get('name')?.value;
+        if (currentName) {
+          this.generateBuildingCode(currentName);
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -79,7 +89,7 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Hàm sinh mã tòa nhà từ tên (VD: "Tòa Park 1" -> "TOA_PARK_1")
+  // Hàm sinh mã tòa nhà từ tên (VD: "Tòa Park 1" + Project "Hồ Tân Xã" -> "TOA_PARK_1_DAHTX")
   private generateBuildingCode(name: string): void {
     if (!name) return;
 
@@ -92,6 +102,16 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
     // 4. Loại bỏ ký tự đặc biệt (chỉ giữ A-Z, 0-9, _)
     code = code.replace(/[^A-Z0-9_]/g, '');
 
+    // 5. Thêm đuôi là viết tắt của tên dự án (nếu có)
+    const projectId = this.createForm.get('projectId')?.value;
+    if (projectId) {
+      const selectedProject = this.projects.find(p => p.projectId === projectId);
+      if (selectedProject && selectedProject.name) {
+        const projectAcronym = this.getAcronym(selectedProject.name);
+        code = `${code}_DA${projectAcronym}`;
+      }
+    }
+
     // Set value nhưng không emit event để tránh loop (nếu cần)
     this.createForm.get('buildingCode')?.setValue(code, { emitEvent: false });
   }
@@ -101,6 +121,36 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
     let result = str.replace(/đ/g, 'd').replace(/Đ/g, 'D');
     result = result.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return result;
+  }
+
+  // Hàm lấy viết tắt từ tên (giống project-create)
+  private getAcronym(str: string): string {
+    const latinStr = this.toLatin(str);
+    // Loại bỏ ký tỹ đặc biệt, chỉ giữ chữ, số và khoảng trắng
+    const cleaned = latinStr.replace(/[^a-zA-Z0-9\s]/g, '');
+    return cleaned
+      .trim()
+      .split(/\s+/)
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase();
+  }
+
+  // Validator cho ngày bàn giao: phải từ năm 1990 và không quá 50 năm trong tương lai
+  private dateRangeValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null; // Cho phép để trống
+
+    const selectedDate = new Date(control.value);
+    const currentYear = new Date().getFullYear();
+    const selectedYear = selectedDate.getFullYear();
+
+    if (selectedYear < 1990) {
+      return { tooOld: true };
+    }
+    if (selectedYear > currentYear + 50) {
+      return { tooFuture: true };
+    }
+    return null;
   }
 
   onSubmit() {
@@ -113,12 +163,15 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
     const start = this.createForm.get('readingWindowStart')?.value;
     const end = this.createForm.get('readingWindowEnd')?.value;
     if (start >= end) {
-      this.errorMessage = 'Ngày bắt đầu chốt số phải nhỏ hơn ngày kết thúc.';
+      this.snackBar.open('Ngày bắt đầu chốt số phải nhỏ hơn ngày kết thúc.', 'Đóng', {
+        duration: 4000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top'
+      });
       return;
     }
 
     this.isSubmitting = true;
-    this.errorMessage = '';
     
     const formValue = this.createForm.getRawValue();
     const buildingData = {
@@ -132,15 +185,27 @@ export class BuildingCreateComponent implements OnInit, OnDestroy {
       next: (res: BuildingDetailResponse) => {
         this.isSubmitting = false;
         if (res.succeeded) {
-          this.successMessage = 'Tạo tòa nhà thành công!';
+          this.snackBar.open('Tạo tòa nhà thành công!', 'Đóng', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+            verticalPosition: 'top'
+          });
           setTimeout(() => this.router.navigate(['/admin/building/list']), 1500);
         } else {
-          this.errorMessage = res.message || 'Lỗi khi tạo tòa nhà.';
+          this.snackBar.open(res.message || 'Lỗi khi tạo tòa nhà.', 'Đóng', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+            verticalPosition: 'top'
+          });
         }
       },
       error: (err: any) => {
         this.isSubmitting = false;
-        this.errorMessage = err.error?.message || 'Đã xảy ra lỗi hệ thống.';
+        this.snackBar.open(err.error?.message || 'Đã xảy ra lỗi hệ thống.', 'Đóng', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        });
       }
     });
   }

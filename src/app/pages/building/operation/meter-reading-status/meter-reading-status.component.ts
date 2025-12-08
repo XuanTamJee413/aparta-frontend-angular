@@ -37,7 +37,7 @@ export class MeterReadingStatusComponent implements OnInit {
   statusFilter: string = ''; // Filter theo trạng thái
   
   // Pagination
-  pageSize = 20;
+  pageSize = 10;
   pageIndex = 0;
   totalApartments = 0;
   

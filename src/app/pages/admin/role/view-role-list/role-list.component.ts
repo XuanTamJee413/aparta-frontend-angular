@@ -84,9 +84,17 @@ export class RoleListComponent implements OnInit {
     ref.afterClosed().subscribe(name => {
       if (typeof name === 'string' && name.trim().length >= 3) {
         this.roleService.createRole(name.trim()).subscribe(res => {
-          this.snackBar.open(res?.message ?? 'Tạo role thành công', 'Đóng', { duration: 3000 });
+          this.snackBar.open(res?.message ?? 'Tạo role thành công', 'Đóng', { 
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+            verticalPosition: 'top'
+          });
           this.loadRoles();
-        }, err => this.snackBar.open(err?.error?.message || 'Tạo role thất bại', 'Đóng', { duration: 4000 }));
+        }, err => this.snackBar.open(err?.error?.message || 'Tạo role thất bại', 'Đóng', { 
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        }));
       }
     });
   }
@@ -99,9 +107,17 @@ export class RoleListComponent implements OnInit {
     ref.afterClosed().subscribe(newName => {
       if (typeof newName === 'string' && newName.trim().length >= 3 && newName.trim() !== role.roleName) {
         this.roleService.updateRole(role.roleId, newName.trim()).subscribe(res => {
-          this.snackBar.open(res?.message ?? 'Cập nhật role thành công', 'Đóng', { duration: 3000 });
+          this.snackBar.open(res?.message ?? 'Cập nhật role thành công', 'Đóng', { 
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+            verticalPosition: 'top'
+          });
           this.loadRoles();
-        }, err => this.snackBar.open(err?.error?.message || 'Cập nhật role thất bại', 'Đóng', { duration: 4000 }));
+        }, err => this.snackBar.open(err?.error?.message || 'Cập nhật role thất bại', 'Đóng', { 
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        }));
       }
     });
   }
@@ -115,9 +131,17 @@ export class RoleListComponent implements OnInit {
     ref.afterClosed().subscribe(ok => {
       if (ok === true) {
         this.roleService.deleteRole(role.roleId).subscribe(res => {
-          this.snackBar.open(res?.message ?? 'Xóa role thành công', 'Đóng', { duration: 3000 });
+          this.snackBar.open(res?.message ?? 'Tắt role thành công', 'Đóng', { 
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+            verticalPosition: 'top'
+          });
           this.loadRoles();
-        }, err => this.snackBar.open(err?.error?.message || 'Xóa role thất bại', 'Đóng', { duration: 4000 }));
+        }, err => this.snackBar.open(err?.error?.message || 'Tắt role thất bại', 'Đóng', { 
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top'
+        }));
       }
     });
   }
@@ -127,10 +151,14 @@ export class RoleListComponent implements OnInit {
       width: '720px',
       data: { role }
     });
-    ref.afterClosed().subscribe((res) => {
+    ref.afterClosed().subscribe((res: any) => {
       if (!res) return;
       const message = res?.message ?? (res?.succeeded ? 'Lưu quyền thành công' : 'Lưu quyền thất bại');
-      this.snackBar.open(message, 'Đóng', { duration: 3000 });
+      this.snackBar.open(message, 'Đóng', { 
+        duration: 3000,
+        panelClass: res?.succeeded ? ['success-snackbar'] : ['error-snackbar'],
+        verticalPosition: 'top'
+      });
     });
   }
 }

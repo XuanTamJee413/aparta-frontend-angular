@@ -195,9 +195,8 @@ export class BuildingListComponent implements OnInit, OnDestroy {
 
   showNotification(message: string, type: 'success' | 'error') {
     this.snackBar.open(message, 'Đóng', {
-      duration: 3000,
-      panelClass: type === 'success' ? ['bg-success', 'text-white'] : ['bg-danger', 'text-white'],
-      horizontalPosition: 'right',
+      duration: type === 'success' ? 3000 : 4000,
+      panelClass: type === 'success' ? ['success-snackbar'] : ['error-snackbar'],
       verticalPosition: 'top'
     });
   }

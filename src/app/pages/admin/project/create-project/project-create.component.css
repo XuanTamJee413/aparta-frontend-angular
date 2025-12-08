@@ -101,3 +101,26 @@ header p { margin-top: 0.25rem; color: #6b7280; font-size: 0.875rem; }
   color: #0284c7;
   font-weight: 500;
 }
+
+/* Dấu X xóa trong ô input tên dự án (giống search box) */
+.position-relative {
+  position: relative;
+}
+
+.clear-icon {
+  position: absolute;
+  right: 12px;
+  top: 48%;
+  transform: translateY(-52%);
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.clear-icon:hover {
+  color: #4f46e5;
+}
