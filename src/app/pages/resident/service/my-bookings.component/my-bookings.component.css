@@ -1,3 +1,61 @@
+/* 1. Căn giữa nút trong ô bảng */
+.cell-action {
+  text-align: center;
+  vertical-align: middle; /* Quan trọng để nút không bị lệch */
+  white-space: nowrap;    /* Giữ nút không bị xuống dòng */
+}
+
+/* 2. Style cho nút Hủy */
+.btn-cancel {
+  background-color: #fff;       /* Nền trắng */
+  color: #dc3545;               /* Chữ màu đỏ */
+  border: 1px solid #dc3545;    /* Viền đỏ mỏng */
+  padding: 6px 14px;            /* Khoảng cách đệm */
+  border-radius: 6px;           /* Bo góc mềm mại */
+  font-size: 0.85rem;           /* Cỡ chữ vừa vặn trong bảng */
+  font-weight: 500;             /* Chữ hơi đậm */
+  cursor: pointer;              /* Con trỏ chuột hình bàn tay */
+  transition: all 0.2s ease-in-out; /* Hiệu ứng chuyển màu mượt mà */
+  
+  /* Căn chỉnh nội dung bên trong nút */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3. Hiệu ứng khi rê chuột (Hover) */
+.btn-cancel:hover {
+  background-color: #dc3545;    /* Nền chuyển đỏ */
+  color: #fff;                  /* Chữ chuyển trắng */
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3); /* Bóng đổ nhẹ */
+  transform: translateY(-1px);  /* Nút nảy lên nhẹ */
+}
+
+/* 4. Hiệu ứng khi bấm giữ (Active) */
+.btn-cancel:active {
+  transform: translateY(1px);   /* Nút lún xuống nhẹ */
+  box-shadow: none;
+}
+
+/* 5. Trạng thái Vô hiệu hóa (Disabled/Loading) */
+.btn-cancel:disabled {
+  background-color: #f8d7da;
+  color: #888;
+  border-color: #f5c6cb;
+  cursor: not-allowed;          /* Con trỏ báo không được bấm */
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 6. Style cho dấu gạch ngang (khi không hủy được) */
+.text-muted {
+  color: #adb5bd;
+  font-weight: bold;
+  font-size: 1.2rem;
+  display: inline-block;
+  padding-top: 5px;
+}
 /* ====================== ROOT ====================== */
 :host {
   display: block;

@@ -497,3 +497,136 @@ tr.expired {
     padding: 1.4rem;
   }
 }
+
+/* ====================== BẢNG LƯU Ý ĐẸP NHẤT 2025 ====================== */
+/* BẢNG LƯU Ý - NỀN TRẮNG, THANH LỊCH & HIỆN ĐẠI */
+.notice-card {
+  background: #ffffff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 36px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Thanh màu xanh chủ đạo ở trên cùng */
+.notice-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #1976d2, #42a5f5, #64b5f6);
+  border-radius: 18px 18px 0 0;
+}
+
+/* Header */
+.notice-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.notice-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+  color: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  flex-shrink: 0;
+  box-shadow: 0 6px 15px rgba(25, 118, 210, 0.25);
+}
+
+.notice-card h4 {
+  margin: 0;
+  color: #1e88e5;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Danh sách lưu ý */
+.notice-list {
+  margin: 24px 0;
+  padding-left: 4px;
+  line-height: 1.85;
+  color: #2c3e50;
+  font-size: 1.05rem;
+}
+
+.notice-list li {
+  margin-bottom: 14px;
+  position: relative;
+  padding-left: 34px;
+}
+
+
+/* Footer */
+.notice-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 2px dashed #bbdefb;
+  color: #1565c0;
+  font-size: 0.98rem;
+  font-weight: 500;
+  text-align: center;
+  font-style: normal;
+  background: linear-gradient(to right, transparent, #e3f2fd 50%, transparent);
+  padding: 16px 20px;
+  border-radius: 12px;
+}
+
+/* Hover effect */
+.notice-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notice-card {
+    padding: 24px 20px;
+    margin: 20px 12px;
+    border-radius: 16px;
+  }
+
+  .notice-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .notice-icon {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+  }
+
+  .notice-card h4 {
+    font-size: 1.3rem;
+  }
+
+  .notice-list {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .notice-list li {
+    padding-left: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notice-card {
+    margin: 16px 8px;
+    padding: 20px 16px;
+  }
+}

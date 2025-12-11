@@ -416,3 +416,52 @@ dialog::backdrop {
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+
+/* 1. Căn chỉnh ô chứa nút (Action Cell) */
+.action-cell {
+  text-align: center;      /* Căn giữa ngang */
+  vertical-align: middle;  /* Căn giữa dọc (Sửa lỗi bị lệch) */
+  white-space: nowrap;     /* Giữ nút trên 1 dòng */
+  padding: 8px;            /* Khoảng cách đệm */
+}
+
+/* 2. Style cho nút Hủy nhỏ (Small Cancel Button) */
+.btn-cancel-sm {
+  background-color: #fff;       /* Nền trắng */
+  color: #dc3545;               /* Chữ màu đỏ */
+  border: 1px solid #dc3545;    /* Viền đỏ mỏng */
+  padding: 4px 10px;            /* Kích thước nhỏ gọn cho bảng */
+  border-radius: 4px;           /* Bo góc nhẹ */
+  font-size: 0.85rem;           /* Cỡ chữ vừa phải (~13-14px) */
+  font-weight: 500;             /* Chữ hơi đậm để dễ đọc */
+  cursor: pointer;              /* Con trỏ bàn tay */
+  transition: all 0.2s ease;    /* Hiệu ứng mượt mà */
+  
+  /* Flex để căn giữa chữ trong nút */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3. Hiệu ứng Hover (Rê chuột vào) */
+.btn-cancel-sm:hover {
+  background-color: #dc3545;    /* Nền chuyển đỏ */
+  color: #fff;                  /* Chữ chuyển trắng */
+  box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3); /* Bóng đổ nhẹ */
+}
+
+/* 4. Hiệu ứng Active (Khi bấm xuống) */
+.btn-cancel-sm:active {
+  transform: translateY(1px);   /* Nhún xuống 1 chút */
+  box-shadow: none;
+}
+
+/* 5. Style cho dấu gạch ngang (khi không hủy được) */
+.text-muted {
+  color: #adb5bd;               /* Màu xám nhạt */
+  font-size: 1.2rem;            /* To hơn một chút cho rõ */
+  line-height: 1;
+  font-weight: bold;
+  user-select: none;            /* Không cho bôi đen */
+}

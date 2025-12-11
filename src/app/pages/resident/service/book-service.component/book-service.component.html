@@ -2,21 +2,17 @@
   
   <h2>Danh sách dịch vụ</h2>
 
-  <div *ngIf="isLoading && availableServices.length === 0" class="loading">
-    Đang tải dịch vụ...
-  </div>
-
   <div *ngIf="!isLoading && availableServices.length === 0" class="empty-state">
     Không có dịch vụ nào khả dụng.
   </div>
 
-  <div class="service-grid" *ngIf="!isLoading && availableServices.length > 0">
+  <div class="service-grid" *ngIf="availableServices.length > 0">
     <div class="service-card" *ngFor="let service of availableServices">
       <div class="service-card-header">
         <h3 class="service-name">{{ service.name }}</h3>
       </div>
       <div class="service-card-body">
-        
+         
       </div>
       <div class="service-card-footer">
         <button class="btn-primary" (click)="openBookingModal(service)">Đặt ngay</button>
@@ -29,7 +25,7 @@
   <h2>Lịch sử đặt dịch vụ của tôi</h2>
 
   <div *ngIf="isHistoryLoading" class="loading">
-    Đang tải lịch sử...
+    <div class="spinner"></div> Đang tải lịch sử...
   </div>
 
   <div class="table-responsive" *ngIf="!isHistoryLoading && myBookings.length > 0">
@@ -41,21 +37,35 @@
           <th>Trạng thái</th>
           <th>Ghi chú của bạn</th>
           <th>Phản hồi nhân viên</th>
-          <th>Thanh toán</th>
-        </tr>
+          <!-- <th>Thanh toán</th> -->
+          <th style="text-align: center;">Hành động</th> </tr>
       </thead>
       <tbody>
         <tr *ngFor="let booking of myBookings">
-          <td>{{ booking.serviceName }}</td>
+          <td><strong>{{ booking.serviceName }}</strong></td>
           <td>{{ booking.bookingDate | date:'dd/MM/yyyy HH:mm' }}</td>
           <td>
             <span class="status-badge" [ngClass]="'status-' + booking.status.toLowerCase()">
               {{ getStatusLabel(booking.status) }}
             </span>
           </td>
-          <td>{{ booking.residentNote || '—' }}</td>
-          <td>{{ booking.staffNote || '—' }}</td>
-          <td>{{ booking.paymentAmount | currency:'VND':'symbol':'1.0-0' }}</td>
+          <td class="note-cell">{{ booking.residentNote || '—' }}</td>
+          <td class="note-cell">{{ booking.staffNote || '—' }}</td>
+          <!-- <td style="font-weight: bold;">{{ booking.paymentAmount | currency:'VND':'symbol':'1.0-0' }}</td>
+           -->
+          <td class="action-cell">
+  <button 
+    *ngIf="canCancel(booking.status, booking.bookingDate)" 
+    class="btn-cancel-sm"
+    (click)="onCancelBooking(booking.serviceBookingId)">
+    Hủy
+  </button>
+
+  <span *ngIf="!canCancel(booking.status, booking.bookingDate)" class="text-muted">
+    —
+  </span>
+</td>
+
         </tr>
       </tbody>
     </table>
@@ -70,15 +80,12 @@
 <dialog #bookingDialog (close)="closeDialog()" class="booking-modal">
   <form [formGroup]="bookingForm" (ngSubmit)="onSubmitBooking()" class="booking-form">
 
-    <!-- Header -->
     <div class="modal-header">
       <h3>Đặt dịch vụ: {{ selectedService?.name }}</h3>
       <button type="button" class="btn-close" (click)="closeDialog()" aria-label="Đóng">×</button>
     </div>
 
-    <!-- Body -->
     <div class="modal-body">
-
       <div class="form-group">
         <label for="bookingDate">Thời gian mong muốn <span class="required">*</span></label>
         <input 
@@ -93,34 +100,23 @@
       </div>
 
       <div class="form-group">
-        <label for="residentNote">Ghi chú thêm (không bắt buộc)</label>
+        <label for="residentNote">Ghi chú thêm</label>
         <textarea 
           id="residentNote"
           formControlName="residentNote" 
           rows="3"
-          placeholder="Ví dụ: Vui lòng đến vào buổi sáng, cần sửa điều hòa phòng khách..."
+          placeholder="Ví dụ: Cần sửa gấp, vui lòng gọi trước..."
           class="form-textarea"></textarea>
       </div>
 
-      <!-- Thông báo lỗi / thành công -->
-      <div class="alert alert-danger" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
-      <div class="alert alert-success" *ngIf="successMessage">
-        {{ successMessage }}
-      </div>
-
+      <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
     </div>
 
-    <!-- Footer -->
     <div class="modal-footer">
-      <button type="button" class="btn btn-cancel" (click)="closeDialog()">
-        Hủy bỏ
-      </button>
-      <button type="submit" class="btn btn-primary" 
-              [disabled]="isLoading || bookingForm.invalid">
-        <span *ngIf="isLoading">Đang gửi...</span>
-        <span *ngIf="!isLoading">Xác nhận đặt</span>
+      <button type="button" class="btn btn-cancel" (click)="closeDialog()">Hủy bỏ</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading || bookingForm.invalid">
+        {{ isLoading ? 'Đang gửi...' : 'Xác nhận đặt' }}
       </button>
     </div>
 

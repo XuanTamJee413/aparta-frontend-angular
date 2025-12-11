@@ -451,3 +451,47 @@ dialog::backdrop {
   margin: 10px 0;
   text-align: center;
 }
+
+/* Button styles */
+.btn-verify {
+  background-color: #28a745; /* Màu xanh lá */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.btn-verify:hover {
+  background-color: #218838;
+}
+
+/* Dialog footer buttons */
+.verify-footer {
+  display: flex;
+  justify-content: space-between; /* Tách 2 nút ra 2 bên */
+  gap: 10px;
+}
+
+.btn-reject {
+  background-color: #dc3545; /* Màu đỏ */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-reject:hover {
+  background-color: #c82333;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}

@@ -5,7 +5,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { ServiceDto } from '../../../../models/service.model';
 import { ServiceBookingCreateDto, ServiceBookingDto } from '../../../../models/service-booking.model';
-
 import { ServiceBookingService } from '../../../../services/resident/service-booking.service';
 
 @Component({
@@ -22,12 +21,15 @@ export class BookServiceComponent implements OnInit {
   availableServices: ServiceDto[] = [];
   bookingForm: FormGroup;
   selectedService: ServiceDto | null = null;
-  isLoading = false;
+  
+  // Trạng thái loading
+  isLoading = false;      // Cho việc đặt mới
+  isHistoryLoading = false; // Cho việc tải lịch sử
+  
   errorMessage = '';
   successMessage = '';
 
   myBookings: ServiceBookingDto[] = [];
-  isHistoryLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -44,68 +46,15 @@ export class BookServiceComponent implements OnInit {
     this.loadHistory();
   }
 
+  // --- 1. PHẦN TẢI DỮ LIỆU ---
   loadAvailableServices(): void {
-    this.isLoading = true;
     this.bookingService.getAvailableServices().subscribe({
       next: (data) => {
         this.availableServices = data.items;
-        this.isLoading = false;
       },
       error: (err) => {
         console.error(err);
         this.errorMessage = 'Failed to load services.';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  openBookingModal(service: ServiceDto): void {
-    this.selectedService = service;
-    this.bookingForm.reset({
-      bookingDate: this.getNowISO(),
-      residentNote: ''
-    });
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.dialog.nativeElement.showModal();
-  }
-
-  closeDialog(): void {
-    this.dialog.nativeElement.close();
-    this.selectedService = null;
-  }
-
-  onSubmitBooking(): void {
-    if (this.bookingForm.invalid || !this.selectedService) {
-      return;
-    }
-
-    this.isLoading = true;
-    const formValue = this.bookingForm.value;
-    const serviceName = this.selectedService.name;
-
-    const bookingDto: ServiceBookingCreateDto = {
-      serviceId: this.selectedService.serviceId,
-      bookingDate: new Date(formValue.bookingDate).toISOString(),
-      residentNote: formValue.residentNote
-    };
-
-    this.bookingService.createBooking(bookingDto).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.successMessage = `Đặt dịch vụ "${serviceName}" thành công!`;
-        
-        setTimeout(() => {
-          this.closeDialog();
-          this.successMessage = '';
-        }, 1500);
-
-        this.loadHistory();
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = err.error?.message || 'Lỗi khi đặt dịch vụ.';
-        this.isLoading = false;
       }
     });
   }
@@ -124,6 +73,97 @@ export class BookServiceComponent implements OnInit {
     });
   }
 
+  // --- 2. PHẦN ĐẶT DỊCH VỤ ---
+  openBookingModal(service: ServiceDto): void {
+    this.selectedService = service;
+    this.bookingForm.reset({
+      bookingDate: this.getNowISO(),
+      residentNote: ''
+    });
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.dialog.nativeElement.showModal();
+  }
+
+  closeDialog(): void {
+    this.dialog.nativeElement.close();
+    this.selectedService = null;
+  }
+
+  onSubmitBooking(): void {
+    if (this.bookingForm.invalid || !this.selectedService) return;
+
+    this.isLoading = true;
+    const formValue = this.bookingForm.value;
+    const serviceName = this.selectedService.name;
+
+    const bookingDto: ServiceBookingCreateDto = {
+      serviceId: this.selectedService.serviceId,
+      bookingDate: new Date(formValue.bookingDate).toISOString(),
+      residentNote: formValue.residentNote
+    };
+
+    this.bookingService.createBooking(bookingDto).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.successMessage = `Đặt dịch vụ "${serviceName}" thành công!`;
+        
+        setTimeout(() => {
+          this.closeDialog();
+          this.successMessage = '';
+        }, 1500);
+
+        this.loadHistory(); // Tải lại lịch sử sau khi đặt
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Lỗi khi đặt dịch vụ.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // --- 3. PHẦN HỦY DỊCH VỤ (MỚI THÊM) ---
+  
+  // Chỉ cho phép hủy khi trạng thái là Pending
+  // Trong file book-service.component.ts
+
+// Cập nhật hàm này
+canCancel(status: string, bookingDate: string): boolean {
+  // 1. Phải là trạng thái Pending
+  if (status !== 'Pending') {
+    return false;
+  }
+
+  // 2. LOGIC MỚI: Phải chưa đến giờ thực hiện
+  const bookingTime = new Date(bookingDate).getTime();
+  const now = new Date().getTime();
+
+  // Nếu thời gian đặt > thời gian hiện tại => Chưa quá giờ => Được hủy
+  return bookingTime > now;
+}
+
+  onCancelBooking(bookingId: string): void {
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn đặt dịch vụ này không?')) {
+      return;
+    }
+
+    // Sử dụng isHistoryLoading để hiện trạng thái chờ trên bảng
+    this.isHistoryLoading = true; 
+
+    this.bookingService.cancelBooking(bookingId).subscribe({
+      next: () => {
+        alert('Đã hủy đơn thành công!');
+        this.loadHistory(); // Tải lại để cập nhật trạng thái
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isHistoryLoading = false;
+        const msg = err.error?.message || 'Có lỗi xảy ra khi hủy đơn.';
+        alert(msg);
+      }
+    });
+  }
+
+  // --- HELPERS ---
   getStatusLabel(status: string): string {
     const map: { [key: string]: string } = {
       Pending: 'Chờ duyệt',
