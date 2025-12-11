@@ -166,42 +166,52 @@ export class ChatShellComponent implements OnInit, OnDestroy {
   }
 
   loadMessages(shouldScrollToBottom: boolean = false): void {
-    if (!this.selectedInteraction || this.isLoadingMessages || !this.hasMoreMessages) {
-      return;
-    }
+  if (!this.selectedInteraction || this.isLoadingMessages || !this.hasMoreMessages) {
+    return;
+  }
 
-    this.isLoadingMessages = true;
+  this.isLoadingMessages = true;
+  const container = this.messagesContainer?.nativeElement;
+  const oldScrollHeight = container?.scrollHeight || 0;
 
-    const container = this.messagesContainer?.nativeElement;
-    const oldScrollHeight = container?.scrollHeight || 0;
+  // [SỬA ĐOẠN NÀY]
+  this.chatService.getMessages(this.selectedInteraction.interactionId, this.currentPage).subscribe({
+    next: (response) => { // response là ApiResponse
+      this.isLoadingMessages = false;
 
-    this.chatService.getMessages(this.selectedInteraction.interactionId, this.currentPage).subscribe({
-      next: (newMessages) => {
-        this.isLoadingMessages = false;
+      if (response.succeeded && response.data) {
+        const newMessages = response.data.items; // Lấy mảng items từ data
 
         if (newMessages.length > 0) {
+          // Logic cũ: nối mảng
           this.messages = [...newMessages, ...this.messages];
         }
 
-        if (newMessages.length < 10) {
+        // Logic phân trang dựa trên response trả về
+        if (newMessages.length < 10) { // Hoặc check: this.messages.length >= response.data.totalCount
           this.hasMoreMessages = false;
         } else {
           this.currentPage++;
         }
 
+        // Logic scroll giữ nguyên
         if (shouldScrollToBottom) {
           this.scrollToBottom();
         } else if (container && this.currentPage > 1) {
-          const newScrollHeight = container.scrollHeight;
-          container.scrollTop = newScrollHeight - oldScrollHeight;
+          // Timeout nhỏ để DOM kịp render trước khi set scrollTop
+          setTimeout(() => {
+             const newScrollHeight = container.scrollHeight;
+             container.scrollTop = newScrollHeight - oldScrollHeight;
+          }, 0);
         }
-      },
-      error: (err) => {
-        console.error('[API ERROR] loadMessages thất bại:', err);
-        this.isLoadingMessages = false;
       }
-    });
-  }
+    },
+    error: (err) => {
+      console.error('[API ERROR] loadMessages thất bại:', err);
+      this.isLoadingMessages = false;
+    }
+  });
+}
 
   sendMessage(content: string): void {
     if (!this.selectedInteraction || !content.trim() || !this.currentUserId || this.isSending) return;

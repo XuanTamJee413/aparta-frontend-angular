@@ -1,67 +1,91 @@
-<h2 mat-dialog-title>Thêm Nhân Viên Mới</h2>
+<h2 mat-dialog-title>
+  {{ isEditMode ? 'Cấu Hình & Quản Lý Nhân Viên' : 'Thêm Nhân Viên Mới' }}
+</h2>
 
 <mat-dialog-content class="dialog-content">
   <form [formGroup]="staffForm" class="staff-form">
     
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="col">
-        <mat-label>Họ và tên</mat-label>
-        <input matInput formControlName="fullName" placeholder="VD: Nguyễn Văn A" required>
-        <mat-error *ngIf="staffForm.get('fullName')?.hasError('required')">Bắt buộc nhập</mat-error>
-      </mat-form-field>
+    <div class="info-block">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="col">
+          <mat-label>Họ và tên</mat-label>
+          <input matInput formControlName="fullName" placeholder="VD: Nguyễn Văn A" required>
+          <mat-error *ngIf="staffForm.get('fullName')?.hasError('required')">Bắt buộc nhập</mat-error>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline" class="col">
-        <mat-label>Mã nhân viên (Tùy chọn)</mat-label>
-        <input matInput formControlName="staffCode" placeholder="VD: NV001">
-      </mat-form-field>
+        <mat-form-field appearance="outline" class="col">
+          <mat-label>Mã nhân viên</mat-label>
+          <input matInput formControlName="staffCode" placeholder="VD: NV001">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="col">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="email@example.com" required>
+          <mat-error>Email không hợp lệ hoặc thiếu</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="col">
+          <mat-label>Số điện thoại</mat-label>
+          <input matInput type="tel" formControlName="phone" placeholder="0987654321" required>
+          <mat-error>SĐT không hợp lệ hoặc thiếu</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="col">
+          <mat-label>Vai trò</mat-label>
+          <mat-select formControlName="roleId" required>
+            <mat-option *ngFor="let role of roles" [value]="role.roleId">
+              {{ role.roleName | titlecase }}
+            </mat-option>
+          </mat-select>
+          <mat-error>Vui lòng chọn vai trò</mat-error>
+        </mat-form-field>
+      </div>
     </div>
 
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="col">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="email" placeholder="email@example.com" required>
-        <mat-error *ngIf="staffForm.get('email')?.hasError('required')">Bắt buộc nhập</mat-error>
-        <mat-error *ngIf="staffForm.get('email')?.hasError('email')">Email không hợp lệ</mat-error>
-        <mat-error *ngIf="staffForm.get('email')?.hasError('duplicate')">Email đã tồn tại</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="col">
-        <mat-label>Số điện thoại</mat-label>
-        <input matInput type="tel" formControlName="phone" placeholder="0987654321" required>
-        <mat-error *ngIf="staffForm.get('phone')?.hasError('required')">Bắt buộc nhập</mat-error>
-        <mat-error *ngIf="staffForm.get('phone')?.hasError('pattern')">SĐT không hợp lệ</mat-error>
-        <mat-error *ngIf="staffForm.get('phone')?.hasError('duplicate')">SĐT đã tồn tại</mat-error>
-      </mat-form-field>
-    </div>
-
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="col">
-        <mat-label>Mật khẩu khởi tạo</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" required>
-        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'" type="button">
-          <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+    <div *ngIf="isEditMode" class="password-reset-section">
+      <mat-divider></mat-divider>
+      <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <div>
+          <h4 class="m-0 text-muted">Bảo mật</h4>
+          <small class="text-muted">Gửi mật khẩu mới ngẫu nhiên qua email nhân viên.</small>
+        </div>
+        <button type="button" mat-stroked-button color="warn" (click)="onResetPassword()">
+          <mat-icon>lock_reset</mat-icon> Đặt lại mật khẩu
         </button>
-        <mat-error *ngIf="staffForm.get('password')?.hasError('required')">Bắt buộc nhập</mat-error>
-        <mat-error *ngIf="staffForm.get('password')?.hasError('minlength')">Tối thiểu 6 ký tự</mat-error>
-      </mat-form-field>
+      </div>
+      <mat-divider></mat-divider>
+    </div>
 
-      <mat-form-field appearance="outline" class="col">
-        <mat-label>Vai trò</mat-label>
-        <mat-select formControlName="roleId" required>
-          <mat-option *ngFor="let role of roles" [value]="role.roleId">
-            {{ role.roleName | titlecase }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="staffForm.get('roleId')?.hasError('required')">Vui lòng chọn vai trò</mat-error>
-      </mat-form-field>
+    <p *ngIf="!isEditMode" class="text-muted small mt-2">
+      <mat-icon class="align-middle fs-6">info</mat-icon>
+      Mật khẩu sẽ được hệ thống tạo ngẫu nhiên và gửi qua email cho nhân viên.
+    </p>
+
+    <div class="building-section mt-3">
+      <h4 class="mb-2">Phân công quản lý tòa nhà:</h4>
+      <div class="building-grid" formArrayName="selectedBuildings">
+        <div *ngFor="let building of buildings; let i=index" class="building-item">
+          <mat-checkbox [formControlName]="i" color="primary">
+            {{ building.name }} <span class="text-muted small">({{ building.buildingCode }})</span>
+          </mat-checkbox>
+        </div>
+        <div *ngIf="buildings.length === 0" class="text-muted fst-italic">
+          Đang tải danh sách tòa nhà...
+        </div>
+      </div>
     </div>
 
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Hủy bỏ</button>
-  <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isSubmitting || staffForm.invalid">
-    {{ isSubmitting ? 'Đang tạo...' : 'Tạo mới' }}
+  <button mat-button mat-dialog-close>Đóng</button>
+  
+  <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isSubmitting || (staffForm.invalid && !isEditMode)">
+    {{ isSubmitting ? 'Đang xử lý...' : (isEditMode ? 'Lưu cấu hình' : 'Tạo mới') }}
   </button>
 </mat-dialog-actions>

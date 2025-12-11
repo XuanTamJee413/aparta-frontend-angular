@@ -1,12 +1,17 @@
 <mat-card>
   <mat-card-header>
-    <mat-card-title>Đăng ký khách thăm</mat-card-title>
+    <mat-card-title>{{ editingLogId ? 'Cập nhật thông tin' : 'Đăng ký khách thăm' }}</mat-card-title>
     <mat-card-subtitle>Vui lòng nhập thông tin của khách</mat-card-subtitle>
   </mat-card-header>
-  
+
   <mat-card-content>
     <form [formGroup]="visitorForm" (ngSubmit)="onSubmit()" class="visitor-form">
-      
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <button mat-stroked-button color="primary" type="button" (click)="openRecentVisitors()">
+          <mat-icon>history</mat-icon> Chọn khách cũ
+        </button>
+        <span class="text-muted small">Hoặc nhập mới bên dưới:</span>
+      </div>
       <!-- Họ tên -->
       <mat-form-field appearance="outline">
         <mat-label>Họ và tên</mat-label>
@@ -38,7 +43,7 @@
           <mat-error *ngIf="visitorForm.get('idNumber')?.hasError('pattern')">
             CCCD/Hộ chiếu chỉ được chứa số
           </mat-error>
-           <mat-error *ngIf="visitorForm.get('idNumber')?.hasError('maxlength')">
+          <mat-error *ngIf="visitorForm.get('idNumber')?.hasError('maxlength')">
             Tối đa 20 ký tự
           </mat-error>
         </mat-form-field>
@@ -52,22 +57,18 @@
 
       <!-- Ngày và Giờ -->
       <div class="form-row">
-        
+
         <mat-form-field appearance="outline" class="form-field-half">
           <mat-label>Ngày dự kiến đến</mat-label>
-          <input matInput 
-                 [matDatepicker]="picker" 
-                 formControlName="checkinDate"
-                 placeholder="Chọn ngày"
-                 required>
+          <input matInput [matDatepicker]="picker" formControlName="checkinDate" placeholder="Chọn ngày" required>
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
-          
+
           <!-- Ưu tiên báo lỗi 'required' trước -->
           <mat-error *ngIf="visitorForm.get('checkinDate')?.hasError('required')">
             Ngày là bắt buộc
           </mat-error>
-          
+
           <!-- THÊM MAT-ERROR CHO LỖI 'pastDate' MÀ CHÚNG TA VỪA TẠO -->
           <mat-error *ngIf="visitorForm.get('checkinDate')?.hasError('pastDate')">
             Không được chọn ngày ở quá khứ
@@ -86,14 +87,20 @@
             Giờ là bắt buộc
           </mat-error>
         </mat-form-field>
-        </div>
+      </div>
 
       <!-- (Nút bấm không thay đổi) -->
       <mat-card-actions align="end">
-        <button mat-button type="button" (click)="resetForm()">Hủy</button>
-        <button mat-raised-button color="primary" type="submit" [disabled]="visitorForm.invalid">
-          Đăng ký
+
+        <button mat-button type="button" (click)="editingLogId ? cancelEdit() : resetForm()">
+          {{ editingLogId ? 'Hủy cập nhật' : 'Nhập lại' }}
         </button>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="visitorForm.invalid">
+          <mat-icon>{{ editingLogId ? 'save' : 'add' }}</mat-icon>
+          {{ editingLogId ? 'Lưu thay đổi' : 'Đăng ký' }}
+        </button>
+
       </mat-card-actions>
 
     </form>
@@ -144,8 +151,8 @@
         <!-- Cột Trạng thái -->
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
-          <td mat-cell *matCellDef="let log"> 
-            {{log.status}} 
+          <td mat-cell *matCellDef="let log">
+            {{log.status}}
           </td>
         </ng-container>
 
@@ -156,7 +163,8 @@
             <button mat-icon-button (click)="editVisit(log)" [disabled]="log.status !== 'Pending'" title="Sửa">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="deleteVisit(log)" [disabled]="log.status !== 'Pending'" title="Hủy">
+            <button mat-icon-button color="warn" (click)="deleteVisit(log)" [disabled]="log.status !== 'Pending'"
+              title="Hủy">
               <mat-icon>delete</mat-icon>
             </button>
           </td>

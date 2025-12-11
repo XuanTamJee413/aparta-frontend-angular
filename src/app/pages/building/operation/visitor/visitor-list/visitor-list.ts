@@ -4,11 +4,25 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+// --- ANGULAR MATERIAL IMPORTS ---
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
+
 import { 
   VisitorService, 
   VisitLogStaffViewDto, 
   ApartmentDto, 
-  PagedList, 
   VisitorQueryParams 
 } from '../../../../../services/resident/visitor.service';
 
@@ -20,7 +34,21 @@ import { FastCheckin } from '../fast-checkin/fast-checkin';
   imports: [
     CommonModule,
     FormsModule,
-    FastCheckin
+    FastCheckin,
+    // Material Modules
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatDividerModule
   ],
   templateUrl: './visitor-list.html',
   styleUrl: './visitor-list.css'
@@ -38,10 +66,13 @@ export class VisitorList implements OnInit {
 
   apartmentList: ApartmentDto[] = []; 
   
-  // SỬA LỖI 1: Thay đổi kiểu PagedList<...> thành 'any' 
-  // để cho phép chúng ta thay đổi kiểu dữ liệu của 'checkinTime' (string -> Date)
+  // Dữ liệu bảng
   paginatedVisitors: any | null = null;
   
+  // --- UI CONFIG CHO MAT-TABLE ---
+  // Định nghĩa các cột sẽ hiển thị
+  displayedColumns: string[] = ['visitorInfo', 'checkinTime', 'status', 'actions'];
+
   queryParams: VisitorQueryParams = {
     pageNumber: 1,
     pageSize: 10,
@@ -75,25 +106,17 @@ export class VisitorList implements OnInit {
     this.isLoading = true;
     this.visitorService.getAllVisitors(this.queryParams).subscribe({
       next: (data) => {
-        
-        // --- SỬA LỖI 2: XỬ LÝ MÚI GIỜ ---
-        // Map qua mảng 'items' để xử lý chuỗi thời gian
         const processedItems = data.items.map(log => {
           let checkinTimeStr = (log as any).checkinTime;
           let checkoutTimeStr = (log as any).checkoutTime;
 
-          // Xử lý Check-in Time (thêm 'Z' nếu thiếu)
           if (typeof checkinTimeStr === 'string' && !checkinTimeStr.endsWith('Z')) {
             checkinTimeStr += 'Z';
           }
-          
-          // Xử lý Check-out Time (thêm 'Z' nếu thiếu và nếu tồn tại)
           if (typeof checkoutTimeStr === 'string' && !checkoutTimeStr.endsWith('Z')) {
             checkoutTimeStr += 'Z';
           }
 
-          // Trả về object mới với Date objects
-          // DatePipe trong HTML sẽ tự động chuyển Date object này sang giờ local
           return {
             ...log,
             checkinTime: new Date(checkinTimeStr),
@@ -101,12 +124,10 @@ export class VisitorList implements OnInit {
           };
         });
         
-        // Gán lại PagedList với 'items' đã được xử lý
         this.paginatedVisitors = {
-          ...data, // Giữ lại totalCount, totalPages, v.v.
-          items: processedItems // Ghi đè 'items' bằng mảng mới
+          ...data, 
+          items: processedItems 
         };
-        // --- KẾT THÚC SỬA LỖI ---
         
         this.isLoading = false;
       },
@@ -135,29 +156,32 @@ export class VisitorList implements OnInit {
     this.searchSubject.next(searchTerm);
   }
 
-  onApartmentFilterChange(event: Event): void {
-    const apartmentId = (event.target as HTMLSelectElement).value;
+  // Cập nhật sự kiện change cho MatSelect
+  onApartmentFilterChange(apartmentId: string): void {
     this.queryParams.apartmentId = apartmentId;
     this.queryParams.pageNumber = 1; 
     this.loadAllVisitors();
   }
 
-  onSort(columnName: string): void {
-    if (this.queryParams.sortColumn === columnName) {
-      this.queryParams.sortDirection = this.queryParams.sortDirection === 'asc' ? 'desc' : 'asc';
+  // Cập nhật sort cho MatSort header
+  onSortChange(sortState: {active: string, direction: string}): void {
+    // MatSort direction trả về '' hoặc 'asc' hoặc 'desc'
+    if (sortState.direction) {
+        this.queryParams.sortColumn = sortState.active;
+        this.queryParams.sortDirection = sortState.direction;
     } else {
-      this.queryParams.sortColumn = columnName;
-      this.queryParams.sortDirection = 'desc';
+        // Mặc định
+        this.queryParams.sortColumn = 'checkinTime';
+        this.queryParams.sortDirection = 'desc';
     }
     this.queryParams.pageNumber = 1;
-    this.loadAllVisitors(); 
+    this.loadAllVisitors();
   }
 
-  onPageChange(pageNumber: number): void {
-    if (pageNumber < 1 || (this.paginatedVisitors && pageNumber > this.paginatedVisitors.totalPages) || pageNumber === this.queryParams.pageNumber) {
-      return; 
-    }
-    this.queryParams.pageNumber = pageNumber;
+  // Cập nhật phân trang cho MatPaginator
+  onMatPageChange(event: PageEvent): void {
+    this.queryParams.pageSize = event.pageSize;
+    this.queryParams.pageNumber = event.pageIndex + 1; // MatPaginator index bắt đầu từ 0
     this.loadAllVisitors();
   }
 
@@ -180,7 +204,7 @@ export class VisitorList implements OnInit {
       next: (response) => {
         if (response.succeeded) {
           this.showAlert(response.message || `Đã check-in cho khách: ${visitor.visitorFullName}`, 'success');
-          this.loadAllVisitors(); // Tải lại danh sách
+          this.loadAllVisitors(); 
         } else {
           this.showAlert(response.message || 'Lỗi: Không thể check-in', 'danger');
         }
@@ -223,18 +247,14 @@ export class VisitorList implements OnInit {
     this.showFastCheckin = false;
   }
 
-  getStatusBadge(status: string): string {
+  // Helper cho màu sắc chip
+  getStatusColor(status: string): 'primary' | 'accent' | 'warn' | undefined {
     switch (status.toLowerCase()) {
-      case 'pending':
-        return 'text-bg-warning';
-      case 'checked-in':
-        return 'text-bg-success';
-      case 'checked-out':
-        return 'text-bg-secondary';
-      case 'cancelled':
-        return 'text-bg-danger';
-      default:
-        return 'text-bg-light';
+      case 'checked-in': return 'primary'; // Xanh
+      case 'pending': return 'accent'; // Vàng/Cam (tùy theme)
+      case 'cancelled': return 'warn'; // Đỏ
+      case 'checked-out': return undefined; // Xám mặc định
+      default: return undefined;
     }
   }
 
@@ -247,10 +267,5 @@ export class VisitorList implements OnInit {
     this.alertTimeout = setTimeout(() => {
       this.alertMessage = null;
     }, 3000);
-  }
-
-  getPaginationArray(): number[] {
-    if (!this.paginatedVisitors) return [];
-    return Array(this.paginatedVisitors.totalPages).fill(0).map((x, i) => i + 1);
   }
 }
