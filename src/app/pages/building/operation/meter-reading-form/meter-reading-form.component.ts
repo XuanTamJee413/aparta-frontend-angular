@@ -481,28 +481,35 @@ export class MeterReadingFormComponent implements OnInit {
     }
   }
 
-  // Cập nhật tất cả chỉ số
+  /**
+   * Cập nhật/tạo nhiều chỉ số đồng hồ cùng lúc cho một apartment
+   * Xử lý song song các request và đếm kết quả thành công/thất bại
+   */
   updateAllReadings(readings: any[]): void {
     const updatePromises: Promise<any>[] = [];
     let successCount = 0;
     let errorCount = 0;
     let lastError: string = '';
 
+    // Duyệt qua từng chỉ số trong form
     readings.forEach((reading: any, index: number) => {
       const readingGroup = this.readingsFormArray.at(index) as FormGroup;
       const feeType = readingGroup.get('feeType')?.value || reading.feeType || this.services[index]?.feeType;
       const rawReadingValue = readingGroup.get('readingValue')?.value || reading.readingValue;
       const readingId = readingGroup.get('readingId')?.value || reading.readingId;
 
+      // Nếu có readingId → Cập nhật chỉ số đã tồn tại
       if (readingId) {
         const numericValue = typeof rawReadingValue === 'string' ? parseFloat(rawReadingValue) : Number(rawReadingValue);
         
+        // Validate giá trị
         if (isNaN(numericValue)) {
           errorCount++;
           lastError = `Giá trị chỉ số không hợp lệ cho ${feeType}`;
           return;
         }
         
+        // Gọi API update
         const updateDto: MeterReadingUpdateDto = {
           readingValue: numericValue
         };
@@ -519,6 +526,7 @@ export class MeterReadingFormComponent implements OnInit {
           }).catch((error) => {
             errorCount++;
             const errorMessage = error.error?.message || error.error?.Message || '';
+            // Xử lý các lỗi cụ thể
             if (errorMessage.includes('too low') || errorMessage.includes('SM35')) {
               lastError = 'Giá trị chỉ số phải lớn hơn hoặc bằng chỉ số trước đó. ' + errorMessage;
             } else if (errorMessage.includes('locked') || errorMessage.includes('SM30')) {
@@ -528,16 +536,20 @@ export class MeterReadingFormComponent implements OnInit {
             }
           })
         );
-      } else {
+      } 
+      // Nếu không có readingId → Tạo chỉ số mới
+      else {
         const readingDate = this.getCurrentDate();
         const numericValue = typeof rawReadingValue === 'string' ? parseFloat(rawReadingValue) : Number(rawReadingValue);
         
+        // Validate giá trị
         if (isNaN(numericValue)) {
           errorCount++;
           lastError = `Giá trị chỉ số không hợp lệ cho ${feeType}`;
           return;
         }
         
+        // Gọi API create
         const createDto: MeterReadingCreateDto[] = [{
           feeType: feeType,
           readingValue: numericValue,
@@ -552,6 +564,7 @@ export class MeterReadingFormComponent implements OnInit {
             } else {
               errorCount++;
               const message = response?.message || '';
+              // Xử lý các lỗi cụ thể
               if (message.includes('tồn tại') || message.includes('exists') || message.includes('SM34')) {
                 lastError = 'Đã có chỉ số trong tháng trước. ' + message;
               } else if (message.includes('too low') || message.includes('SM35')) {
@@ -563,6 +576,7 @@ export class MeterReadingFormComponent implements OnInit {
           }).catch((error) => {
             errorCount++;
             const errorMessage = error.error?.message || error.error?.Message || '';
+            // Xử lý các lỗi cụ thể
             if (errorMessage.includes('tồn tại') || errorMessage.includes('exists') || errorMessage.includes('SM34')) {
               lastError = 'Đã có chỉ số trong tháng trước. ' + errorMessage;
             } else if (errorMessage.includes('too low') || errorMessage.includes('SM35')) {
@@ -575,29 +589,32 @@ export class MeterReadingFormComponent implements OnInit {
       }
     });
 
-        Promise.all(updatePromises).then(() => {
-          if (errorCount === 0) {
-            this.submitMessage = `Cập nhật thành công ${successCount} chỉ số`;
-            this.submitMessageType = 'success';
-            setTimeout(() => {
-              this.checkExistingReadings();
-              // Clear message sau 3 giây
-              setTimeout(() => {
-                this.submitMessage = '';
-                this.submitMessageType = '';
-              }, 3000);
-            }, 1000);
-          } else {
-            this.submitMessage = `Cập nhật ${successCount} thành công, ${errorCount} thất bại. ${lastError}`;
-            this.submitMessageType = 'error';
-            // Không gọi checkExistingReadings nếu có lỗi để giữ nguyên form
-          }
-          this.saving = false;
-        }).catch(() => {
-          this.submitMessage = 'Lỗi cập nhật chỉ số';
-          this.submitMessageType = 'error';
-          this.saving = false;
-        });
+    // Chờ tất cả request hoàn thành, sau đó hiển thị kết quả
+    Promise.all(updatePromises).then(() => {
+      if (errorCount === 0) {
+        // Tất cả thành công → Hiển thị thông báo và refresh form
+        this.submitMessage = `Cập nhật thành công ${successCount} chỉ số`;
+        this.submitMessageType = 'success';
+        setTimeout(() => {
+          this.checkExistingReadings();
+          // Clear message sau 3 giây
+          setTimeout(() => {
+            this.submitMessage = '';
+            this.submitMessageType = '';
+          }, 3000);
+        }, 1000);
+      } else {
+        // Có lỗi → Hiển thị thông báo lỗi, giữ nguyên form
+        this.submitMessage = `Cập nhật ${successCount} thành công, ${errorCount} thất bại. ${lastError}`;
+        this.submitMessageType = 'error';
+        // Không gọi checkExistingReadings nếu có lỗi để giữ nguyên form
+      }
+      this.saving = false;
+    }).catch(() => {
+      this.submitMessage = 'Lỗi cập nhật chỉ số';
+      this.submitMessageType = 'error';
+      this.saving = false;
+    });
   }
 
 

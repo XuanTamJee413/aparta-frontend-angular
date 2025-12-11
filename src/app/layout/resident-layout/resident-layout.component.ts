@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit, computed } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay, catchError } from 'rxjs/operators';
@@ -37,6 +37,7 @@ export class ResidentLayoutComponent implements OnInit, AfterViewInit {
 
   private isSmallScreenQuery = '(max-width: 959.98px)';
   isSmallScreen$: Observable<boolean>;
+  userName = computed(() => this.auth.user()?.name || '');
 
   constructor(
     private breakpointObserver: BreakpointObserver,
