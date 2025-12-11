@@ -10,13 +10,6 @@ export const ROLE_ROUTES: Routes = [
     title: 'Quản lý Phân quyền'
   },
   {
-    path: 'edit/:id',
-    canActivate: [roleCanActivate('admin')],
-    loadComponent: () => import('./update-role/role-edit.component')
-      .then(m => m.RoleEditComponent),
-    title: 'Chỉnh sửa Role'
-  },
-  {
     path: '',
     redirectTo: 'list',
     pathMatch: 'full'
