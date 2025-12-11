@@ -32,6 +32,7 @@ export interface VisitLogUpdateDto {
   checkinTime: string;
 }
 export interface VisitorQueryParams {
+  buildingId?: string | null;
   apartmentId?: string | null;
   searchTerm?: string | null;
   sortColumn?: string | null;
@@ -84,8 +85,34 @@ export class VisitorService {
   private apartmentApiUrl = `${this.apiBaseUrl}/Apartments`;
 
   constructor(private http: HttpClient) { }
+  getStaffVisitLogs(params: VisitorQueryParams): Observable<PagedList<VisitLogStaffViewDto>> {
+    const httpParams = this.createHttpParams(params);
+    return this.http.get<ApiResponse<PagedList<VisitLogStaffViewDto>>>(`${this.visitLogApiUrl}/all`, { params: httpParams })
+      .pipe(map(response => response.data));
+  }
 
-  // [NEW] Lấy danh sách khách cũ
+  // 2. [RESIDENT] Lấy lịch sử ra vào của chính mình
+  getResidentVisitHistory(params: VisitorQueryParams): Observable<PagedList<VisitLogStaffViewDto>> {
+    const httpParams = this.createHttpParams(params);
+    return this.http.get<ApiResponse<PagedList<VisitLogStaffViewDto>>>(`${this.visitLogApiUrl}/my-history`, { params: httpParams })
+      .pipe(map(response => response.data));
+  }
+
+  // Helper tạo HttpParams 
+  private createHttpParams(params: VisitorQueryParams): HttpParams {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.buildingId) httpParams = httpParams.set('buildingId', params.buildingId);
+    if (params.apartmentId) httpParams = httpParams.set('apartmentId', params.apartmentId);
+    if (params.searchTerm) httpParams = httpParams.set('searchTerm', params.searchTerm);
+    if (params.sortColumn) httpParams = httpParams.set('sortColumn', params.sortColumn);
+    if (params.sortDirection) httpParams = httpParams.set('sortDirection', params.sortDirection);
+
+    return httpParams;
+  }
+  // Lấy danh sách khách cũ
   getRecentVisitors(): Observable<VisitorDto[]> {
     return this.http.get<VisitorDto[]>(`${this.visitorApiUrl}/recent`);
   }
@@ -117,8 +144,16 @@ export class VisitorService {
   }
 
 
-  getAllApartments(): Observable<ApartmentDto[]> {
-    return this.http.get<ApiResponse<ApartmentDto[]>>(`${this.apartmentApiUrl}`)
+  getAllApartments(buildingId?: string): Observable<ApartmentDto[]> {
+    let params = new HttpParams()
+      .set('pageSize', '5000')
+      .set('sortBy', 'code');
+
+    if (buildingId) {
+      params = params.set('buildingId', buildingId);
+    }
+
+    return this.http.get<ApiResponse<ApartmentDto[]>>(`${this.apartmentApiUrl}/my-buildings`, { params })
       .pipe(
         map(response => response.data)
       );

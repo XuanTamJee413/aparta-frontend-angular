@@ -312,8 +312,8 @@ export class VisitorComponent implements OnInit {
       sortDirection: 'desc'
     };
 
-    this.visitorService.getAllVisitors(params).subscribe({
-      next: (pagedData) => {
+this.visitorService.getResidentVisitHistory(params).subscribe({ 
+       next: (pagedData) => {
 
         this.history = pagedData.items.map(log => {
           let checkinTimeStr = (log as any).checkinTime;
