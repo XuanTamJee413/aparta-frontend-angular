@@ -72,6 +72,7 @@ export interface VisitorDto {
   fullName: string;
   phone: string;
   idNumber: string;
+  isUpdated?: boolean;
 }
 
 @Injectable({
@@ -165,5 +166,4 @@ export class VisitorService {
   updateVisitLog(id: string, dto: VisitLogUpdateDto): Observable<any> {
     return this.http.put<ApiResponse<any>>(`${this.visitLogApiUrl}/${id}/info`, dto);
   }
-
 }
