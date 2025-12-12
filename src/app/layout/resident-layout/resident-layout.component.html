@@ -72,19 +72,12 @@
         <mat-icon>menu</mat-icon>
       </button>
 
-      <span>Cư dân (Resident)</span>
+      <span>Xin Chào: {{ userName() }}</span>
       <span class="spacer"></span>
-      <button mat-icon-button>
-        <mat-icon>notifications_none</mat-icon>
-      </button>
       <button mat-icon-button [matMenuTriggerFor]="userMenuRef">
         <mat-icon>account_circle</mat-icon>
       </button>
       <mat-menu #userMenuRef>
-        <button mat-menu-item routerLink="editprofile">
-          <mat-icon>settings_outline</mat-icon>
-          <span>Cài đặt</span>
-        </button>
         <button mat-menu-item (click)="logout()"> <mat-icon>exit_to_app</mat-icon>
           <span>Đăng xuất</span>
         </button>

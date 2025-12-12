@@ -1,4 +1,4 @@
-import { Component, ViewChild, inject } from '@angular/core'; // <-- Thêm 'inject'
+import { Component, ViewChild, inject, computed } from '@angular/core'; // <-- Thêm 'inject'
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -35,6 +35,7 @@ export class AdminLayout {
 
   private isSmallScreenQuery = '(max-width: 959.98px)';
   isSmallScreen$: Observable<boolean>;
+  userName = computed(() => this.auth.user()?.name || '');
 
   constructor(
     private breakpointObserver: BreakpointObserver,

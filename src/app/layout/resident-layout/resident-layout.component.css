@@ -110,3 +110,9 @@ a[mat-list-item]:not(.active-link):hover {
 .active-link mat-icon {
   color: var(--resident-primary-color); /* Icon màu chính */
 }
+
+/* Ẩn touch target của Material buttons */
+.mat-mdc-button-touch-target,
+::ng-deep .mat-mdc-button-touch-target {
+  display: none !important;
+}

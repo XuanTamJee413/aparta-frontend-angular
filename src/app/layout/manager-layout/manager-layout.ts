@@ -1,4 +1,4 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, ViewChild, inject, computed } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -38,6 +38,19 @@ export class ManagerLayout {
   private isSmallScreenQuery = '(max-width: 959.98px)';
   isSmallScreen$: Observable<boolean>;
   isManager$: Observable<boolean>;
+  userName = computed(() => this.auth.user()?.name || '');
+  userRole = computed(() => {
+    const role = this.auth.user()?.role || '';
+    // Map role to display name
+    const roleMap: { [key: string]: string } = {
+      'manager': 'Manager',
+      'staff': 'Staff',
+      'finance_staff': 'Finance Staff',
+      'maintenance_staff': 'Maintenance Staff',
+      'operation_staff': 'Operation Staff'
+    };
+    return roleMap[role.toLowerCase()] || role;
+  });
 
   constructor(
     private breakpointObserver: BreakpointObserver,

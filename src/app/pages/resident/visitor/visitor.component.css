@@ -40,6 +40,9 @@ mat-card-actions {
 table {
   width: 100%;
 }
+.highlight-row {
+  background-color: #e3f2fd; /* Màu xanh nhạt khi đang sửa */
+}
 
 /* Tô mờ nút Sửa/Xóa khi bị disabled */
 button[disabled] mat-icon {
