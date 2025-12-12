@@ -3,15 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
-// Import Models
 import { 
   UtilityBookingDto, 
   UtilityBookingUpdateDto, 
   PagedList, 
   UtilityQueryParameters 
 } from '../../../../models/utility-booking.model';
-
-// Import Service
 import { UtilityBookingManagementService } from '../../../../services/operation/utility-booking-management.service';
 
 @Component({
@@ -19,15 +16,15 @@ import { UtilityBookingManagementService } from '../../../../services/operation/
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './utility-booking-management.component.html',
-  styleUrls: ['./utility-booking-management.component.css'] // Dùng chung CSS hoặc tạo mới
+  styleUrls: ['./utility-booking-management.component.css']
 })
 export class UtilityBookingManagementComponent implements OnInit {
 
-  @ViewChild('bookingDialog') dialog!: ElementRef<HTMLDialogElement>;
+  @ViewChild('rejectDialog') dialog!: ElementRef<HTMLDialogElement>; // Đổi tên tham chiếu cho rõ nghĩa
 
   bookings: UtilityBookingDto[] = [];
   currentBookingId: string | null = null;
-  bookingForm: FormGroup;
+  rejectForm: FormGroup; // Đổi tên form
   isLoading = false;
 
   // Pagination & Filter
@@ -37,24 +34,17 @@ export class UtilityBookingManagementComponent implements OnInit {
   totalPages = 0;
 
   searchControl = new FormControl('');
-  statusFilterControl = new FormControl('Pending'); // Mặc định xem đơn chờ duyệt
+  
+  // YÊU CẦU: Không mặc định filter pending nữa -> Để rỗng (Tất cả)
+  statusFilterControl = new FormControl(''); 
 
- statusOptions = [
+  statusOptions = [
     { label: 'Tất cả', value: '' },
-    { label: 'Chờ duyệt', value: 'Pending' },
-    { label: 'Đã duyệt', value: 'Approved' },
-    { label: 'Từ chối', value: 'Rejected' },
-    { label: 'Đã hủy', value: 'Cancelled' }
+    { label: 'Đã duyệt (Approved)', value: 'Approved' }, // Auto approve nên đây là trạng thái chính
+    { label: 'Từ chối (Rejected)', value: 'Rejected' },
+    { label: 'Đã hủy (Cancelled)', value: 'Cancelled' }
   ];
 
-  // Các trạng thái Staff có thể chọn trong Dialog
- dialogStatusOptions = this.statusOptions.filter(o => 
-  o.value !== '' && 
-  o.value !== 'Pending' && 
-  o.value !== 'Cancelled' // <-- Thêm dòng này nếu muốn chặn Staff chọn Hủy
-);
-
-  // Messages
   pageSuccessMessage: string | null = null;
   dialogErrorMessage: string | null = null;
 
@@ -62,9 +52,9 @@ export class UtilityBookingManagementComponent implements OnInit {
     private bookingService: UtilityBookingManagementService,
     private fb: FormBuilder
   ) {
-    this.bookingForm = this.fb.group({
-      status: ['Approved', Validators.required],
-      staffNote: ['']
+    // Form chỉ cần nhập lý do từ chối
+    this.rejectForm = this.fb.group({
+      staffNote: ['', [Validators.required, Validators.minLength(5)]] // Bắt buộc nhập lý do
     });
   }
 
@@ -106,27 +96,28 @@ export class UtilityBookingManagementComponent implements OnInit {
       this.loadBookings();
     }
   }
-  get hasPreviousPage(): boolean { return this.currentPage > 1; }
-  get hasNextPage(): boolean { return this.currentPage < this.totalPages; }
 
-  // --- Update Status ---
-  openEditModal(booking: UtilityBookingDto): void {
-    if (booking.status === 'Cancelled') {
-      alert('Đơn này đã bị hủy, không thể cập nhật.');
-      return;
+  // --- Logic Mới: Từ chối đơn ---
+  
+  // Helper kiểm tra điều kiện hiển thị nút Từ chối
+  canReject(booking: UtilityBookingDto): boolean {
+    // 1. Không thể từ chối đơn đã Hủy hoặc đã Từ chối trước đó
+    if (booking.status === 'Cancelled' || booking.status === 'Rejected') {
+      return false;
     }
-
+    // 2. Không thể từ chối nếu thời gian bắt đầu đã qua (User yêu cầu: trước giờ bắt đầu)
     if (this.isExpired(booking.bookingDate)) {
-      alert('Đơn này đã quá thời gian bắt đầu, không thể cập nhật.');
-      return;
+      return false;
     }
+    return true;
+  }
+
+  openRejectModal(booking: UtilityBookingDto): void {
+    if (!this.canReject(booking)) return;
+
     this.resetMessages();
     this.currentBookingId = booking.utilityBookingId;
-    
-    this.bookingForm.patchValue({
-      status: booking.status, 
-      staffNote: booking.staffNote ?? ''
-    });
+    this.rejectForm.reset(); // Reset form trắng
     this.dialog.nativeElement.showModal();
   }
 
@@ -135,23 +126,25 @@ export class UtilityBookingManagementComponent implements OnInit {
     this.currentBookingId = null;
   }
 
-  saveBooking(): void {
+  confirmReject(): void {
     this.resetMessages();
-    if (this.bookingForm.invalid || !this.currentBookingId) {
-      this.bookingForm.markAllAsTouched();
+    
+    if (this.rejectForm.invalid || !this.currentBookingId) {
+      this.rejectForm.markAllAsTouched();
       return;
     }
 
+    // Hardcode status là 'Rejected'
     const dto: UtilityBookingUpdateDto = {
-      status: this.bookingForm.value.status,
-      staffNote: this.bookingForm.value.staffNote
+      status: 'Rejected',
+      staffNote: this.rejectForm.value.staffNote
     };
 
     this.bookingService.updateBooking(this.currentBookingId, dto).subscribe({
       next: () => {
-        this.loadBookings();
+        this.loadBookings(); // Tải lại danh sách
         this.closeDialog();
-        this.setSuccessMessage('Cập nhật trạng thái thành công!');
+        this.setSuccessMessage('Đã từ chối đơn đăng ký thành công.');
       },
       error: (err: HttpErrorResponse) => {
         this.dialogErrorMessage = err.error?.message || 'Lỗi khi cập nhật.';
@@ -171,9 +164,15 @@ export class UtilityBookingManagementComponent implements OnInit {
   }
 
   getStatusLabel(status: string): string {
-    const option = this.statusOptions.find(o => o.value === status);
-    return option ? option.label : status;
+    const map: any = {
+      Approved: 'Đã duyệt (Auto)',
+      Rejected: 'Đã từ chối',
+      Cancelled: 'Đã hủy',
+      Pending: 'Chờ xử lý' // Đề phòng dữ liệu cũ
+    };
+    return map[status] || status;
   }
+
   isExpired(dateStr: string): boolean {
     return new Date(dateStr).getTime() < new Date().getTime();
   }

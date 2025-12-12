@@ -6,7 +6,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { 
   TaskDto, PagedList, TaskQueryParameters, 
   TaskCreateDto, TaskAssignmentCreateDto, StaffDto, 
-  TaskAssigneeDto, TaskUnassignDto // <-- Thêm các DTO mới
+  TaskAssigneeDto, TaskUnassignDto,
+  TaskVerifyDto // <-- Thêm các DTO mới
 } from '../../../../models/task.model';
 import { TaskService } from '../../../../services/operation/task.service';
 
@@ -21,7 +22,7 @@ export class TaskListComponent implements OnInit {
 
   @ViewChild('createTaskDialog') createDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('assignTaskDialog') assignDialog!: ElementRef<HTMLDialogElement>;
-
+  @ViewChild('verifyTaskDialog') verifyDialog!: ElementRef<HTMLDialogElement>;
   tasks: TaskDto[] = [];
   maintenanceStaffs: StaffDto[] = []; 
   isLoading = false;
@@ -29,7 +30,7 @@ export class TaskListComponent implements OnInit {
   // Form
   createForm: FormGroup;
   assignForm: FormGroup;
-  
+  verifyForm: FormGroup;
   selectedTaskId: string | null = null;
   currentAssignees: TaskAssigneeDto[] = []; // Danh sách nhân viên HIỆN TẠI của task đang chọn
 
@@ -78,6 +79,10 @@ export class TaskListComponent implements OnInit {
 
     this.assignForm = this.fb.group({
       assigneeUserId: ['', Validators.required]
+    });
+
+    this.verifyForm = this.fb.group({
+      managerComment: [''] // Không bắt buộc
     });
   }
 
@@ -241,10 +246,56 @@ export class TaskListComponent implements OnInit {
     });
   }
 
+  openVerifyModal(task: TaskDto): void {
+    this.resetMessages();
+    this.selectedTaskId = task.taskId;
+    
+    // Reset form
+    this.verifyForm.reset();
+    
+    this.verifyDialog.nativeElement.showModal();
+  }
+
+  // 2. Gửi xác nhận lên Server
+  submitVerify(isAccepted: boolean): void {
+    if (!this.selectedTaskId) return;
+
+    const formVal = this.verifyForm.value;
+
+    const dto: TaskVerifyDto = {
+      taskId: this.selectedTaskId,
+      verifyNote: formVal.managerComment,
+      isAccepted: isAccepted // true = Hoàn tất, false = Yêu cầu làm lại
+    };
+
+    // Confirm nhẹ nếu từ chối
+    if (!isAccepted && !confirm('Bạn muốn yêu cầu nhân viên làm lại công việc này?')) {
+        return;
+    }
+
+    this.isLoading = true; // Block UI xíu cho an toàn
+
+    this.taskService.verifyTask(dto).subscribe({
+      next: () => {
+        this.setSuccessMessage(isAccepted ? 'Đã xác nhận hoàn thành!' : 'Đã yêu cầu làm lại!');
+        this.loadTasks(); // Reload để cập nhật trạng thái mới (vd: Closed hoặc In Progress)
+        this.closeDialogs();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.dialogErrorMessage = err.error?.message || 'Lỗi khi xác nhận công việc.';
+        this.isLoading = false;
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
   // --- HELPER ---
   closeDialogs(): void {
     this.createDialog.nativeElement.close();
     this.assignDialog.nativeElement.close();
+    this.verifyDialog.nativeElement.close();
   }
 
   private resetMessages(): void {

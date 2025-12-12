@@ -75,14 +75,27 @@
           </td>
           <td>{{ task.createdAt | date:'dd/MM/yyyy' }}</td>
           
-          <td class="action-cell">
-            <button 
-              class="btn btn-edit" 
-              (click)="openAssignModal(task)"
-              [disabled]="task.status === 'Completed'">
-              Phân Công
-            </button>
-          </td>
+         <td class="action-cell">
+  <button 
+    class="btn btn-edit" 
+    (click)="openAssignModal(task)"
+    *ngIf="task.status !== 'Completed' && task.status !== 'Closed'" 
+    title="Phân công nhân viên">
+    Phân Công
+  </button>
+
+  <button 
+    class="btn btn-verify" 
+    (click)="openVerifyModal(task)"
+    *ngIf="task.status === 'Completed'"
+    title="Nghiệm thu công việc">
+    ✅ Duyệt
+  </button>
+  
+  <span *ngIf="task.status === 'Closed'" class="text-success">
+    <small>Đã nghiệm thu</small>
+  </span>
+</td>
         </tr>
         <tr *ngIf="tasks.length === 0 && !isLoading" class="empty-row">
           <td colspan="7">Không tìm thấy công việc nào.</td>
@@ -198,4 +211,40 @@
   <div class="form-footer">
     <button type="button" class="btn btn-primary" (click)="closeDialogs()">Đóng</button>
   </div>
+</dialog>
+
+<dialog #verifyTaskDialog (close)="closeDialogs()">
+  <form [formGroup]="verifyForm">
+    <div class="form-header">
+      <h3>Nghiệm Thu Công Việc</h3>
+      <button type="button" class="btn-close" (click)="closeDialogs()">×</button>
+    </div>
+    
+    <div class="form-body">
+      <p>Công việc này đã được nhân viên báo cáo hoàn thành. Bạn có muốn xác nhận đóng công việc này không?</p>
+      
+      <div class="form-group">
+        <label for="verifyComment">Ghi chú / Đánh giá của quản lý (OS):</label>
+        <textarea 
+            id="verifyComment" 
+            formControlName="managerComment" 
+            rows="3" 
+            placeholder="Nhập nhận xét về kết quả công việc..."></textarea>
+      </div>
+    </div>
+
+    <div *ngIf="dialogErrorMessage" class="form-error-summary">
+      {{ dialogErrorMessage }}
+    </div>
+
+    <div class="form-footer verify-footer">
+      <button type="button" class="btn btn-reject" (click)="submitVerify(false)">
+        Yêu cầu làm lại
+      </button>
+      
+      <button type="button" class="btn btn-success" (click)="submitVerify(true)">
+        Xác nhận Hoàn Thành
+      </button>
+    </div>
+  </form>
 </dialog>

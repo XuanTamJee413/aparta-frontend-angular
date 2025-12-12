@@ -11,7 +11,8 @@ TaskDto,
   TaskQueryParameters, 
   PagedList, 
   StaffDto,
-  TaskUnassignDto
+  TaskUnassignDto,
+  TaskVerifyDto
 } from '../../models/task.model';
 
 @Injectable({
@@ -74,4 +75,7 @@ export class TaskService {
     // Gọi endpoint POST /api/tasks/unassign
     return this.http.post(`${this.apiUrl}/unassign`, unassignDto);
   }
+  verifyTask(dto: TaskVerifyDto): Observable<any> {
+  return this.http.put(`${this.apiUrl}/verify`, dto); 
+}
 }
