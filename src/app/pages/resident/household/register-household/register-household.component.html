@@ -146,11 +146,14 @@
             <div class="text-center">Chưa có thành viên nào được khai báo.</div>
             } @else {
             <div class="table-responsive">
-              <table class="table table-striped" style="width:100%">
+              <table class="table table-striped align-middle" style="width:100%">
                 <thead>
                   <tr>
+                    <th style="width: 80px;">Ảnh</th>
                     <th>Họ Tên</th>
                     <th>Quan hệ</th>
+                    <th>CCCD</th>
+                    <th>Số điện thoại</th>
                     <th>Ngày sinh</th>
                     <th>Giới tính</th>
                   </tr>
@@ -158,9 +161,18 @@
                 <tbody>
                   @for (member of members(); track member.apartmentMemberId) {
                   <tr>
+                    <td>
+                      <img
+                        [src]="member.faceImageUrl || 'https://ui-avatars.com/api/?name=' + member.name + '&background=random'"
+                        alt="Avatar" class="rounded-circle" width="40" height="40"
+                        style="object-fit: cover; border: 1px solid #dee2e6;">
+                    </td>
+
                     <td>{{ member.name }}</td>
                     <td>{{ member.familyRole }}</td>
-                    <td>{{ member.dateOfBirth }}</td>
+                    <td>{{ member.idNumber }}</td>
+                    <td>{{ member.phoneNumber }}</td>
+                    <td>{{ member.dateOfBirth | date:'dd/MM/yyyy' }}</td>
                     <td>{{ member.gender }}</td>
                   </tr>
                   }

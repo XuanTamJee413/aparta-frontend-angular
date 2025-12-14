@@ -32,7 +32,9 @@ export class RegisterVehicle implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly vehicleService = inject(VehicleService);
-
+  isDeleting = signal<string | null>(null);
+  listSuccess = signal<string | null>(null);
+  listError = signal<string | null>(null);
   readonly vehicleTypes = ['Xe đạp', 'Xe ô tô', 'Xe máy', 'Xe điện'];
 
   submitting = signal(false);
@@ -193,6 +195,7 @@ export class RegisterVehicle implements OnInit {
         this.success.set('Đăng ký phương tiện thành công! Vui lòng chờ duyệt.');
         this.form.reset({ info: '' });
         this.loadMyVehicles();
+         setTimeout(() => this.success.set(null), 3000);
       },
       error: (err) => {
         this.submitting.set(false);
@@ -208,6 +211,32 @@ export class RegisterVehicle implements OnInit {
 
         this.success.set(null);
         console.error('Lỗi khi đăng ký xe:', err);
+      }
+    });
+  }
+ onDelete(vehicle: Vehicle): void {
+    if (vehicle.status === 'Đã duyệt') return;
+
+    const confirmDelete = confirm(
+      `Bạn có chắc chắn muốn hủy đăng ký cho xe biển số "${vehicle.vehicleNumber}" không?`
+    );
+    if (!confirmDelete) return;
+    this.isDeleting.set(vehicle.vehicleId);
+    this.listSuccess.set(null);
+    this.listError.set(null);
+    this.vehicleService.deleteVehicle(vehicle.vehicleId).subscribe({
+      next: () => {
+        this.listSuccess.set('Đã hủy đăng ký phương tiện thành công.');
+        this.isDeleting.set(null);
+        this.loadMyVehicles();
+        setTimeout(() => this.listSuccess.set(null), 3000);
+      },
+      error: (err) => {
+        console.error('Lỗi khi xóa:', err);
+        this.isDeleting.set(null);
+        this.listError.set(
+          err?.error?.message || 'Không thể hủy đăng ký phương tiện. Vui lòng thử lại sau.'
+        );
       }
     });
   }
