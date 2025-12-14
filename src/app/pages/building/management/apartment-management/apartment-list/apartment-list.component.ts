@@ -1,4 +1,3 @@
-// src/app/pages/building/management/apartment-list/apartment-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -67,7 +66,6 @@ export class ApartmentList implements OnInit {
     this.buildingsLoading.set(true);
     this.buildingsError.set(null);
 
-    // <-- use getMyBuildings so only buildings current account manages
     this.apartmentService.getMyBuildings().subscribe({
       next: (list: BuildingOption[]) => {
         this.buildings.set(list ?? []);
@@ -89,7 +87,6 @@ export class ApartmentList implements OnInit {
     this.query.status = this.selectedStatus;
     this.query.buildingId = this.selectedBuildingId;
 
-    // <-- use getMyApartments so results are scoped to buildings the account manages
     this.apartmentService.getMyApartments(this.query).subscribe({
       next: (response) => {
         if (response.succeeded) {
