@@ -8,43 +8,38 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
       <div class="form-group">
         <label for="vehicleNumber" class="form-label">Biển số xe</label>
-        <input
-          id="vehicleNumber"
-          type="text"
-          class="form-control"
-          formControlName="vehicleNumber"
-          [placeholder]="vehiclePlaceholder"
-        />
+        <input id="vehicleNumber" type="text" class="form-control" formControlName="vehicleNumber"
+          [placeholder]="vehiclePlaceholder" />
 
         @if (
-          (form.controls.vehicleNumber.invalid ||
-            form.errors?.['plateFormat'] ||
-            form.errors?.['bikePlateFormat']) &&
-          (form.controls.vehicleNumber.dirty || form.controls.vehicleNumber.touched)
+        (form.controls.vehicleNumber.invalid ||
+        form.errors?.['plateFormat'] ||
+        form.errors?.['bikePlateFormat']) &&
+        (form.controls.vehicleNumber.dirty || form.controls.vehicleNumber.touched)
         ) {
-          <div class="form-error">
-            @if (form.controls.vehicleNumber.errors?.['required']) {
-              Biển số xe là bắt buộc.
-            } @else if (form.value.info === 'Xe đạp' && form.errors?.['bikePlateFormat']) {
-              Biển số/mã xe không đúng định dạng.
-              Với xe đạp, hãy nhập theo dạng:
-              <strong>{{ apartmentCode || 'MãCănHộ' }}-XX</strong>,
-              ví dụ:
-              <strong>{{ apartmentCode || 'TX201' }}-01</strong>.
-            } @else if (form.errors?.['plateFormat']) {
-              Biển số xe không đúng định dạng.
-              Định dạng đúng: <strong>XXY-XXXXX</strong>,
-              trong đó <strong>X</strong> là số (0–9),
-              <strong>Y</strong> là chữ cái (A–Z).
-              Ví dụ: <strong>29A-12345</strong>.
-            }
-          </div>
+        <div class="form-error">
+          @if (form.controls.vehicleNumber.errors?.['required']) {
+          Biển số xe là bắt buộc.
+          } @else if (form.value.info === 'Xe đạp' && form.errors?.['bikePlateFormat']) {
+          Biển số/mã xe không đúng định dạng.
+          Với xe đạp, hãy nhập theo dạng:
+          <strong>{{ apartmentCode || 'MãCănHộ' }}-XX</strong>,
+          ví dụ:
+          <strong>{{ apartmentCode || 'TX201' }}-01</strong>.
+          } @else if (form.errors?.['plateFormat']) {
+          Biển số xe không đúng định dạng.
+          Định dạng đúng: <strong>XXY-XXXXX</strong>,
+          trong đó <strong>X</strong> là số (0–9),
+          <strong>Y</strong> là chữ cái (A–Z).
+          Ví dụ: <strong>29A-12345</strong>.
+          }
+        </div>
         } @else if (form.value.info === 'Xe đạp') {
-          <div class="form-hint">
-            Với xe đạp, bạn có thể dùng
-            <strong>mã căn hộ của bạn kèm 2 số</strong>.
+        <div class="form-hint">
+          Với xe đạp, bạn có thể dùng
+          <strong>mã căn hộ của bạn kèm 2 số</strong>.
 
-          </div>
+        </div>
         }
       </div>
 
@@ -53,27 +48,27 @@
         <select id="info" class="form-select" formControlName="info">
           <option value="" disabled>-- Vui lòng chọn --</option>
           @for (type of vehicleTypes; track type) {
-            <option [value]="type">{{ type }}</option>
+          <option [value]="type">{{ type }}</option>
           }
         </select>
         @if (form.controls.info.invalid && (form.controls.info.dirty || form.controls.info.touched)) {
-          <div class="form-error">Vui lòng chọn loại xe.</div>
+        <div class="form-error">Vui lòng chọn loại xe.</div>
         }
       </div>
 
       @if (success()) {
-        <div class="alert-success">{{ success() }}</div>
+      <div class="alert-success">{{ success() }}</div>
       }
       @if (error()) {
-        <div class="alert-danger">{{ error() }}</div>
+      <div class="alert-danger">{{ error() }}</div>
       }
 
       <div class="form-actions">
         <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting()">
           @if (submitting()) {
-            <span>Đang gửi...</span>
+          <span>Đang gửi...</span>
           } @else {
-            <span>Đăng ký</span>
+          <span>Đăng ký</span>
           }
         </button>
       </div>
@@ -85,48 +80,74 @@
       <h2>Phương tiện đã đăng ký</h2>
       <p>Danh sách các phương tiện thuộc căn hộ của bạn.</p>
     </header>
+    <div style="margin-top: 1rem;">
+      @if (listSuccess()) {
+      <div class="alert-success">{{ listSuccess() }}</div>
+      }
+      @if (listError()) {
+      <div class="alert-danger">{{ listError() }}</div>
+      }
+    </div>
+    @if (isLoadingList()) {
+    } @else {
+    <div class="table-container">
+    </div>
+    }
 
     @if (isLoadingList()) {
-      <div class="text-center" style="padding: 2rem;">
-        <p>Đang tải danh sách...</p>
-      </div>
+    <div class="text-center" style="padding: 2rem;">
+      <p>Đang tải danh sách...</p>
+    </div>
     } @else {
-      <div class="table-container">
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Biển số</th>
-                <th>Loại xe</th>
-                <th>Ngày đăng ký</th>
-                <th>Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (vehicle of myVehicles(); track vehicle.vehicleId) {
-                <tr>
-                  <td class="font-medium">{{ vehicle.vehicleNumber }}</td>
-                  <td>{{ vehicle.info }}</td>
-                  <td>{{ vehicle.createdAt | date: 'dd/MM/yyyy' }}</td>
-                  <td>
-                    @if (vehicle.status === 'Đã duyệt') {
-                      <span class="status-approved">Đã duyệt</span>
-                    } @else if (vehicle.status === 'Chờ duyệt') {
-                      <span class="status-pending">Chờ duyệt</span>
-                    } @else {
-                      <span class="status-rejected">Bị từ chối</span>
-                    }
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="no-results">Bạn chưa đăng ký phương tiện nào.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+    <div class="table-container">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Biển số</th>
+              <th>Loại xe</th>
+              <th>Ngày đăng ký</th>
+              <th>Trạng thái</th>
+              <th style="text-align: right;">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (vehicle of myVehicles(); track vehicle.vehicleId) {
+            <tr>
+              <td class="font-medium">{{ vehicle.vehicleNumber }}</td>
+              <td>{{ vehicle.info }}</td>
+              <td>{{ vehicle.createdAt | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                @if (vehicle.status === 'Đã duyệt') {
+                <span class="status-approved">Đã duyệt</span>
+                } @else if (vehicle.status === 'Chờ duyệt') {
+                <span class="status-pending">Chờ duyệt</span>
+                } @else {
+                <span class="status-rejected">Bị từ chối</span>
+                }
+              </td>
+              <td style="text-align: right;">
+                @if (vehicle.status !== 'Đã duyệt') {
+                <button class="btn-danger-sm" (click)="onDelete(vehicle)"
+                  [disabled]="isDeleting() === vehicle.vehicleId">
+                  @if (isDeleting() === vehicle.vehicleId) {
+                  ...
+                  } @else {
+                  Hủy
+                  }
+                </button>
+                }
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="5" class="no-results">Bạn chưa đăng ký phương tiện nào.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
       </div>
+    </div>
     }
   </div>
 </div>

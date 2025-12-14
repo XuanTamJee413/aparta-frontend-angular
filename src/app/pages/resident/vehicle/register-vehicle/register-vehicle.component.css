@@ -51,3 +51,24 @@ header p { margin-top: .25rem; font-size: .875rem; color: #6b7280; }
 .status-rejected{ display:inline-block; padding:.25rem .625rem; font-size:.75rem; font-weight:500; color:#991b1b; background:#fee2e2; border-radius:9999px; }
 
 .no-results{ text-align:center; padding:2.5rem; color:#6b7280; }
+.btn-danger-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #b91c1c;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger-sm:hover:not(:disabled) {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+.btn-danger-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
