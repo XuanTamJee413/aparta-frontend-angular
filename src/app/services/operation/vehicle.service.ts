@@ -14,6 +14,7 @@ export interface VehicleQueryParameters {
   searchTerm: string | null;
   sortBy: string | null;
   sortOrder: string | null;
+  info: string | null;
 }
 
 export interface Apartment {
@@ -49,7 +50,7 @@ export class VehicleService {
   private apiUrl = `${environment.apiUrl}/vehicles`;
   private apartmentApiUrl = `${environment.apiUrl}/apartments`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getVehicleById(id: string): Observable<Vehicle> {
     return this.http.get<Vehicle>(`${this.apiUrl}/${id}`);
@@ -63,7 +64,7 @@ export class VehicleService {
     }
     if (query.sortBy) params = params.append('SortBy', query.sortBy);
     if (query.sortOrder) params = params.append('SortOrder', query.sortOrder);
-
+    if (query.info) params = params.append('Info', query.info);
     return this.http.get<ApiResponse<Vehicle[]>>(this.apiUrl, { params });
   }
 
@@ -75,7 +76,7 @@ export class VehicleService {
     }
     if (query.sortBy) params = params.append('SortBy', query.sortBy);
     if (query.sortOrder) params = params.append('SortOrder', query.sortOrder);
-
+    if (query.info) params = params.append('Info', query.info);
     return this.http.get<ApiResponse<Vehicle[]>>(`${this.apiUrl}/my-buildings`, { params });
   }
 
@@ -87,7 +88,7 @@ export class VehicleService {
     return this.http.get<ApiResponse<Apartment[]>>(this.apartmentApiUrl);
   }
 
-   getApartmentById(id: string): Observable<Apartment> {
+  getApartmentById(id: string): Observable<Apartment> {
     return this.http.get<Apartment>(`${this.apartmentApiUrl}/${id}`);
   }
 
