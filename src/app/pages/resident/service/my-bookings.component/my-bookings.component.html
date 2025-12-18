@@ -1,23 +1,19 @@
 <h2 class="section-title">Lịch sử đặt dịch vụ</h2>
 
-<!-- Loading -->
 <div *ngIf="isLoading" class="loading-state">
   <div class="spinner"></div>
   <p>Đang tải lịch sử...</p>
 </div>
 
-<!-- Error -->
 <div *ngIf="errorMessage" class="alert error">
   {{ errorMessage }}
 </div>
 
-<!-- Empty -->
 <div *ngIf="!isLoading && myBookings.length === 0" class="empty-state">
-  <div class="empty-icon">Empty Icon</div>
+  <div class="empty-icon">📂</div>
   <p>Bạn chưa có lịch sử đặt dịch vụ nào.</p>
 </div>
 
-<!-- Table -->
 <div *ngIf="myBookings.length > 0" class="table-wrapper">
   <table class="booking-table">
     <thead>
@@ -28,7 +24,7 @@
         <th>Ghi chú của tôi</th>
         <th>Ghi chú nhân viên</th>
         <th>Số tiền</th>
-      </tr>
+        <th>Hành động</th> </tr>
     </thead>
     <tbody>
       <tr *ngFor="let booking of myBookings" class="booking-row">
@@ -36,7 +32,7 @@
         <td class="cell-date">{{ booking.bookingDate | date:'dd/MM/yyyy HH:mm' }}</td>
         <td class="cell-status">
           <span class="status-badge status-{{ booking.status.toLowerCase() }}">
-           {{ booking.status }}
+            {{ booking.status }}
           </span>
         </td>
         <td class="cell-note">
@@ -47,6 +43,17 @@
         </td>
         <td class="cell-amount">
           {{ booking.paymentAmount | currency:'VND':'symbol':'1.0-0' }}
+        </td>
+        <td class="cell-action">
+          <button 
+            *ngIf="canCancel(booking.status)" 
+            class="btn-cancel"
+            (click)="onCancelBooking(booking.serviceBookingId)"
+            [disabled]="isLoading">
+            Hủy
+          </button>
+          
+          <span *ngIf="!canCancel(booking.status)" class="text-muted">—</span>
         </td>
       </tr>
     </tbody>

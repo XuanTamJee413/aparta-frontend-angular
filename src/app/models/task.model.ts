@@ -45,7 +45,7 @@ export interface TaskDto {
   endDate?: string | null;
   createdAt?: string | null;
   assigneeNote?: string | null;
-  
+  verifyNote?: string | null;
   // Thông tin người được giao việc (Single - Có thể giữ để tương thích ngược)
   assigneeUserId?: string | null;
   assigneeName?: string | null;
@@ -82,4 +82,10 @@ export interface StaffDto {
   name: string;
   role: string;
   phone?: string; // Có thể thêm phone nếu cần hiển thị
+}
+
+export interface TaskVerifyDto {
+  taskId: string;
+  verifyNote?: string | null; // Ghi chú của OS (nếu có)
+  isAccepted: boolean;     // true = Chấp nhận (Done), false = Từ chối (Làm lại - Reopen)
 }

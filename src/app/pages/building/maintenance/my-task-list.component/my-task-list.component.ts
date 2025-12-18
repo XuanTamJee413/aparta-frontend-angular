@@ -61,7 +61,7 @@ export class MyTaskListComponent implements OnInit {
     };
 
     this.taskService.getMyTasks(params).subscribe({
-      next: (data) => {
+      next: (data: PagedList<TaskDto>) => {
         this.tasks = data.items;
         this.totalCount = data.totalCount;
         this.totalPages = data.totalPages;
@@ -69,7 +69,7 @@ export class MyTaskListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
+        console.error('Lỗi tải công việc:', err);
         this.isLoading = false;
       }
     });
@@ -79,12 +79,16 @@ export class MyTaskListComponent implements OnInit {
   startTask(task: TaskDto): void {
     if (!confirm('Bạn xác nhận bắt đầu thực hiện công việc này?')) return;
 
+    this.isLoading = true;
     this.taskService.updateStatus(task.taskId, 'In Progress', null).subscribe({
       next: () => {
-        this.setSuccessMessage('Đã chuyển trạng thái sang Đang thực hiện.');
+        this.setSuccessMessage('Đã bắt đầu thực hiện công việc.');
         this.loadMyTasks();
       },
-      error: (err) => alert('Lỗi: ' + err.message)
+      error: (err) => {
+        alert('Lỗi: ' + err.message);
+        this.isLoading = false;
+      }
     });
   }
 
@@ -107,16 +111,19 @@ export class MyTaskListComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
     const note = this.reportForm.value.note;
 
     this.taskService.updateStatus(this.selectedTaskId, 'Completed', note).subscribe({
       next: () => {
+        this.isLoading = false;
         this.closeDialog();
-        this.setSuccessMessage('Báo cáo hoàn thành công việc thành công!');
+        this.setSuccessMessage('Báo cáo hoàn thành thành công!');
         this.loadMyTasks();
       },
       error: (err: HttpErrorResponse) => {
-        this.dialogErrorMessage = err.error?.message || 'Lỗi khi cập nhật.';
+        this.isLoading = false;
+        this.dialogErrorMessage = err.error?.message || 'Lỗi khi báo cáo hoàn thành.';
       }
     });
   }
@@ -124,7 +131,7 @@ export class MyTaskListComponent implements OnInit {
   // Helpers
   onFilterChange(): void { this.currentPage = 1; this.loadMyTasks(); }
   onPageChange(page: number): void { 
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page; 
       this.loadMyTasks(); 
     } 
@@ -136,7 +143,6 @@ export class MyTaskListComponent implements OnInit {
   }
 
   formatStatusClass(status: string): string {
-    if (!status) return '';
     return status.toLowerCase().replace(/\s+/g, '-');
   }
   
@@ -145,20 +151,20 @@ export class MyTaskListComponent implements OnInit {
   canComplete(status: string): boolean { return status === 'In Progress'; }
 
   getStatusLabel(status: string): string {
-  const map: any = {
-    Assigned: 'Được giao',
-    'In Progress': 'Đang thực hiện',
-    Completed: 'Đã hoàn thành'
-  };
-  return map[status] || status;
-}
+    const map: { [key: string]: string } = {
+      Assigned: 'Được giao',
+      'In Progress': 'Đang thực hiện',
+      Completed: 'Đã hoàn thành'
+    };
+    return map[status] || status;
+  }
 
-getTypeLabel(type: string): string {
-  const map: any = {
-    suddenly: 'Đột xuất',
-    propose: 'Đề xuất',
-    periodic: 'Định kỳ'
-  };
-  return map[type] || type;
-}
+  getTypeLabel(type: string): string {
+    const map: { [key: string]: string } = {
+      suddenly: 'Đột xuất',
+      propose: 'Đề xuất',
+      periodic: 'Định kỳ'
+    };
+    return map[type] || type;
+  }
 }

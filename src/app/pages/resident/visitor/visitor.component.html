@@ -19,6 +19,9 @@
         <mat-error *ngIf="visitorForm.get('fullName')?.hasError('required')">
           Họ tên là bắt buộc
         </mat-error>
+        <mat-error *ngIf="visitorForm.get('fullName')?.hasError('pattern')">
+          Họ tên không được chứa ký tự đặc biệt
+        </mat-error>
       </mat-form-field>
 
       <!-- SĐT và CCCD -->
@@ -53,6 +56,14 @@
       <mat-form-field appearance="outline">
         <mat-label>Mục đích</mat-label>
         <textarea matInput formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..."></textarea>
+        
+        <mat-error *ngIf="visitorForm.get('purpose')?.hasError('pattern')">
+          Mục đích không được chứa ký tự đặc biệt (&lt; &gt; / ' ...)
+        </mat-error>
+
+        <mat-error *ngIf="visitorForm.get('purpose')?.hasError('maxlength')">
+          Tối đa 500 ký tự
+        </mat-error>
       </mat-form-field>
 
       <!-- Ngày và Giờ -->

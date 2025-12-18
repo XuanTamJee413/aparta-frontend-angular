@@ -19,6 +19,7 @@ import { AuthService } from '../../../services/auth.service';
 import { RecentVisitorDialogComponent } from './recent-visitor/recent-visitor';
 
 @Injectable()
+// chuyển tháng ngày năm sang ngày tháng năm
 export class AppDateAdapter extends NativeDateAdapter {
   override format(date: Date, displayFormat: Object): string {
     if (displayFormat === 'input') {
@@ -114,7 +115,10 @@ export class VisitorComponent implements OnInit {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     this.visitorForm = this.fb.group({
-      fullName: ['', Validators.required],
+      fullName: ['', [
+        Validators.required,
+        Validators.pattern(/^[\p{L}0-9\s]+$/u)
+      ]],
       phone: ['', [
         Validators.maxLength(15),
         Validators.pattern('^[0-9]*$')
@@ -124,7 +128,10 @@ export class VisitorComponent implements OnInit {
         Validators.maxLength(20),
         Validators.pattern('^[0-9]+$')
       ]],
-      purpose: [''],
+      purpose: ['', [
+    Validators.maxLength(500),
+    Validators.pattern(/^[\p{L}0-9\s,.-]+$/u)
+  ]],
       checkinDate: [tomorrow, [Validators.required, this.pastDateValidator]],
       checkinTime: ['12:00', Validators.required]
     });
@@ -221,11 +228,23 @@ export class VisitorComponent implements OnInit {
 
       this.visitorService.createVisitor(createDto).subscribe({
         next: (created) => {
-          this.snackBar.open(`Đăng ký thành công: ${created.fullName}`, 'Đóng', { duration: 3000, panelClass: ['success-snackbar'] });
-          this.resetForm();
+          if (created.isUpdated) {
+             this.snackBar.open(
+               `Thông tin khách thăm đã được cập nhật và Đăng Ký thành công: ${created.fullName}`, 
+               'Đóng', 
+               { duration: 4000, panelClass: ['info-snackbar'] } 
+             );
+          } else {
+             this.snackBar.open(
+               `Đăng ký thành công: ${created.fullName}`, 
+               'Đóng', 
+               { duration: 3000, panelClass: ['success-snackbar'] }
+             );
+          }
+
           this.loadHistory();
         },
-        error: (err) => this.handleError(err, 'Không thể đăng ký')
+        error: (err) => this.handleError(err, 'Không thể đăng ký, vui lòng thử lại sau')
       });
     }
   }
@@ -243,7 +262,7 @@ export class VisitorComponent implements OnInit {
     // Đẩy dữ liệu lên form
     this.visitorForm.patchValue({
       fullName: log.visitorFullName,
-      phone: log.visitorPhone || '', // Cần backend trả về field này
+      phone: log.visitorPhone || '', 
       idNumber: log.visitorIdNumber,
       purpose: log.purpose,
       checkinDate: checkinDateObj,
@@ -312,8 +331,8 @@ export class VisitorComponent implements OnInit {
       sortDirection: 'desc'
     };
 
-    this.visitorService.getAllVisitors(params).subscribe({
-      next: (pagedData) => {
+this.visitorService.getResidentVisitHistory(params).subscribe({ 
+       next: (pagedData) => {
 
         this.history = pagedData.items.map(log => {
           let checkinTimeStr = (log as any).checkinTime;
@@ -341,6 +360,7 @@ export class VisitorComponent implements OnInit {
     });
   }
 
+  // mảng ngày giờ trong cbx cho dễ chọn
   populateTimeSlots(): void {
     for (let h = 0; h < 24; h++) {
       for (let m = 0; m < 60; m += 30) {

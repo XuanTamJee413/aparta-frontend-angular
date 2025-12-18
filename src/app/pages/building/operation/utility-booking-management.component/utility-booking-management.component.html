@@ -26,83 +26,96 @@
   <div class="card-body">
     <div class="loading" *ngIf="isLoading">Đang tải dữ liệu...</div>
 
-    <table>
+    <table *ngIf="!isLoading">
       <thead>
         <tr>
           <th>Tiện Ích</th>
           <th>Cư Dân</th>
-          <th>Bắt đầu</th>
-          <th>Kết Thúc</th>
+          <th>Thời gian đặt</th>
           <th>Trạng Thái</th>
-          <th>Ghi Chú Cư Dân</th>
-          <th>Hành Động</th>
+          <th>Ghi Chú</th>
+          <th style="width: 120px;">Hành Động</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let b of bookings">
-          <td><strong>{{ b.utilityName }}</strong></td>
+          <td>
+            <strong>{{ b.utilityName }}</strong><br>
+            <small class="text-muted">Ngày tạo: {{ b.bookedAt | date:'dd/MM/yyyy HH:mm' }}</small>
+          </td>
           <td>{{ b.residentName }}</td>
           <td>
-            {{ b.bookingDate | date:'dd/MM HH:mm' }}
-            <span class="text-danger" *ngIf="isExpired(b.bookingDate)"> (Hết hạn)</span>
+            <div><strong>Bắt đầu:</strong> {{ b.bookingDate | date:'dd/MM HH:mm' }}</div>
+            <div *ngIf="isExpired(b.bookingDate)" class="text-expired">(Đã qua giờ)</div>
           </td>
-          <td>{{ b.bookedAt | date:'dd/MM/yyyy HH:mm' }}</td>
           <td>
             <span class="status-badge status-{{ b.status | lowercase }}">
               {{ getStatusLabel(b.status) }}
             </span>
           </td>
-          <td class="note-cell">{{ b.residentNote || '—' }}</td>
+          <td class="note-cell">
+            <div *ngIf="b.residentNote"><strong>Cư dân:</strong> {{ b.residentNote }}</div>
+            <div *ngIf="b.staffNote" class="text-danger mt-1"><strong>Lý do từ chối:</strong> {{ b.staffNote }}</div>
+          </td>
           <td class="action-cell">
-            <button class="btn btn-edit" (click)="openEditModal(b)"
-                    [disabled]="b.status === 'Cancelled' || b.status === 'Rejected'">
-              Cập nhật
+            <button 
+              *ngIf="canReject(b)" 
+              class="btn btn-reject" 
+              (click)="openRejectModal(b)">
+              Từ chối
             </button>
+            
+            <span *ngIf="!canReject(b) && b.status !== 'Rejected' && b.status !== 'Cancelled'" class="text-muted small">
+              Không thể thao tác
+            </span>
           </td>
         </tr>
-        <tr *ngIf="!isLoading && bookings.length === 0" class="empty-row">
-          <td colspan="7">Không có đơn đặt tiện ích nào.</td>
+        <tr *ngIf="bookings.length === 0" class="empty-row">
+          <td colspan="6">Không có đơn đặt tiện ích nào.</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- PHÂN TRANG ĐẸP -->
   <div class="card-footer" *ngIf="totalPages > 1">
     <div class="pagination-summary">
       Hiển thị {{ bookings.length }} / {{ totalCount }} đơn
     </div>
     <div class="pagination-controls">
       <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(1)">«</button>
-      <button class="btn-page" [disabled]="!hasPreviousPage" (click)="onPageChange(currentPage - 1)">‹</button>
+      <button class="btn-page" [disabled]="currentPage <= 1" (click)="onPageChange(currentPage - 1)">‹</button>
       <span>Trang {{ currentPage }} / {{ totalPages }}</span>
-      <button class="btn-page" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">›</button>
+      <button class="btn-page" [disabled]="currentPage >= totalPages" (click)="onPageChange(currentPage + 1)">›</button>
       <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(totalPages)">»</button>
     </div>
   </div>
 </div>
 
-<!-- DIALOG CẬP NHẬT -->
-<dialog #bookingDialog class="modern-dialog" (close)="closeDialog()">
-  <form [formGroup]="bookingForm" (ngSubmit)="saveBooking()" class="dialog-form">
-    <div class="form-header">
-      <h3>Cập nhật trạng thái đặt chỗ</h3>
+<dialog #rejectDialog class="modern-dialog" (close)="closeDialog()">
+  <form [formGroup]="rejectForm" (ngSubmit)="confirmReject()" class="dialog-form">
+    <div class="form-header bg-danger-light"> <h3 class="text-danger">Xác nhận Từ chối</h3>
       <button type="button" class="btn-close" (click)="closeDialog()">×</button>
     </div>
 
     <div class="form-body">
-      <div class="form-group">
-        <label>Trạng thái</label>
-        <select formControlName="status">
-          <option *ngFor="let o of dialogStatusOptions" [value]="o.value">
-            {{ o.label }}
-          </option>
-        </select>
-      </div>
+      <p class="confirm-text">
+        Bạn có chắc chắn muốn từ chối đơn đặt tiện ích này? <br>
+        <small>Hành động này sẽ gửi thông báo đến cư dân.</small>
+      </p>
 
       <div class="form-group">
-        <label>Ghi chú của nhân viên (gửi cư dân)</label>
-        <textarea formControlName="staffNote" rows="4" placeholder="VD: Đã xác nhận, vui lòng đến quầy lễ tân nhận thẻ..."></textarea>
+        <label>Lý do từ chối <span class="required">*</span></label>
+        <textarea 
+          formControlName="staffNote" 
+          rows="4" 
+          placeholder="Vui lòng nhập lý do (VD: Bảo trì đột xuất, Cư dân vi phạm quy định...)"
+          class="form-control"
+          [class.invalid]="rejectForm.get('staffNote')?.invalid && rejectForm.get('staffNote')?.touched"
+        ></textarea>
+        
+        <div *ngIf="rejectForm.get('staffNote')?.invalid && rejectForm.get('staffNote')?.touched" class="form-error">
+          Vui lòng nhập lý do từ chối (tối thiểu 5 ký tự).
+        </div>
       </div>
     </div>
 
@@ -111,10 +124,11 @@
     </div>
 
     <div class="form-footer">
-      <button type="button" class="btn btn-cancel" (click)="closeDialog()">Hủy</button>
-      <button type="submit" class="btn btn-save" [disabled]="bookingForm.invalid">
-        Lưu thay đổi
+      <button type="button" class="btn btn-secondary" (click)="closeDialog()">Quay lại</button>
+      <button type="submit" class="btn btn-danger" [disabled]="rejectForm.invalid">
+        Xác nhận Từ chối
       </button>
     </div>
   </form>
 </dialog>
+

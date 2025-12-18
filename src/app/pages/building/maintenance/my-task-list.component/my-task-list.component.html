@@ -34,6 +34,7 @@
           <th>Thời hạn</th>
           <th>Trạng thái</th>
           <th>Ghi chú của tôi</th>
+          <th>Ghi chú quản lý</th>
           <th>Hành động</th>
         </tr>
       </thead>
@@ -61,6 +62,9 @@
           </td>
           <td class="note-cell">
             {{ task.assigneeNote || '—' }}
+          </td>
+          <td class="note-cell">
+            {{ task.verifyNote || '—'  }}
           </td>
           <td class="action-cell">
             <!-- Chỉ hiện nút khi được phép -->
@@ -120,7 +124,7 @@
         <textarea 
           formControlName="note" 
           rows="5" 
-          placeholder="VD: Đã sửa xong ống nước tầng 5, kiểm tra áp lực ổn định. Không còn rò rỉ."
+          placeholder="..."
           class="note-input"></textarea>
         <small class="form-error" *ngIf="reportForm.get('note')?.invalid && reportForm.get('note')?.touched">
           Vui lòng nhập nội dung báo cáo.

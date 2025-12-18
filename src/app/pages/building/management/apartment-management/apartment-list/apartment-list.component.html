@@ -24,7 +24,6 @@
           <option value="Đã Bán">Đã Bán</option>
           <option value="Còn Trống">Còn Trống</option>
           <option value="Đang Bảo Trì">Đang Bảo Trì</option>
-          <option value="Đã Đóng">Đã Đóng</option>
         </select>
 
         <select class="filter-select" [(ngModel)]="selectedBuildingId" (change)="onFilterChange()">
@@ -103,7 +102,6 @@
                         'status-rented': apartment.status === 'Đã Bán',
                         'status-available': apartment.status === 'Còn Trống',
                         'status-maintenance': apartment.status === 'Đang Bảo Trì',
-                        'status-closed': apartment.status === 'Đã Đóng'
                       }">
                   <svg class="status-dot" fill="currentColor" viewBox="0 0 8 8">
                     <circle cx="4" cy="4" r="3" />

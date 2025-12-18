@@ -1,301 +1,467 @@
-/* ====================== ROOT ====================== */
-:host {
-  display: block;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* ====================== TYPOGRAPHY ====================== */
-.section-title {
-  font-size: 1.75rem;
-  font-weight: 600;
+h2 {
+  font-size: 1.8rem;
+  color: #2c3e50;
   margin-bottom: 1.5rem;
-  color: #1a1a1a;
-  text-align: center;
+  font-weight: 600;
 }
 
-/* ====================== LOADING & EMPTY ====================== */
-.loading,
-.empty-state {
+.loading {
   text-align: center;
-  padding: 2rem;
+  padding: 3rem;
   color: #666;
+  font-style: italic;
 }
 
-.spinner,
-.spinner-small {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-}
-
-.spinner-small {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-width: 2px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* ====================== SERVICE GRID ====================== */
+/* Dạng khối cho dịch vụ */
 .service-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
-  padding: 1rem 0;
 }
 
 .service-card {
   background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  text-align: center;
-  position: relative;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   overflow: hidden;
+  transition: transform 0.2s;
 }
 
 .service-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
 }
 
-.service-card:focus {
-  outline: 2px solid #3498db;
-  outline-offset: 2px;
-}
-.service-card .icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-.service-name {
-  font-size: 1.1rem;
-  margin: 0.5rem 0;
-  color: #2c3e50;
-}
-
-.service-price {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #e74c3c;
-  margin-bottom: 1rem;
-}
-
-.btn-book {
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.btn-book:hover {
-  background: #2980b9;
-}
-
-/* ====================== DIALOG ====================== */
-.booking-dialog {
-  max-width: 500px;
-  width: 90%;
-  border: none;
-  border-radius: 16px;
-  padding: 0;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  animation: fadeIn 0.3s ease-out;
-}
-
-.booking-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.dialog-content {
-  padding: 1.5rem;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
+.service-card-header {
+  background: #f8f9fa;
+  padding: 1rem;
   border-bottom: 1px solid #eee;
 }
 
-.dialog-header h3 {
-  margin: 0;
-  font-size: 1.4rem;
+.service-name {
+  font-size: 1.2rem;
+  font-weight: 600;
   color: #2c3e50;
+  margin: 0;
 }
 
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.8rem;
-  cursor: pointer;
-  color: #999;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s;
+.service-card-body {
+  padding: 1rem;
 }
 
-.close-btn:hover {
-  background: #f1f1f1;
-  color: #e74c3c;
-}
-
-.service-summary {
-  margin-bottom: 1.5rem;
+.service-price {
   font-size: 1.1rem;
-  color: #27ae60;
+  font-weight: 500;
+  color: #28a745;
+  margin: 0;
+}
+
+.service-card-footer {
+  padding: 1rem;
+  text-align: center;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
   font-weight: 600;
 }
 
-/* ====================== FORM ====================== */
-.booking-form {
+.btn-primary:hover {
+  background: #2980b9;
+}
+
+/* Bảng lịch sử */
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.booking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.booking-table th {
+  background-color: #f8f9fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #34495e;
+  border-bottom: 2px solid #eee;
+}
+
+.booking-table td {
+  padding: 14px 15px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.booking-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Badge trạng thái */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending    { background: #fff3cd; color: #856404; }
+.status-approved   { background: #d4edda; color: #155724; }
+.status-rejected   { background: #f8d7da; color: #721c24; }
+.status-cancelled  { background: #e9ecef; color: #495057; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #7f8c8d;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Dialog đặt dịch vụ */
+dialog {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  max-width: 480px;
+  width: 90%;
+  padding: 0;
+}
+
+dialog::backdrop {
+  background: rgba(0,0,0,0.5);
+}
+
+.form-header {
+  background: #3498db;
+  color: white;
+  padding: 1.2rem;
+  border-radius: 12px 12px 0 0;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-header h3 { margin: 0; font-size: 1.4rem; }
+
+.btn-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+.form-body {
+  padding: 1.5rem;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 20px;
 }
 
 .form-group label {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #34495e;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
-.form-input,
-.form-textarea {
-  padding: 0.75rem;
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 10px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1rem;
-  transition: border 0.3s ease;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
 .form-textarea {
   resize: vertical;
-  min-height: 80px;
 }
 
-.error-text {
+.required { color: #e74c3c; }
+
+.form-error {
   color: #e74c3c;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.alert {
-  padding: 0.75rem;
-  border-radius: 8px;
   font-size: 0.9rem;
-  margin: 0.75rem 0;
+  margin-top: 5px;
 }
 
-.alert.error {
-  background: #fdf2f2;
-  color: #c53030;
-  border: 1px solid #feb2b2;
+.form-error-summary, .form-success-summary {
+  padding: 10px;
+  border-radius: 6px;
+  margin: 15px;
+  font-size: 0.9rem;
 }
 
-.alert.success {
-  background: #f0fdf4;
-  color: #166534;
-  border: 1px solid #bbf7d0;
+.form-error-summary {
+  background: #f8d7da;
+  color: #721c24;
 }
 
-/* ====================== ACTIONS ====================== */
-.dialog-actions {
+.form-success-summary {
+  background: #d4edda;
+  color: #155724;
+}
+
+.form-footer {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 15px;
+  border-radius: 0 0 12px 12px;
 }
 
-.btn-secondary,
-.btn-primary {
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+.btn-cancel {
+  background: #6c757d;
+  color: white;
+  padding: 10px 20px;
   border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.btn-secondary {
-  background: #ecf0f1;
+.btn-save {
+  background: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-cancel:hover, .btn-save:hover {
+  opacity: 0.9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .service-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .booking-table {
+    font-size: 0.85rem;
+  }
+  .booking-table th, .booking-table td {
+    padding: 10px;
+  }
+  .dialog { width: 95%; }
+}
+
+/* ====================== DIALOG ĐẶT DỊCH VỤ - GIỐNG HỆT TIỆN ÍCH ====================== */
+.booking-modal {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  max-width: 520px;
+  width: 92%;
+  padding: 0;
+  overflow: hidden;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.booking-modal::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 1.4rem 1.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modal-header .btn-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.modal-header .btn-close:hover { opacity: 1; }
+
+.modal-body {
+  padding: 1.8rem;
+  background: #fff;
+}
+
+.modal-footer {
+  padding: 1.2rem 1.8rem;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  border-radius: 0 0 16px 16px;
+}
+
+.form-group {
+  margin-bottom: 1.4rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
   color: #2c3e50;
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: #d6dbdf;
+.required { color: #e74c3c; }
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.2s, box-shadow 0.2s;
 }
 
-.btn-primary {
-  background: #27ae60;
+.form-input:focus, .form-textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.form-error {
+  display: block;
+  color: #e74c3c;
+  font-size: 0.88rem;
+  margin-top: 6px;
+}
+
+.alert {
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 0.94rem;
+}
+
+.alert-danger {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.modal-footer .btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 110px;
+}
+
+.modal-footer .btn-cancel {
+  background: #6c757d;
   color: white;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #219a52;
+.modal-footer .btn-cancel:hover { background: #5a6268; }
+
+.modal-footer .btn-primary {
+  background: #28a745;
+  color: white;
 }
 
-.btn-primary:disabled,
-.btn-secondary:disabled {
-  opacity: 0.6;
+.modal-footer .btn-primary:hover:not(:disabled) { background: #218838; }
+
+.modal-footer .btn:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
-/* ====================== RESPONSIVE ====================== */
-@media (max-width: 600px) {
-  .service-grid {
-    grid-template-columns: 1fr;
-  }
 
-  .booking-dialog {
-    width: 95%;
-    margin: 1rem;
-  }
+/* 1. Căn chỉnh ô chứa nút (Action Cell) */
+.action-cell {
+  text-align: center;      /* Căn giữa ngang */
+  vertical-align: middle;  /* Căn giữa dọc (Sửa lỗi bị lệch) */
+  white-space: nowrap;     /* Giữ nút trên 1 dòng */
+  padding: 8px;            /* Khoảng cách đệm */
+}
 
-  .dialog-header h3 {
-    font-size: 1.2rem;
-  }
+/* 2. Style cho nút Hủy nhỏ (Small Cancel Button) */
+.btn-cancel-sm {
+  background-color: #fff;       /* Nền trắng */
+  color: #dc3545;               /* Chữ màu đỏ */
+  border: 1px solid #dc3545;    /* Viền đỏ mỏng */
+  padding: 4px 10px;            /* Kích thước nhỏ gọn cho bảng */
+  border-radius: 4px;           /* Bo góc nhẹ */
+  font-size: 0.85rem;           /* Cỡ chữ vừa phải (~13-14px) */
+  font-weight: 500;             /* Chữ hơi đậm để dễ đọc */
+  cursor: pointer;              /* Con trỏ bàn tay */
+  transition: all 0.2s ease;    /* Hiệu ứng mượt mà */
+  
+  /* Flex để căn giữa chữ trong nút */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3. Hiệu ứng Hover (Rê chuột vào) */
+.btn-cancel-sm:hover {
+  background-color: #dc3545;    /* Nền chuyển đỏ */
+  color: #fff;                  /* Chữ chuyển trắng */
+  box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3); /* Bóng đổ nhẹ */
+}
+
+/* 4. Hiệu ứng Active (Khi bấm xuống) */
+.btn-cancel-sm:active {
+  transform: translateY(1px);   /* Nhún xuống 1 chút */
+  box-shadow: none;
+}
+
+/* 5. Style cho dấu gạch ngang (khi không hủy được) */
+.text-muted {
+  color: #adb5bd;               /* Màu xám nhạt */
+  font-size: 1.2rem;            /* To hơn một chút cho rõ */
+  line-height: 1;
+  font-weight: bold;
+  user-select: none;            /* Không cho bôi đen */
 }

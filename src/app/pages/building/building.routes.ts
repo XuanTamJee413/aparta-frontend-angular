@@ -48,7 +48,7 @@ export const MANAGER_ROUTES: Routes = [
   { path: 'news/list', component: NewsListComponent, title: 'News List' },
   { path: 'news/create', component: NewsCreateComponent, title: 'Create News' },
   { path: 'news/edit/:id', component: NewsEditComponent, title: 'Edit News' },
-  { path: 'manage-quotation', canActivate: [permissionGuard('visitor.read')], component: PriceQuotationListComponent },
+  { path: 'manage-quotation', canActivate: [permissionGuard('staffassignment.read')], component: PriceQuotationListComponent },
   { path: 'manage-quotation/new', component: PriceQuotationFormComponent },
   { path: 'manage-quotation/edit/:id', component: PriceQuotationFormComponent },
   { 

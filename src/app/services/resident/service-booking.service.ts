@@ -33,4 +33,8 @@ export class ServiceBookingService {
   getMyBookings(): Observable<ServiceBookingDto[]> {
     return this.http.get<ServiceBookingDto[]>(`${this.bookingApiUrl}/my`);
   }
+
+  cancelBooking(bookingId: string): Observable<void> {
+    return this.http.put<void>(`${this.bookingApiUrl}/${bookingId}/cancel`, {});
+  }
 }

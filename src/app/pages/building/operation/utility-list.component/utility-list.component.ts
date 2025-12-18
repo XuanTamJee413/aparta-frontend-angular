@@ -51,7 +51,9 @@ export class UtilityListComponent implements OnInit {
       name: ['', Validators.required],
       location: ['', Validators.required],
       periodTime: [1, [Validators.required, Validators.min(1)]],
-      status: ['Available', Validators.required]
+      status: ['Available', Validators.required],
+      openTime: ['06:00'], // Giá trị mặc định
+      closeTime: ['22:00'] // Giá trị mặc định
     });
   }
 
@@ -116,7 +118,9 @@ export class UtilityListComponent implements OnInit {
       name: '',
       location: '',
       periodTime: 1,
-      status: 'Available'
+      status: 'Available',
+      openTime: '06:00', // Reset về mặc định
+      closeTime: '22:00'
     });
     this.dialog.nativeElement.showModal();
   }
@@ -125,11 +129,17 @@ export class UtilityListComponent implements OnInit {
   openEditModal(utility: UtilityDto): void {
     this.isEditMode = true;
     this.currentUtilityId = utility.utilityId;
+    
+    // Cần cắt chuỗi "HH:mm:ss" thành "HH:mm" để input type="time" hiểu
+    const formatTime = (time: string | null) => time ? time.substring(0, 5) : null;
+
     this.utilityForm.patchValue({
       name: utility.name,
       location: utility.location,
       periodTime: utility.periodTime,
-      status: utility.status
+      status: utility.status,
+      openTime: formatTime(utility.openTime),   // Map vào form
+      closeTime: formatTime(utility.closeTime)  // Map vào form
     });
     this.dialog.nativeElement.showModal();
   }
@@ -151,38 +161,34 @@ export class UtilityListComponent implements OnInit {
     }
 
     const formValue = this.utilityForm.value;
+    
+    // Thêm giây ":00" vào cuối để backend parse thành TimeSpan chuẩn (nếu cần)
+    // Tuy nhiên input type="time" thường trả về "HH:mm", backend .NET parse tốt.
+    
+    const payload = {
+      name: formValue.name,
+      location: formValue.location,
+      periodTime: formValue.periodTime,
+      status: formValue.status,
+      openTime: formValue.openTime ? formValue.openTime + ':00' : null, // Thêm :00 cho chắc
+      closeTime: formValue.closeTime ? formValue.closeTime + ':00' : null
+    };
 
     if (this.isEditMode && this.currentUtilityId) {
-      // Cập nhật
-      const updateDto: UtilityUpdateDto = {
-        name: formValue.name,
-        location: formValue.location,
-        periodTime: formValue.periodTime,
-        status: formValue.status
-      };
-
-      this.utilityService.updateUtility(this.currentUtilityId, updateDto).subscribe({
+      this.utilityService.updateUtility(this.currentUtilityId, payload as UtilityUpdateDto).subscribe({
         next: () => {
           this.loadUtilities();
           this.hideDialog();
         },
-        error: (err) => console.error('Lỗi khi cập nhật tiện ích:', err)
+        error: (err) => console.error('Lỗi cập nhật:', err)
       });
     } else {
-      // Thêm mới
-      const createDto: UtilityCreateDto = {
-        name: formValue.name,
-        location: formValue.location,
-        periodTime: formValue.periodTime,
-        status: formValue.status
-      };
-
-      this.utilityService.addUtility(createDto).subscribe({
+      this.utilityService.addUtility(payload as UtilityCreateDto).subscribe({
         next: () => {
           this.loadUtilities();
           this.hideDialog();
         },
-        error: (err) => console.error('Lỗi khi thêm tiện ích:', err)
+        error: (err) => console.error('Lỗi thêm mới:', err)
       });
     }
   }

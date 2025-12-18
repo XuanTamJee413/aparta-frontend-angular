@@ -1,21 +1,23 @@
 // src/app/models/utility.model.ts
-
 export interface UtilityDto {
   utilityId: string;
   name: string | null;
   status: string | null;
   location: string | null;
-  periodTime: number | null; // double/float -> number
+  periodTime: number | null;
+  openTime: string | null;  
+  closeTime: string | null; 
   createdAt: string | null;
   updatedAt: string | null;
 }
 
 export interface UtilityCreateDto {
-  utilityId?: string | null;
   name: string | null;
   status: string | null;
   location: string | null;
   periodTime: number | null;
+  openTime: string | null;
+  closeTime: string | null;
 }
 
 export interface UtilityUpdateDto {
@@ -23,6 +25,8 @@ export interface UtilityUpdateDto {
   status: string | null;
   location: string | null;
   periodTime: number | null;
+  openTime: string | null;
+  closeTime: string | null;
 }
 
 export interface ServiceQueryParameters {
