@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CreateManagerDto, ManagerService } from '../../../../services/admin/manager.service';
-import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
+import { CreateManagerDto, ManagerBuildingOption, ManagerService } from '../../../../services/admin/manager.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { PhotoService } from '../../../../services/photo.service';
@@ -26,7 +25,7 @@ export class ManagerCreateComponent implements OnInit {
     buildingIds: []
   };
 
-  allBuildings$!: Observable<BuildingDto[]>;
+  allBuildings$!: Observable<ManagerBuildingOption[]>;
   submitting = false;
   errorMessage = '';
   uploadingAvatar = false;
@@ -36,15 +35,14 @@ export class ManagerCreateComponent implements OnInit {
 
   constructor(
     private managerService: ManagerService,
-    private buildingService: BuildingService,
     private router: Router,
     private photoService: PhotoService
   ) {}
 
   ngOnInit(): void {
-    // Tải danh sách tất cả các building
-    this.allBuildings$ = this.buildingService.getAllBuildings().pipe(
-      map(response => response.succeeded ? response.data?.items || [] : [])
+    // Tải danh sách tất cả các building và trạng thái manager
+    this.allBuildings$ = this.managerService.getBuildingOptions().pipe(
+      map(response => response.succeeded ? response.data || [] : [])
     );
   }
 

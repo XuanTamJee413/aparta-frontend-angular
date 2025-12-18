@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { Manager } from '../../../../models/manager.model';
-import { ManagerService, UpdateManagerDto } from '../../../../services/admin/manager.service';
-import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
+import { ManagerBuildingOption, ManagerService, UpdateManagerDto } from '../../../../services/admin/manager.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { PhotoService } from '../../../../services/photo.service';
@@ -30,7 +29,7 @@ export class ManagerEditComponent implements OnInit {
     buildingIds: []
   };
 
-  allBuildings$!: Observable<BuildingDto[]>;
+  allBuildings$!: Observable<ManagerBuildingOption[]>;
   statusOptions = [
     { value: 'active', label: 'Hoạt động' },
     { value: 'inactive', label: 'Vô hiệu hóa' }
@@ -46,7 +45,6 @@ export class ManagerEditComponent implements OnInit {
 
   constructor(
     private managerService: ManagerService,
-    private buildingService: BuildingService,
     private router: Router,
     private route: ActivatedRoute,
     private photoService: PhotoService
@@ -55,13 +53,9 @@ export class ManagerEditComponent implements OnInit {
   ngOnInit(): void {
     this.managerId = this.route.snapshot.paramMap.get('id') || '';
     
-    // Tải danh sách tất cả các building
-    this.allBuildings$ = this.buildingService.getAllBuildings().pipe(
-      map(response => response.succeeded ? response.data?.items || [] : [])
-    );
-    
     if (this.managerId) {
       this.loadManagerData();
+      this.loadBuildingOptions();
     } else {
       this.errorMessage = 'Manager ID not found';
     }
@@ -110,6 +104,13 @@ export class ManagerEditComponent implements OnInit {
         console.error('Error loading manager:', error);
       }
     });
+  }
+
+  private loadBuildingOptions(): void {
+    // Lấy danh sách building + trạng thái manager, cho phép giữ các tòa của chính manager này
+    this.allBuildings$ = this.managerService.getBuildingOptions(this.managerId).pipe(
+      map(response => response.succeeded ? response.data || [] : [])
+    );
   }
 
   onBuildingChange(event: Event): void {
