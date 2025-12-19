@@ -212,7 +212,7 @@
         <div class="section-header">
           <div>
             <h2>Toà nhà phụ trách</h2>
-            <p>Tick chọn để gán quyền quản lý cho từng toà nhà.</p>
+            <p>Chỉ có thể chọn các toà nhà chưa có Manager khác đang hoạt động.</p>
           </div>
         </div>
         <div class="building-grid" *ngIf="(allBuildings$ | async) as buildings">
@@ -226,10 +226,13 @@
               [value]="building.buildingId"
               [checked]="manager.buildingIds.includes(building.buildingId)"
               (change)="onBuildingChange($event)"
-              [disabled]="submitting">
+              [disabled]="submitting || building.hasManager">
             <div>
-              <strong>{{ building.name }}</strong>
+              <strong>{{ building.buildingName }}</strong>
               <p>{{ building.buildingCode }}</p>
+              <p *ngIf="building.hasManager" class="text-muted">
+                Đã có manager: {{ building.managerName || 'Đã được gán' }}
+              </p>
             </div>
           </label>
           <div *ngIf="buildings.length === 0" class="building-empty">
