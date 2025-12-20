@@ -85,7 +85,6 @@ export interface UserQueryParams {
 })
 export class UserManagementService {
   private apiUrl = `${environment.apiUrl}/UserManagement`;
-private buildingUrl = `${environment.apiUrl}/Buildings`;
   constructor(private http: HttpClient) { }
 
   // --- Helper to build HttpParams ---
@@ -122,40 +121,22 @@ private buildingUrl = `${environment.apiUrl}/Buildings`;
 
   // 4. TOGGLE Status
   toggleUserStatus(userId: string, status: string): Observable<ApiResponse<UserAccountDto>> {
-    // Backend mong đợi body là { status: "Active" }
     const body: StatusUpdateDto = { status: status };
     return this.http.put<ApiResponse<UserAccountDto>>(`${this.apiUrl}/${userId}/status`, body);
   }
 
-// [MỚI] 5. UPDATE Assignments
   updateStaffAssignments(staffId: string, buildingIds: string[], scopeOfWork?: string): Observable<ApiResponse<void>> {
     const body = { buildingIds, scopeOfWork };
     return this.http.put<ApiResponse<void>>(`${this.apiUrl}/staffs/${staffId}/assignments`, body);
   }
 
-  // [MỚI] Helper lấy danh sách tất cả tòa nhà (để hiện checkbox)
-  getAllBuildings(): Observable<ApiResponse<any>> { // ApiResponse<PagedList<BuildingDto>> hoặc List
-    // Lưu ý: Backend BuildingController GetAll thường trả về PagedList. 
-    // Ta lấy trang 1, size lớn để lấy hết hoặc cần endpoint get-all-lookup riêng.
-    // Ở đây giả định lấy 100 tòa nhà đầu tiên.
-    return this.http.get<ApiResponse<any>>(`${this.buildingUrl}?pageSize=100`);
-  }
-
-  // [MỚI] Reset Password (Admin reset cho User)
-  // Backend cần endpoint: POST /api/Auth/reset-password-admin hoặc tương tự.
-  // Nếu chưa có, ta giả định dùng endpoint UserManagement update profile hoặc logic riêng.
-  // Ở đây tôi giả định bạn sẽ dùng logic Update thông thường hoặc 1 endpoint cụ thể.
-  // Tạm thời gọi endpoint update profile hoặc endpoint giả định:
   resetPasswordByAdmin(userId: string): Observable<ApiResponse<any>> {
-     // Logic này phụ thuộc Backend của bạn có endpoint "Force Reset" không.
-     // Nếu không, ta gửi mật khẩu mới qua email.
      return this.http.post<ApiResponse<any>>(`${this.apiUrl}/staffs/${userId}/reset-password`, {});
   }
-  // GET Roles (Helper for creating staff)
-  getAllRoles(): Observable<ApiResponse<RoleDto[]>> {
-    // Lưu ý: Endpoint này nằm ở Controller Roles, nên URL có thể khác
-    // Nếu bạn gom vào UserManagementController thì dùng apiUrl, nếu không thì dùng endpoint riêng
-    // Giả sử Controller Roles tách biệt: api/Roles
-    return this.http.get<ApiResponse<RoleDto[]>>(`${this.apiUrl}/Roles`);
+  getRolesForManager(): Observable<ApiResponse<RoleDto[]>> {
+  return this.http.get<ApiResponse<RoleDto[]>>(`${this.apiUrl}/roles`);
+}
+  getManagedBuildings(): Observable<ApiResponse<BuildingDto[]>> {
+    return this.http.get<ApiResponse<BuildingDto[]>>(`${this.apiUrl}/managed-buildings`);
   }
 }

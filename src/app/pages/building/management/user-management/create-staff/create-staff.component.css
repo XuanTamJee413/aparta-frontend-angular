@@ -39,7 +39,24 @@
   padding: 0 15px;
   border-radius: 4px;
 }
+.no-building-warning {
+  grid-column: span 2; /* Trải dài hết 2 cột của grid */
+  padding: 12px;
+  background-color: #fff3cd; /* Màu vàng cảnh báo */
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  font-size: 13.5px;
+}
 
+.no-building-warning mat-icon {
+  margin-right: 8px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
 /* Responsive */
 @media (max-width: 600px) {
   .dialog-content {

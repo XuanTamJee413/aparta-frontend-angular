@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -53,6 +53,9 @@ import { CreateStaffComponent } from './create-staff/create-staff.component';
   styleUrls: ['./user-management.component.css']
 })
 export class UserManagementComponent implements OnInit {
+  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
+  confirmMessage: string = '';
+  isActivating: boolean = false;
   // Trạng thái chung
   activeTab: 'staffs' | 'residents' = 'staffs';
   isLoading = false;
@@ -240,27 +243,34 @@ export class UserManagementComponent implements OnInit {
   
   toggleStatus(user: UserAccountDto): void {
     const isCurrentlyActive = user.status.toLowerCase() === 'active';
-    const newStatus = isCurrentlyActive ? 'Inactive' : 'Active';
-
-    if (!confirm(`Xác nhận ${newStatus === 'Active' ? 'KÍCH HOẠT' : 'VÔ HIỆU HÓA'} tài khoản ${user.name}?`)) {
-        return;
-    }
+    this.isActivating = !isCurrentlyActive; // Nếu đang active thì hành động là "Vô hiệu hóa" (false)
     
-    this.isLoading = true;
-    // Gọi API với string status trực tiếp (Service sẽ đóng gói thành object)
-    this.userService.toggleUserStatus(user.userId, newStatus)
-      .pipe(finalize(() => this.isLoading = false))
-      .subscribe({
-        next: (response) => {
-          if (response.succeeded) {
-            // Update UI
-            user.status = response.data.status; 
-            this.snackBar.open('Cập nhật trạng thái thành công.', 'Đóng', { duration: 3000 });
-          } else {
-            this.snackBar.open(response.message || 'Cập nhật thất bại.', 'Đóng', { duration: 3000 });
-          }
-        },
-        error: () => this.snackBar.open('Lỗi kết nối.', 'Đóng', { duration: 3000 })
-      });
+    this.confirmMessage = `Bạn có chắc chắn muốn ${this.isActivating ? 'kích hoạt' : 'vô hiệu hóa'} tài khoản của nhân viên ${user.name}?`;
+
+    // Mở popup bằng template đã tạo
+    const dialogRef = this.dialog.open(this.confirmDialog, {
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) { // Nếu nhấn nút [mat-dialog-close]="true"
+        this.isLoading = true;
+        const targetStatus = this.isActivating ? 'Active' : 'Inactive';
+
+        this.userService.toggleUserStatus(user.userId, targetStatus)
+          .pipe(finalize(() => this.isLoading = false))
+          .subscribe({
+            next: (response) => {
+              if (response.succeeded) {
+                user.status = response.data.status; 
+                this.snackBar.open('Cập nhật trạng thái thành công.', 'Đóng', { duration: 3000 });
+              } else {
+                this.snackBar.open(response.message || 'Cập nhật thất bại.', 'Đóng', { duration: 3000 });
+              }
+            },
+            error: () => this.snackBar.open('Lỗi kết nối hệ thống.', 'Đóng', { duration: 3000 })
+          });
+      }
+    });
   }
 }
