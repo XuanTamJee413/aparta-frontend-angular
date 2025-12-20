@@ -13,6 +13,8 @@ export interface ProposalDto {
     residentName: string;
     operationStaffId: string | null;
     operationStaffName: string | null;
+    title: string;
+    type: string;
     content: string;
     reply: string | null;
     status: string;
@@ -21,6 +23,8 @@ export interface ProposalDto {
 }
 
 export interface ProposalCreateDto {
+    title: string;
+    type: string;
     content: string;
 }
 export interface ProposalReplyDto {
@@ -30,6 +34,7 @@ export interface ProposalReplyDto {
 export interface ProposalQueryParams {
     searchTerm?: string;
     status?: string;
+    type: string;
     pageNumber: number;
     pageSize: number;
     sortColumn?: string;
@@ -101,4 +106,10 @@ export class ProposalService {
             map(response => response.data as ProposalDto)
         );
     }
+
+    getProposalTypes(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/types`).pipe(
+        map(res => res.data)
+    );
+}
 }
