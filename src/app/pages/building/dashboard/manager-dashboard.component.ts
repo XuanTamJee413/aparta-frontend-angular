@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, Chart, CategoryScale, LinearScale, BarElement, ArcElement, Legend, Tooltip, BarController, DoughnutController, LineElement, PointElement, LineController } from 'chart.js';
 import { DashboardService, ProjectApartmentStatus } from '../../../services/dashboard.service';
-import { BuildingService } from '../../../services/admin/building.service';
 import { MeterReadingService } from '../../../services/operation/meter-reading.service';
 import { BillingService } from '../../../services/billing.service';
+import { ProfileService } from '../../../services/profile.service';
+import { UserAssignmentProfileDto } from '../../../models/profile.model';
 
 // Register Chart.js components
 Chart.register(CategoryScale, LinearScale, BarElement, ArcElement, Legend, Tooltip, BarController, DoughnutController, LineElement, PointElement, LineController);
@@ -20,9 +21,9 @@ Chart.register(CategoryScale, LinearScale, BarElement, ArcElement, Legend, Toolt
 })
 export class ManagerDashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
-  private buildingService = inject(BuildingService);
   private meterReadingService = inject(MeterReadingService);
   private billingService = inject(BillingService);
+  private profileService = inject(ProfileService);
 
   // Overview Cards Data
   totalBuildings = 0;
@@ -32,6 +33,9 @@ export class ManagerDashboardComponent implements OnInit {
   unpaidInvoices = 0;
   pendingMeterReadings = 0;
   loading = true;
+
+  managedBuildings: UserAssignmentProfileDto[] = [];
+  managedBuildingIds: string[] = [];
 
   // Revenue Chart Data
   selectedYear: number = new Date().getFullYear();
@@ -206,8 +210,33 @@ export class ManagerDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.loadAvailableYears();
-    this.loadDashboardData();
+    this.loadManagedBuildingsAndInit();
+  }
+
+  private loadManagedBuildingsAndInit(): void {
+    this.loading = true;
+    this.profileService.getProfile().subscribe({
+      next: (res) => {
+        const assignments = res.succeeded ? (res.data?.currentAssignments || []) : [];
+        // Với manager: dùng currentAssignments để xác định building được phép xem
+        this.managedBuildings = assignments;
+        this.managedBuildingIds = assignments.map(a => a.buildingId).filter(Boolean);
+        this.totalBuildings = this.managedBuildingIds.length;
+
+        // Dashboard endpoints đã được BE filter theo manager
+        this.loadAvailableYears();
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        console.error('Error loading profile for manager dashboard:', err);
+        // Fallback: vẫn tải dashboard (nếu BE đã filter theo token) nhưng không có danh sách building để loop
+        this.managedBuildings = [];
+        this.managedBuildingIds = [];
+        this.totalBuildings = 0;
+        this.loadAvailableYears();
+        this.loadDashboardData();
+      }
+    });
   }
 
   loadAvailableYears(): void {
@@ -306,34 +335,31 @@ export class ManagerDashboardComponent implements OnInit {
   }
 
   loadAdditionalData(): void {
-    // Load sold apartments count
-    this.buildingService.getAllBuildings({ take: 100 }).subscribe({
-      next: (buildingsResponse) => {
-        if (buildingsResponse.succeeded && buildingsResponse.data?.items) {
-          const buildings = buildingsResponse.data.items.filter(b => b.isActive);
-          const apartmentPromises = buildings.map(building => 
-            this.meterReadingService.getApartmentsForBuilding(building.buildingId).toPromise()
-          );
-          
-          Promise.all(apartmentPromises).then(results => {
-            let totalSold = 0;
-            results.forEach(response => {
-              if (response?.succeeded && response.data) {
-                totalSold += response.data.length;
-              }
-            });
-            this.soldApartments = totalSold;
-            this.loading = false;
-          }).catch(() => {
-            this.loading = false;
-          });
-        } else {
-          this.loading = false;
+    // Load additional counts based only on buildings managed by current manager
+    const buildingIds = this.managedBuildingIds;
+    if (!buildingIds || buildingIds.length === 0) {
+      this.soldApartments = 0;
+      this.loading = false;
+      return;
+    }
+
+    const apartmentPromises = buildingIds.map(buildingId =>
+      this.meterReadingService.getApartmentsForBuilding(buildingId).toPromise()
+    );
+
+    Promise.all(apartmentPromises).then(results => {
+      let totalRented = 0;
+      results.forEach(response => {
+        if (response?.succeeded && response.data) {
+          totalRented += response.data.length;
         }
-      },
-      error: () => {
-        this.loading = false;
-      }
+      });
+
+      // NOTE: endpoint trả về căn hộ "Đã thuê"; hiện UI đang label "đã bán"
+      this.soldApartments = totalRented;
+      this.loading = false;
+    }).catch(() => {
+      this.loading = false;
     });
   }
 

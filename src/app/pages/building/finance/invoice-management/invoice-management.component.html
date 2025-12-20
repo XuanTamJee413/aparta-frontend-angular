@@ -147,6 +147,14 @@
                         title="Sửa ngày kết thúc">
                         Sửa
                       </button>
+                      <button 
+                        *ngIf="invoice.status === 'PENDING'"
+                        type="button"
+                        class="btn-mark-paid"
+                        (click)="markAsPaid(invoice.invoiceId)"
+                        title="Thu tiền mặt">
+                        Trả tiền mặt
+                      </button>
                     </div>
                   </td>
                 </tr>
