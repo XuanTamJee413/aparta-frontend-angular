@@ -127,6 +127,7 @@ export class RegisterVehicle implements OnInit {
     const query: VehicleQueryParameters = {
       searchTerm: this.apartmentId,
       status: null,
+      info:null,
       sortBy: 'createdAt',
       sortOrder: 'desc'
     };

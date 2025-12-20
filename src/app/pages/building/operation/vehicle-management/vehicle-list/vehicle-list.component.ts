@@ -29,7 +29,7 @@ export class VehicleList implements OnInit {
 
   searchTerm = '';
   selectedStatus: string | null = null;
-
+  selectedInfo: string | null = null;
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 0;
@@ -37,6 +37,7 @@ export class VehicleList implements OnInit {
   public query: VehicleQueryParameters = {
     status: null,
     searchTerm: null,
+    info: null,
     sortBy: 'vehicleNumber',
     sortOrder: 'asc'
   };
@@ -97,6 +98,7 @@ export class VehicleList implements OnInit {
 
     this.query.searchTerm = this.searchTerm || null;
     this.query.status = this.selectedStatus;
+    this.query.info = this.selectedInfo;
 
     this.vehicleService.getMyVehicles(this.query).subscribe({
       next: (vehicleResponse: ApiResponse<Vehicle[]>) => {
@@ -146,6 +148,9 @@ export class VehicleList implements OnInit {
 
   onFilterChange(): void {
     this.currentPage = 1;
+    this.query.status = this.selectedStatus;
+    this.query.searchTerm = this.searchTerm;
+    this.query.info = this.selectedInfo;
     this.loadVehicles();
   }
 
