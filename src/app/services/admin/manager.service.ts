@@ -10,6 +10,22 @@ export interface ManagerResponse {
   message: string;
 }
 
+// Options building để gán cho manager
+export interface ManagerBuildingOption {
+  buildingId: string;
+  buildingName: string;
+  buildingCode: string;
+  hasManager: boolean;
+  managerUserId?: string | null;
+  managerName?: string | null;
+}
+
+export interface ManagerBuildingOptionsResponse {
+  data: ManagerBuildingOption[];
+  succeeded: boolean;
+  message: string;
+}
+
 // DTO để tạo mới Manager
 export interface CreateManagerDto {
   name: string;
@@ -59,6 +75,15 @@ export class ManagerService {
 
   updateManager(id: string, data: UpdateManagerDto): Observable<ManagerResponse> {
     return this.http.put<ManagerResponse>(`${this.apiUrl}/${id}`, data);
+  }
+
+  // Lấy danh sách building options cho form tạo/sửa manager
+  getBuildingOptions(managerId?: string): Observable<ManagerBuildingOptionsResponse> {
+    let url = `${this.apiUrl}/building-options`;
+    if (managerId) {
+      url += `?managerId=${encodeURIComponent(managerId)}`;
+    }
+    return this.http.get<ManagerBuildingOptionsResponse>(url);
   }
 }
 

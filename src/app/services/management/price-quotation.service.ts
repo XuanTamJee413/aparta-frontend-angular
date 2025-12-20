@@ -90,7 +90,6 @@ export class PriceQuotationService {
 
   private apiBaseUrl = environment.apiUrl;
   private quotationApiUrl = `${this.apiBaseUrl}/PriceQuotations`;
-  private buildingApiUrl = `${this.apiBaseUrl}/Buildings`;
   
   private http = inject(HttpClient);
 
@@ -115,14 +114,9 @@ export class PriceQuotationService {
       .pipe(map(response => response.data));
   }
 
-  getBuildings(): Observable<BuildingDto[]> {
-    const params = new HttpParams().set('Skip', '0').set('Take', '1000'); 
-    
-    return this.http.get<ApiResponse<PaginatedResult<BuildingDto>>>(`${this.buildingApiUrl}`, { params: params })
-      .pipe(
-        map(response => response.data.items.sort((a, b) => a.buildingCode.localeCompare(b.buildingCode)))
-      );
-  }
+  getBuildings(): Observable<ApiResponse<BuildingDto[]>> {
+  return this.http.get<ApiResponse<BuildingDto[]>>(`${environment.apiUrl}/UserManagement/managed-buildings`);
+}
 
   createPriceQuotation(dto: PriceQuotationCreateDto): Observable<ApiResponse<PriceQuotationDto>> {
     return this.http.post<ApiResponse<PriceQuotationDto>>(`${this.quotationApiUrl}/create`, dto);

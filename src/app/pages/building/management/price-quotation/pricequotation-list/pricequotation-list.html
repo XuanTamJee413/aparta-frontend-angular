@@ -119,3 +119,14 @@
 
   </mat-card-content>
 </mat-card>
+<ng-template #deleteConfirmDialog>
+  <h2 mat-dialog-title class="text-warn">Xác nhận xóa đơn giá</h2>
+  <mat-dialog-content>
+    <p>Bạn có chắc chắn muốn xóa đơn giá <strong>{{ selectedFeeType }}</strong> không?</p>
+    <p class="small text-muted">Hành động này không thể hoàn tác.</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button [mat-dialog-close]="false">Hủy</button>
+    <button mat-flat-button color="warn" [mat-dialog-close]="true">Xóa đơn giá</button>
+  </mat-dialog-actions>
+</ng-template>

@@ -75,7 +75,7 @@ export class CreateStaffComponent implements OnInit {
   }
 
   loadRoles() {
-    this.userService.getAllRoles().subscribe(res => {
+    this.userService.getRolesForManager().subscribe(res => {
       if (res.succeeded) {
         this.roles = res.data.filter((r: RoleDto) => 
           !['resident', 'admin', 'manager'].includes(r.roleName.toLowerCase()) || 
@@ -96,16 +96,15 @@ export class CreateStaffComponent implements OnInit {
   }
 
   loadBuildings() {
-    this.userService.getAllBuildings().subscribe(res => {
-      if (res.succeeded) {
-        // Backend trả về PagedList, lấy items
-        this.buildings = res.data.items || res.data; 
-        
-        // Khởi tạo checkbox controls
-        this.initBuildingCheckboxes();
-      }
-    });
-  }
+  // Gọi qua UserManagementService thay vì BuildingService
+  this.userService.getManagedBuildings().subscribe(res => {
+    if (res.succeeded) {
+      // Dữ liệu trả về giờ chỉ là những building manager này có quyền
+      this.buildings = res.data; 
+      this.initBuildingCheckboxes();
+    }
+  });
+}
 
   initBuildingCheckboxes() {
     const formArray = this.staffForm.get('selectedBuildings') as FormArray;

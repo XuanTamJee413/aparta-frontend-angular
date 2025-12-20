@@ -215,16 +215,16 @@ export class PriceQuotationFormComponent implements OnInit {
   }
 
   loadBuildings(): void {
-    this.quotationService.getBuildings().subscribe({
-      next: (data) => {
-        this.buildings = data;
-      },
-      error: (err) => {
-        console.error(err);
-        this.snackBar.open('Không thể tải danh sách tòa nhà', 'Đóng', { duration: 3000 });
-      }
-    });
-  }
+  this.quotationService.getBuildings().subscribe({
+    next: (res) => {
+      this.buildings = res.data;
+    },
+    error: (err) => {
+      console.error(err);
+      this.snackBar.open('Không thể tải danh sách tòa nhà', 'Đóng', { duration: 3000 });
+    }
+  });
+}
 
   loadCalculationMethods(): void {
     this.quotationService.getCalculationMethods().subscribe({

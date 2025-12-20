@@ -393,7 +393,12 @@ export class InvoiceManagementComponent implements OnInit {
             setTimeout(() => {
               this.successMessage = null;
             }, 3000);
-            this.loadOneTimeInvoices();
+            // Reload invoices based on active tab
+            if (this.activeTab === 'monthly') {
+              this.loadInvoices();
+            } else {
+              this.loadOneTimeInvoices();
+            }
           } else {
             this.error = response.message || 'Có lỗi xảy ra';
           }

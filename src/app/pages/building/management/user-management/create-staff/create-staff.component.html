@@ -4,7 +4,7 @@
 
 <mat-dialog-content class="dialog-content">
   <form [formGroup]="staffForm" class="staff-form">
-    
+
     <div class="info-block">
       <div class="form-row">
         <mat-form-field appearance="outline" class="col">
@@ -73,8 +73,10 @@
             {{ building.name }} <span class="text-muted small">({{ building.buildingCode }})</span>
           </mat-checkbox>
         </div>
-        <div *ngIf="buildings.length === 0" class="text-muted fst-italic">
-          Đang tải danh sách tòa nhà...
+
+        <div *ngIf="buildings.length === 0" class="no-building-warning">
+          <mat-icon class="align-middle">warning</mat-icon>
+          <span class="ms-1">Bạn chưa được phân công quản lý tòa nhà nào.</span>
         </div>
       </div>
     </div>
@@ -84,8 +86,9 @@
 
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Đóng</button>
-  
-  <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isSubmitting || (staffForm.invalid && !isEditMode)">
+
+  <button mat-flat-button color="primary" (click)="onSubmit()"
+    [disabled]="isSubmitting || (staffForm.invalid && !isEditMode)">
     {{ isSubmitting ? 'Đang xử lý...' : (isEditMode ? 'Lưu cấu hình' : 'Tạo mới') }}
   </button>
 </mat-dialog-actions>

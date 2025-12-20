@@ -36,9 +36,10 @@
 
       <div class="form-field">
         <label for="quantity">Số Lượng <span class="req">*</span></label>
-        <input id="quantity" type="number" inputmode="numeric" step="1" min="1" max="9999" formControlName="quantity"
+        <input id="quantity" type="number" inputmode="numeric" step="1" min="1" max="999" formControlName="quantity"
           placeholder="0" />
-        @if (hasError('quantity','max')) { <div class="field-error">Tối đa 9999.</div> }
+
+        @if (hasError('quantity','max')) { <div class="field-error">Tối đa 999.</div> }
 
         @if (hasError('quantity','required')) {
         <div class="field-error">Không được để trống.</div>
