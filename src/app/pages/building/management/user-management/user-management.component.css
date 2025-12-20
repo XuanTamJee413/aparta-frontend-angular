@@ -1,3 +1,46 @@
-/* file css
-chưa có gì trong css của User-management.component.css
-*/
+.user-management-container {
+    margin: 20px;
+    border-radius: 8px;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+.full-width-table {
+    width: 100%;
+}
+
+/* Style cho nút thay đổi trạng thái */
+.btn-status-toggle {
+    line-height: 30px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px !important;
+}
+
+.btn-status-toggle mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Hover effect cho tên user */
+.user-info .fw-bold:hover {
+    text-decoration: underline;
+}
+
+/* Căn chỉnh lại Toolbar */
+.filter-toolbar {
+    padding: 0 4px;
+}
+
+/* Material density fix cho form fields */
+::ng-deep .density-sm .mat-mdc-form-field-subscript-wrapper {
+    display: none; /* Ẩn khoảng trống error bên dưới để table gọn hơn */
+}
