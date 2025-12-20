@@ -46,7 +46,7 @@ export class CreateAsset implements OnInit {
         Validators.required,
         [this.uniqueInfoInBuildingValidator()]
       ],
-      quantity: [0, [Validators.required, Validators.min(0), Validators.max(9999), Validators.pattern('^[0-9]*$')]]
+      quantity: [0, [Validators.required, Validators.min(0), Validators.max(999), Validators.pattern('^[0-9]*$')]]
     });
 
     this.assetForm.get('buildingId')!.valueChanges.subscribe(() => {

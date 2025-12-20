@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   FormBuilder,
@@ -9,7 +9,7 @@ import {
   ValidatorFn,
   AsyncValidatorFn
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { take, map, catchError } from 'rxjs/operators';
 import {
@@ -56,7 +56,7 @@ export class EditAsset implements OnInit {
   form = this.fb.group({
     buildingName: [{ value: '', disabled: true }, [Validators.required]],
     info: ['', [Validators.required, Validators.maxLength(200)]],
-    quantity: [null as number | null, [Validators.required, positiveIntegerValidator(), Validators.max(9999)]]
+    quantity: [null as number | null, [Validators.required, positiveIntegerValidator(), Validators.max(999)]]
   });
 
   ngOnInit(): void {
