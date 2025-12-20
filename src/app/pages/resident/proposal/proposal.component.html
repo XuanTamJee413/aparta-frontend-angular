@@ -1,75 +1,97 @@
 <div class="proposal-container">
-    <mat-card class="proposal-form-card">
+    <mat-card class="main-card form-section">
         <mat-card-header>
-            <mat-card-title>Gửi Đề xuất/Khiếu nại mới</mat-card-title>
+            <mat-icon mat-card-avatar class="header-icon">add_comment</mat-icon>
+            <mat-card-title>Gửi Đề xuất & Khiếu nại</mat-card-title>
+            <mat-card-subtitle>Hãy cho chúng tôi biết vấn đề bạn đang gặp phải</mat-card-subtitle>
         </mat-card-header>
+        
         <mat-card-content>
-            <form [formGroup]="proposalForm" (ngSubmit)="onSubmit()">
+            <form [formGroup]="proposalForm" (ngSubmit)="onSubmit()" class="modern-form">
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="flex-2">
+                        <mat-label>Tiêu đề đề xuất</mat-label>
+                        <input matInput formControlName="title" placeholder="VD: Hỏng bóng đèn hành lang tầng 5">
+                        <mat-error *ngIf="proposalForm.get('title')?.hasError('required')">Tiêu đề là bắt buộc</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="flex-1">
+                        <mat-label>Loại</mat-label>
+                        <mat-select formControlName="type">
+                            <mat-option *ngFor="let t of proposalTypes" [value]="t.value">{{t.name}}</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="proposalForm.get('type')?.hasError('required')">Vui lòng chọn loại</mat-error>
+                    </mat-form-field>
+                </div>
+
                 <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Nội dung đề xuất (Tối đa 2000 ký tự)</mat-label>
-                    <textarea matInput 
-                              formControlName="content" 
-                              rows="4" 
-                              placeholder="Nhập chi tiết đề xuất hoặc khiếu nại của bạn tại đây..." 
-                              required></textarea>
-                    <mat-error *ngIf="proposalForm.get('content')?.hasError('required')">
-                        Nội dung đề xuất là bắt buộc.
-                    </mat-error>
-                    <mat-error *ngIf="proposalForm.get('content')?.hasError('maxlength')">
-                        Nội dung không được vượt quá 2000 ký tự.
-                    </mat-error>
+                    <mat-label>Nội dung chi tiết</mat-label>
+                    <textarea matInput formControlName="content" rows="4" placeholder="Mô tả cụ thể yêu cầu của bạn..."></textarea>
+                    <mat-error *ngIf="proposalForm.get('content')?.hasError('required')">Nội dung là bắt buộc</mat-error>
                 </mat-form-field>
-                
-                <mat-card-actions align="end">
-                    <button mat-raised-button color="primary" type="submit" [disabled]="proposalForm.invalid || isSubmitting">
-                        <span *ngIf="!isSubmitting"><mat-icon>send</mat-icon> Gửi Đề xuất</span>
-                        <mat-progress-spinner *ngIf="isSubmitting" mode="indeterminate" diameter="20"></mat-progress-spinner>
+
+                <div class="actions-row">
+                    <button mat-flat-button color="primary" type="submit" [disabled]="proposalForm.invalid || isSubmitting" class="submit-btn">
+                        <div class="btn-content">
+                            <mat-icon *ngIf="!isSubmitting">send</mat-icon>
+                            <span *ngIf="!isSubmitting">Gửi đề xuất ngay</span>
+                            <mat-spinner *ngIf="isSubmitting" diameter="24"></mat-spinner>
+                        </div>
                     </button>
-                </mat-card-actions>
+                </div>
             </form>
         </mat-card-content>
     </mat-card>
 
-    <mat-card class="proposal-history-card">
-        <mat-card-header>
-            <mat-card-title>Lịch sử Đề xuất của tôi</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <div *ngIf="history$ | async as history; else loadingOrEmpty">
-                <div *ngIf="history.length > 0; else emptyHistory">
+    <div class="history-section">
+        <h3 class="section-title"><mat-icon>history</mat-icon> Lịch sử hoạt động</h3>
+        
+        <div *ngIf="history$ | async as history; else loadingTemplate">
+            <div *ngIf="history.length > 0; else emptyHistory" class="history-grid">
+                
+                <div *ngFor="let proposal of history" class="proposal-card-item">
+                    <div class="card-status-bar" [ngClass]="getStatusClass(proposal.status)"></div>
                     
-                    <div *ngFor="let proposal of history" class="proposal-item">
-                        <div class="proposal-header">
-                            <span class="proposal-date">Ngày gửi: {{ proposal.createdAt | date:'short' }}</span>
-                            <span class="proposal-status" [ngClass]="getStatusClass(proposal.status)">
-                                {{ proposal.status }}
-                            </span>
+                    <div class="card-body">
+                        <div class="card-meta">
+                            <span class="type-tag">{{ proposal.type }}</span>
+                            <span class="date-text">{{ proposal.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
                         </div>
-                        <p class="proposal-content">
-                            <strong>Nội dung:</strong> {{ proposal.content }}
-                        </p>
-                        
-                        <div *ngIf="proposal.reply" class="proposal-reply">
-                            <strong>Phản hồi từ Staff:</strong> 
-                            {{ proposal.reply }} ({{ proposal.operationStaffName }})
+
+                        <h4 class="proposal-title">{{ proposal.title }}</h4>
+                        <p class="proposal-text">{{ proposal.content }}</p>
+
+                        <div class="status-indicator">
+                            <span class="status-dot" [ngClass]="getStatusClass(proposal.status)"></span>
+                            <span class="status-label">{{ proposal.status }}</span>
                         </div>
-                        <div *ngIf="!proposal.reply" class="proposal-reply no-reply">
-                            Chưa có phản hồi.
+
+                        <div *ngIf="proposal.reply" class="reply-container">
+                            <div class="reply-header">
+                                <mat-icon>support_agent</mat-icon>
+                                <span>Phản hồi từ Ban quản lý</span>
+                            </div>
+                            <p class="reply-content">{{ proposal.reply }}</p>
+                            <div class="staff-info">Xử lý bởi: {{ proposal.operationStaffName }}</div>
                         </div>
-                        
-                        <mat-divider></mat-divider>
                     </div>
-
                 </div>
-            </div>
 
-            <ng-template #loadingOrEmpty>
-                <div class="loading-state">Đang tải lịch sử đề xuất...</div>
-            </ng-template>
-            
-            <ng-template #emptyHistory>
-                <div class="loading-state">Bạn chưa có đề xuất nào.</div>
-            </ng-template>
-        </mat-card-content>
-    </mat-card>
+            </div>
+        </div>
+    </div>
 </div>
+
+<ng-template #loadingTemplate>
+    <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Đang tải lịch sử...</p>
+    </div>
+</ng-template>
+
+<ng-template #emptyHistory>
+    <div class="empty-state">
+        <mat-icon>auto_stories</mat-icon>
+        <p>Bạn chưa gửi đề xuất nào.</p>
+    </div>
+</ng-template>

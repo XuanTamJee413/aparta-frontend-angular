@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProposalService, ProposalCreateDto, ProposalDto } from '../../../services/resident/proposal.service';
 import { Observable } from 'rxjs';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-resident-proposal-shell',
@@ -18,7 +19,8 @@ import { Observable } from 'rxjs';
   imports: [
     CommonModule, ReactiveFormsModule, 
     MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, 
-    MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, MatDividerModule
+    MatIconModule, MatSnackBarModule, MatProgressSpinnerModule, MatDividerModule,
+    MatSelectModule
   ],
   templateUrl: './proposal.component.html',
   styleUrls: ['./proposal.component.css'] 
@@ -33,17 +35,27 @@ export class ResidentProposalComponent implements OnInit {
   history$: Observable<ProposalDto[]> | undefined;
   
   isSubmitting = false;
+  proposalTypes: any[] = []; 
 
   constructor() { }
 
   ngOnInit(): void {
+    this.loadProposalTypes();
     this.initForm();
     this.loadHistory();
   }
 
   initForm(): void {
     this.proposalForm = this.fb.group({
+      title: ['', [Validators.required, Validators.maxLength(200)]], // 2. Thêm Title
+      type: ['', [Validators.required]],                             // 3. Thêm Type
       content: ['', [Validators.required, Validators.maxLength(2000)]]
+    });
+  }
+
+  loadProposalTypes(): void {
+    this.proposalService.getProposalTypes().subscribe(types => {
+      this.proposalTypes = types;
     });
   }
 

@@ -208,8 +208,8 @@ export class VisitorComponent implements OnInit {
       this.visitorService.updateVisitLog(this.editingLogId, updateDto).subscribe({
         next: () => {
           this.snackBar.open('Cập nhật thành công!', 'Đóng', { duration: 3000, panelClass: ['success-snackbar'] });
-          this.cancelEdit(); // Reset form về chế độ thêm mới
           this.loadHistory();
+          this.editingLogId = null;
         },
         error: (err) => this.handleError(err, 'Không thể cập nhật')
       });
