@@ -1,4 +1,4 @@
-import { Component, Injectable, OnInit } from '@angular/core';
+import { Component, Injectable, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -17,6 +17,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { VisitorCreateDto, VisitorService, VisitLogStaffViewDto, VisitorQueryParams, VisitLogUpdateDto } from '../../../services/resident/visitor.service';
 import { AuthService } from '../../../services/auth.service';
 import { RecentVisitorDialogComponent } from './recent-visitor/recent-visitor';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Injectable()
 // chuyển tháng ngày năm sang ngày tháng năm
@@ -81,6 +82,8 @@ export class VisitorComponent implements OnInit {
   editingLogId: string | null = null;
 
   private residentApartmentId: string = '';
+  isDuplicateVisitor = false;
+  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
 
   isLoadingHistory = false;
   displayedColumns: string[] = ['visitorFullName', 'purpose', 'checkinTime', 'status', 'actions'];
@@ -129,14 +132,32 @@ export class VisitorComponent implements OnInit {
         Validators.pattern('^[0-9]+$')
       ]],
       purpose: ['', [
-    Validators.maxLength(500),
-    Validators.pattern(/^[\p{L}0-9\s,.-]+$/u)
-  ]],
+        Validators.maxLength(500),
+        Validators.pattern(/^[\p{L}0-9\s,.-]+$/u)
+      ]],
       checkinDate: [tomorrow, [Validators.required, this.pastDateValidator]],
       checkinTime: ['12:00', Validators.required]
     });
 
     this.loadHistory();
+    this.visitorForm.get('idNumber')?.valueChanges.pipe(
+      debounceTime(500), 
+      distinctUntilChanged()
+    ).subscribe(val => {
+      if (val && val.length >= 10) { 
+        this.visitorService.checkVisitorExist(val).subscribe(res => {
+          if (res.exists) {
+            this.isDuplicateVisitor = true;
+            this.visitorForm.patchValue({
+              fullName: res.fullName,
+              phone: res.phone
+            }, { emitEvent: false });
+          } else {
+            this.isDuplicateVisitor = false;
+          }
+        });
+      }
+    });
   }
   openRecentVisitors(): void {
     const dialogRef = this.dialog.open(RecentVisitorDialogComponent, {
@@ -180,6 +201,7 @@ export class VisitorComponent implements OnInit {
       return;
     }
 
+    // 1. Kiểm tra thời gian (Validation)
     const date: Date = this.visitorForm.value.checkinDate;
     const time: string = this.visitorForm.value.checkinTime;
     const [hours, minutes] = time.split(':').map(Number);
@@ -192,11 +214,35 @@ export class VisitorComponent implements OnInit {
       return;
     }
 
+    // 2. Kiểm tra trùng CCCD (Chỉ check khi ĐANG TẠO MỚI, không check khi đang SỬA log cũ)
+    if (this.isDuplicateVisitor && !this.editingLogId) {
+      const dialogRef = this.dialog.open(this.confirmDialog, {
+        width: '400px',
+        disableClose: true
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === true) {
+          this.executeSubmit(); 
+        }
+      });
+    } else {
+      this.executeSubmit();
+    }
+  }
+
+  // HÀM THỰC THI GỬI DỮ LIỆU
+  private executeSubmit(): void {
+    const date: Date = this.visitorForm.value.checkinDate;
+    const time: string = this.visitorForm.value.checkinTime;
+    const [hours, minutes] = time.split(':').map(Number);
+    const combinedCheckinTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
+
     const pad = (num: number) => num.toString().padStart(2, '0');
     const localISOString = `${combinedCheckinTime.getFullYear()}-${pad(combinedCheckinTime.getMonth() + 1)}-${pad(combinedCheckinTime.getDate())}T${pad(combinedCheckinTime.getHours())}:${pad(combinedCheckinTime.getMinutes())}:${pad(combinedCheckinTime.getSeconds())}`;
 
-    // --- LOGIC CẬP NHẬT (EDIT) ---
     if (this.editingLogId) {
+      // LOGIC CẬP NHẬT (EDIT)
       const updateDto: VisitLogUpdateDto = {
         fullName: this.visitorForm.value.fullName,
         phone: this.visitorForm.value.phone,
@@ -209,13 +255,12 @@ export class VisitorComponent implements OnInit {
         next: () => {
           this.snackBar.open('Cập nhật thành công!', 'Đóng', { duration: 3000, panelClass: ['success-snackbar'] });
           this.loadHistory();
-          this.editingLogId = null;
+          this.cancelEdit(); // Reset form và thoát chế độ sửa
         },
         error: (err) => this.handleError(err, 'Không thể cập nhật')
       });
-    }
-    // --- LOGIC TẠO MỚI (CREATE) ---
-    else {
+    } else {
+      // LOGIC TẠO MỚI (CREATE)
       const createDto: VisitorCreateDto = {
         fullName: this.visitorForm.value.fullName,
         phone: this.visitorForm.value.phone,
@@ -228,23 +273,20 @@ export class VisitorComponent implements OnInit {
 
       this.visitorService.createVisitor(createDto).subscribe({
         next: (created) => {
-          if (created.isUpdated) {
-             this.snackBar.open(
-               `Thông tin khách thăm đã được cập nhật và Đăng Ký thành công: ${created.fullName}`, 
-               'Đóng', 
-               { duration: 4000, panelClass: ['info-snackbar'] } 
-             );
-          } else {
-             this.snackBar.open(
-               `Đăng ký thành công: ${created.fullName}`, 
-               'Đóng', 
-               { duration: 3000, panelClass: ['success-snackbar'] }
-             );
-          }
+          const msg = created.isUpdated
+            ? `Thông tin khách đã được cập nhật và đăng ký thành công: ${created.fullName}`
+            : `Đăng ký thành công: ${created.fullName}`;
+
+          this.snackBar.open(msg, 'Đóng', {
+            duration: 4000,
+            panelClass: created.isUpdated ? ['info-snackbar'] : ['success-snackbar']
+          });
 
           this.loadHistory();
+          this.resetForm();
+          this.isDuplicateVisitor = false;
         },
-        error: (err) => this.handleError(err, 'Không thể đăng ký, vui lòng thử lại sau')
+        error: (err) => this.handleError(err, 'Không thể đăng ký')
       });
     }
   }
@@ -262,7 +304,7 @@ export class VisitorComponent implements OnInit {
     // Đẩy dữ liệu lên form
     this.visitorForm.patchValue({
       fullName: log.visitorFullName,
-      phone: log.visitorPhone || '', 
+      phone: log.visitorPhone || '',
       idNumber: log.visitorIdNumber,
       purpose: log.purpose,
       checkinDate: checkinDateObj,
@@ -331,8 +373,8 @@ export class VisitorComponent implements OnInit {
       sortDirection: 'desc'
     };
 
-this.visitorService.getResidentVisitHistory(params).subscribe({ 
-       next: (pagedData) => {
+    this.visitorService.getResidentVisitHistory(params).subscribe({
+      next: (pagedData) => {
 
         this.history = pagedData.items.map(log => {
           let checkinTimeStr = (log as any).checkinTime;
