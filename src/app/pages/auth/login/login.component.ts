@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService, ApiResponse, LoginResponse } from '../../../services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -39,10 +39,12 @@ export class LoginComponent {
       phone: this.form.value.phone,
       password: this.form.value.password
     };
-    this.http.post<any>(`${environment.apiUrl}/auth/login`, body)
+    this.http.post<ApiResponse<LoginResponse> | LoginResponse>(`${environment.apiUrl}/auth/login`, body)
       .subscribe({
         next: (res) => {
-          const token: string | undefined = (res && (res.token || res.Token)) as string | undefined;
+          // Backend returns either wrapped ApiResponse { data: {...} } or raw payload
+          const payload: any = (res as any)?.data ?? res;
+          const token: string | undefined = payload?.token || payload?.Token;
           if (!token) {
             // Backend succeeded but no token field as expected
             this.error.set('Login response missing token');
@@ -51,8 +53,8 @@ export class LoginComponent {
           }
           this.auth.setToken(token);
           
-          // Kiểm tra isFirstLogin từ response
-          const isFirstLogin = res?.isFirstLogin || res?.IsFirstLogin || false;
+          // Kiểm tra isFirstLogin từ response (unwrap data if needed)
+          const isFirstLogin = payload?.isFirstLogin || payload?.IsFirstLogin || false;
           if (isFirstLogin) {
             // Redirect đến reset-password cho first login
             this.router.navigateByUrl('/reset-password?firstLogin=true');

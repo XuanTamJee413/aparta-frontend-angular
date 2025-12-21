@@ -75,6 +75,18 @@
       </div>
 
       <div class="row">
+        <div class="label">Ngày kết thúc</div>
+        <div class="value value-column">
+          <input
+            type="date"
+            class="input-control"
+            formControlName="endDate"
+          />
+          <small class="help-text">Để trống nếu không muốn thay đổi</small>
+        </div>
+      </div>
+
+      <div class="row">
         <div class="label">Ngày tạo hợp đồng</div>
         <div class="value">
           {{ formatDate(contract.createdAt) }}

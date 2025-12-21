@@ -71,6 +71,7 @@ export class UpdateContract implements OnInit {
     if (!this.contract) return;
 
     this.form = this.fb.group({
+      endDate: [this.contract.endDate ? this.formatDateForInput(this.contract.endDate) : '', []],
       image: [this.contract.image ?? '', [Validators.maxLength(2_000_000)]]
     });
 
@@ -91,6 +92,11 @@ export class UpdateContract implements OnInit {
       this.previewMode = 'none';
       this.safePreviewUrl = null;
     }
+  }
+
+  formatDateForInput(value: string | null | undefined): string {
+    if (!value) return '';
+    return value.substring(0, 10);
   }
 
   get pdfUrl(): string | null {
@@ -140,6 +146,7 @@ export class UpdateContract implements OnInit {
     const formValue = this.form.value;
 
     const payload: ContractUpdateDto = {
+      endDate: formValue.endDate || null,
       image: formValue.image
     };
 

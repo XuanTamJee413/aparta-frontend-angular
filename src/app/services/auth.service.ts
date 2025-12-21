@@ -2,6 +2,32 @@ import { Injectable, computed, signal } from '@angular/core';
 
 type UserRole = 'admin' | 'staff' | 'resident' | 'custom';
 
+// Backend response wrapper
+export interface ApiResponse<T = any> {
+  succeeded: boolean;
+  message: string;
+  data?: T;
+}
+
+// Login response data
+export interface LoginResponse {
+  token: string;
+  isFirstLogin: boolean;
+}
+
+// User info response from /auth/me
+export interface UserInfoResponse {
+  userId: string;
+  name: string;
+  phone: string;
+  email: string;
+  role: string;
+  apartmentId?: string | null;
+  staffCode?: string | null;
+  status: string;
+  lastLoginAt?: string | null;
+}
+
 interface JwtPayload {
   id?: string;
   name?: string;
@@ -92,15 +118,15 @@ export class AuthService {
     if (!r) return null;
 
     if (r === 'admin') return 'admin';
-    if (r === 'resident') return 'resident';
+    if (['owner', 'tenant', 'family_member', 'resident'].includes(r)) {
+      return 'resident';
+    }
 
     if (r === 'manager') return 'staff';
 
-    if (['finance_staff', 'maintenance_staff', 'operation_staff'].includes(r)) {
+    if (['finance_staff', 'maintenance_staff', 'operation_staff', 'staff'].includes(r)) {
       return 'staff';
     }
-
-    if (r === 'staff') return 'staff';
 
     return 'custom';
   }
