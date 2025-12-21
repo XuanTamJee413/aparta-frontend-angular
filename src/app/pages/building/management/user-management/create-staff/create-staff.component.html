@@ -15,7 +15,18 @@
 
         <mat-form-field appearance="outline" class="col">
           <mat-label>Mã nhân viên</mat-label>
-          <input matInput formControlName="staffCode" placeholder="VD: NV001">
+          <input matInput formControlName="staffCode" placeholder="Ví dụ: NV1234" uppercase>
+          <mat-icon matSuffix>badge</mat-icon>
+
+          <mat-error *ngIf="staffForm.get('staffCode')?.hasError('required')">
+            Mã nhân viên không được để trống
+          </mat-error>
+
+          <mat-error *ngIf="staffForm.get('staffCode')?.hasError('pattern') || 
+                   staffForm.get('staffCode')?.hasError('minlength') || 
+                   staffForm.get('staffCode')?.hasError('maxlength')">
+            Mã nhân viên phải đúng 6 ký tự (2 ký tự đầu là chữ)
+          </mat-error>
         </mat-form-field>
       </div>
 

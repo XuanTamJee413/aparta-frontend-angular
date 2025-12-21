@@ -1,6 +1,6 @@
 .dialog-content {
   padding-top: 10px;
-  min-width: 500px;
+  min-width: 800px;
   max-height: 80vh; /* Giới hạn chiều cao để scroll */
   overflow-y: auto;
 }

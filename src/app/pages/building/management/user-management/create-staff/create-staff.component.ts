@@ -10,12 +10,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox'; // [MỚI]
 import { MatDividerModule } from '@angular/material/divider'; // [MỚI]
-import { 
-  UserManagementService, 
-  StaffCreateDto, 
-  RoleDto, 
-  BuildingDto, 
-  UserAccountDto 
+import {
+  UserManagementService,
+  StaffCreateDto,
+  RoleDto,
+  BuildingDto,
+  UserAccountDto
 } from '../../../../../services/management/user-management.service';
 
 @Component({
@@ -42,7 +42,7 @@ export class CreateStaffComponent implements OnInit {
   private userService = inject(UserManagementService);
   private dialogRef = inject(MatDialogRef<CreateStaffComponent>);
   private snackBar = inject(MatSnackBar);
-  
+
   // [MỚI] Nhận dữ liệu truyền vào dialog (nếu có user -> Edit Mode)
   public data = inject<{ staff?: UserAccountDto }>(MAT_DIALOG_DATA, { optional: true });
 
@@ -62,9 +62,13 @@ export class CreateStaffComponent implements OnInit {
       email: [{ value: '', disabled: this.isEditMode }, [Validators.required, Validators.email]],
       phone: [{ value: '', disabled: this.isEditMode }, [Validators.required, Validators.pattern('^[0-9]{9,11}$')]],
       roleId: [{ value: '', disabled: this.isEditMode }, Validators.required],
-      staffCode: [{ value: '', disabled: this.isEditMode }],
-      // [MỚI] FormArray cho checkbox tòa nhà
-      selectedBuildings: this.fb.array([]) 
+      staffCode: [{ value: '', disabled: this.isEditMode }, [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.maxLength(6),
+        Validators.pattern('^[a-zA-Z]{2}[a-zA-Z0-9]{4}$') // 2 chữ đầu, theo sau là 4 ký tự chữ/số
+      ]],      // [MỚI] FormArray cho checkbox tòa nhà
+      selectedBuildings: this.fb.array([])
     });
   }
 
@@ -77,11 +81,11 @@ export class CreateStaffComponent implements OnInit {
   loadRoles() {
     this.userService.getRolesForManager().subscribe(res => {
       if (res.succeeded) {
-        this.roles = res.data.filter((r: RoleDto) => 
-          !['resident', 'admin', 'manager'].includes(r.roleName.toLowerCase()) || 
+        this.roles = res.data.filter((r: RoleDto) =>
+          !['resident', 'admin', 'manager'].includes(r.roleName.toLowerCase()) ||
           r.roleName.toLowerCase().includes('staff')
         );
-        
+
         // Nếu Edit Mode, set giá trị Role
         if (this.isEditMode && this.data?.staff) {
           // Cần map RoleName sang RoleId. 
@@ -96,30 +100,30 @@ export class CreateStaffComponent implements OnInit {
   }
 
   loadBuildings() {
-  // Gọi qua UserManagementService thay vì BuildingService
-  this.userService.getManagedBuildings().subscribe(res => {
-    if (res.succeeded) {
-      // Dữ liệu trả về giờ chỉ là những building manager này có quyền
-      this.buildings = res.data; 
-      this.initBuildingCheckboxes();
-    }
-  });
-}
+    // Gọi qua UserManagementService thay vì BuildingService
+    this.userService.getManagedBuildings().subscribe(res => {
+      if (res.succeeded) {
+        // Dữ liệu trả về giờ chỉ là những building manager này có quyền
+        this.buildings = res.data;
+        this.initBuildingCheckboxes();
+      }
+    });
+  }
 
   initBuildingCheckboxes() {
     const formArray = this.staffForm.get('selectedBuildings') as FormArray;
-  formArray.clear();
+    formArray.clear();
 
-  this.buildings.forEach(b => {
-    let isChecked = false;
-    
-    // [SỬA ĐỔI] Dùng assignedBuildingIds để so sánh với b.buildingId
-    if (this.isEditMode && this.data?.staff?.assignedBuildingIds) {
-      isChecked = this.data.staff.assignedBuildingIds.includes(b.buildingId);
-    }
+    this.buildings.forEach(b => {
+      let isChecked = false;
 
-    formArray.push(new FormControl(isChecked));
-  });
+      // [SỬA ĐỔI] Dùng assignedBuildingIds để so sánh với b.buildingId
+      if (this.isEditMode && this.data?.staff?.assignedBuildingIds) {
+        isChecked = this.data.staff.assignedBuildingIds.includes(b.buildingId);
+      }
+
+      formArray.push(new FormControl(isChecked));
+    });
 
     // Nếu Edit Mode, fill các thông tin text
     if (this.isEditMode && this.data?.staff) {
@@ -141,7 +145,7 @@ export class CreateStaffComponent implements OnInit {
   // [MỚI] Hàm Reset Password
   onResetPassword() {
     if (!this.isEditMode || !this.data?.staff) return;
-    
+
     if (confirm(`Bạn có chắc muốn đặt lại mật khẩu cho nhân viên ${this.data.staff.name}? Mật khẩu mới sẽ được gửi qua email.`)) {
       this.isSubmitting = true;
       this.userService.resetPasswordByAdmin(this.data.staff.userId).subscribe({
@@ -178,7 +182,7 @@ export class CreateStaffComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    
+
     // Lấy danh sách ID các tòa nhà được chọn
     const selectedBuildingIds = this.staffForm.value.selectedBuildings
       .map((checked: boolean, index: number) => checked ? this.buildings[index].buildingId : null)
@@ -188,7 +192,7 @@ export class CreateStaffComponent implements OnInit {
       // --- LOGIC EDIT MODE ---
       // Chỉ gọi API Update Assignment
       const staffId = this.data!.staff!.userId;
-      
+
       this.userService.updateStaffAssignments(staffId, selectedBuildingIds, "Cập nhật quản lý").subscribe({
         next: (res) => {
           this.isSubmitting = false;
@@ -224,7 +228,7 @@ export class CreateStaffComponent implements OnInit {
         next: (res) => {
           if (res.succeeded) {
             const newUserId = res.data.userId;
-            
+
             // 2. Nếu tạo user thành công -> Gọi tiếp API gán tòa nhà (nếu có chọn tòa)
             if (selectedBuildingIds.length > 0) {
               this.userService.updateStaffAssignments(newUserId, selectedBuildingIds, "Khởi tạo").subscribe({
@@ -237,7 +241,7 @@ export class CreateStaffComponent implements OnInit {
                   // User tạo rồi nhưng gán lỗi -> Vẫn đóng dialog nhưng báo warning
                   this.isSubmitting = false;
                   this.snackBar.open('Tạo nhân viên thành công nhưng lỗi phân công.', 'Đóng', { duration: 5000 });
-                  this.dialogRef.close(true); 
+                  this.dialogRef.close(true);
                 }
               });
             } else {

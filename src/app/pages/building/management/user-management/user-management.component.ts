@@ -136,7 +136,8 @@ export class UserManagementComponent implements OnInit {
 
   openStaffDialog(staff?: UserAccountDto) {
     const dialogRef = this.dialog.open(CreateStaffComponent, {
-      width: '700px', // Tăng chiều rộng một chút
+      width: '1000px', 
+      maxWidth: '95vw',
       disableClose: true,
       autoFocus: false,
       data: { staff: staff } // Truyền data sang dialog
