@@ -1,10 +1,9 @@
-// src/app/pages/admin/building/operation/utility-list/utility-list.component.ts
-
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 
-import { UtilityCreateDto, UtilityDto, UtilityUpdateDto, PagedList, ServiceQueryParameters } from '../../../../models/utility.model';
+// Import thêm BuildingSimpleDto
+import { UtilityCreateDto, UtilityDto, UtilityUpdateDto, PagedList, ServiceQueryParameters, BuildingSimpleDto } from '../../../../models/utility.model';
 import { UtilityService } from '../../../../services/operation/utility.service';
 
 @Component({
@@ -19,6 +18,8 @@ export class UtilityListComponent implements OnInit {
   @ViewChild('utilityDialog') dialog!: ElementRef<HTMLDialogElement>;
 
   utilities: UtilityDto[] = [];
+  buildings: BuildingSimpleDto[] = []; // Danh sách tòa nhà để chọn
+  
   isEditMode = false;
   currentUtilityId: string | null = null;
   utilityForm: FormGroup;
@@ -34,7 +35,6 @@ export class UtilityListComponent implements OnInit {
   searchControl = new FormControl('');
   statusFilterControl = new FormControl('');
 
-  // Trạng thái
   statusOptions = [
     { label: 'Tất cả', value: '' },
     { label: 'Hoạt động', value: 'Available' },
@@ -52,14 +52,30 @@ export class UtilityListComponent implements OnInit {
       location: ['', Validators.required],
       periodTime: [1, [Validators.required, Validators.min(1)]],
       status: ['Available', Validators.required],
-      openTime: ['06:00'], // Giá trị mặc định
-      closeTime: ['22:00'] // Giá trị mặc định
+      openTime: ['06:00'],
+      closeTime: ['22:00'],
+      buildingId: ['', Validators.required] // <--- THÊM VALIDATOR BẮT BUỘC
     });
   }
 
   ngOnInit(): void {
+    this.loadMyBuildings(); // Load danh sách tòa nhà trước
     this.loadUtilities();
   }
+
+  // utility-list.component.ts
+loadMyBuildings(): void {
+  this.utilityService.getMyBuildings().subscribe({
+    next: (response) => {
+      // Nếu API trả về ApiResponse wrapper
+      this.buildings = response.data || []; 
+      
+      // Nếu bạn đã map ở service thì chỉ cần:
+      // this.buildings = response;
+    },
+    error: (err) => console.error('Lỗi tải danh sách tòa nhà:', err)
+  });
+}
 
   loadUtilities(): void {
     this.isLoading = true;
@@ -84,6 +100,8 @@ export class UtilityListComponent implements OnInit {
       }
     });
   }
+
+  // ... (Giữ nguyên các hàm onSearch, onFilterChange, onPageChange, getter page)
 
   onSearch(): void {
     this.currentPage = 1;
@@ -114,13 +132,21 @@ export class UtilityListComponent implements OnInit {
   openCreateModal(): void {
     this.isEditMode = false;
     this.currentUtilityId = null;
+    
+    // Enable lại buildingId khi thêm mới
+    this.utilityForm.get('buildingId')?.enable();
+
+    // Nếu chỉ có 1 tòa nhà, set default luôn
+    const defaultBuilding = this.buildings.length === 1 ? this.buildings[0].buildingId : '';
+
     this.utilityForm.reset({
       name: '',
       location: '',
       periodTime: 1,
       status: 'Available',
-      openTime: '06:00', // Reset về mặc định
-      closeTime: '22:00'
+      openTime: '06:00',
+      closeTime: '22:00',
+      buildingId: defaultBuilding
     });
     this.dialog.nativeElement.showModal();
   }
@@ -130,7 +156,6 @@ export class UtilityListComponent implements OnInit {
     this.isEditMode = true;
     this.currentUtilityId = utility.utilityId;
     
-    // Cần cắt chuỗi "HH:mm:ss" thành "HH:mm" để input type="time" hiểu
     const formatTime = (time: string | null) => time ? time.substring(0, 5) : null;
 
     this.utilityForm.patchValue({
@@ -138,9 +163,14 @@ export class UtilityListComponent implements OnInit {
       location: utility.location,
       periodTime: utility.periodTime,
       status: utility.status,
-      openTime: formatTime(utility.openTime),   // Map vào form
-      closeTime: formatTime(utility.closeTime)  // Map vào form
+      openTime: formatTime(utility.openTime),
+      closeTime: formatTime(utility.closeTime),
+      buildingId: utility.buildingId // Map buildingId
     });
+
+    // Thường thì không cho sửa tòa nhà của tiện ích đã tạo -> Disable
+    this.utilityForm.get('buildingId')?.disable();
+
     this.dialog.nativeElement.showModal();
   }
 
@@ -151,36 +181,36 @@ export class UtilityListComponent implements OnInit {
   onDialogClose(): void {
     this.utilityForm.reset();
     this.currentUtilityId = null;
+    this.utilityForm.get('buildingId')?.enable(); // Reset trạng thái enable
   }
 
-  // === LƯU (Thêm / Cập nhật) ===
+  // === LƯU ===
   saveUtility(): void {
     if (this.utilityForm.invalid) {
       this.utilityForm.markAllAsTouched();
       return;
     }
 
-    const formValue = this.utilityForm.value;
-    
-    // Thêm giây ":00" vào cuối để backend parse thành TimeSpan chuẩn (nếu cần)
-    // Tuy nhiên input type="time" thường trả về "HH:mm", backend .NET parse tốt.
+    const formValue = this.utilityForm.getRawValue(); // getRawValue để lấy cả field bị disabled
     
     const payload = {
       name: formValue.name,
       location: formValue.location,
       periodTime: formValue.periodTime,
       status: formValue.status,
-      openTime: formValue.openTime ? formValue.openTime + ':00' : null, // Thêm :00 cho chắc
-      closeTime: formValue.closeTime ? formValue.closeTime + ':00' : null
+      openTime: formValue.openTime ? formValue.openTime + ':00' : null,
+      closeTime: formValue.closeTime ? formValue.closeTime + ':00' : null,
+      buildingId: formValue.buildingId // Gửi kèm BuildingId
     };
 
     if (this.isEditMode && this.currentUtilityId) {
+      // Khi update, Backend thường bỏ qua buildingId, nhưng ta cứ gửi hoặc mapping sang Dto update ko có field đó
       this.utilityService.updateUtility(this.currentUtilityId, payload as UtilityUpdateDto).subscribe({
         next: () => {
           this.loadUtilities();
           this.hideDialog();
         },
-        error: (err) => console.error('Lỗi cập nhật:', err)
+        error: (err) => alert('Lỗi cập nhật: ' + (err.error?.message || 'Không xác định'))
       });
     } else {
       this.utilityService.addUtility(payload as UtilityCreateDto).subscribe({
@@ -188,12 +218,12 @@ export class UtilityListComponent implements OnInit {
           this.loadUtilities();
           this.hideDialog();
         },
-        error: (err) => console.error('Lỗi thêm mới:', err)
+        error: (err) => alert('Lỗi thêm mới: ' + (err.error?.message || 'Không xác định'))
       });
     }
   }
 
-  // === XÓA ===
+  // ... (Hàm delete và getStatusLabel giữ nguyên)
   deleteUtility(id: string): void {
     if (confirm('Bạn có chắc muốn xóa tiện ích này?')) {
       this.utilityService.deleteUtility(id).subscribe({
@@ -208,9 +238,15 @@ export class UtilityListComponent implements OnInit {
     }
   }
 
-  // === Hiển thị nhãn trạng thái ===
   getStatusLabel(status: string): string {
     const option = this.statusOptions.find(o => o.value === status);
     return option ? option.label : status;
+  }
+  
+  // Helper để lấy tên tòa nhà hiển thị lên bảng (nếu cần)
+  getBuildingName(id: string | null): string {
+    if (!id) return '---';
+    const b = this.buildings.find(x => x.buildingId === id);
+    return b ? b.name : id; // Nếu không tìm thấy tên thì hiện ID
   }
 }

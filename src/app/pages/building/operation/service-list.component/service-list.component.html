@@ -1,137 +1,161 @@
-<div class="card">
-  <div class="card-header">
-    <h3>Quản lý Dịch vụ</h3>
-    <button class="btn btn-add-new" (click)="openCreateModal()">
-      &#43; Thêm mới
-    </button>
-  </div>
-  
-  <div class="filter-bar">
-    <div class="filter-group">
-      <label for="search">Tìm theo tên:</label>
-      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Nhập tên dịch vụ...">
-    </div>
-    
-    <div class="filter-group">
-      <label for="statusFilter">Lọc theo trạng thái:</label>
-      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
-        <option *ngFor="let option of statusOptions" [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
-    </div>
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Quản lý Dịch vụ</h1>
+      <p>Danh sách các dịch vụ cung cấp cho cư dân</p>
+    </header>
 
-    <button class="btn btn-filter" (click)="onSearch()">Tìm kiếm / Lọc</button>
-  </div>
-
-  <div class="card-body">
-    <table>
-      <thead>
-        <tr>
-          <th>Tên Dịch vụ</th>
-          <th>Giá</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let service of services">
-          <td>{{ service.name }}</td>
-          <td>{{ service.price | number }} VND</td>
-          <td>
-            <span class="status-badge status-{{ service.status | lowercase }}">
-              {{ service.status }}
-            </span>
-          </td>
-          <td class="action-cell">
-            <button class="btn btn-edit" (click)="openEditModal(service)">Sửa</button>
-            <button class="btn btn-delete" (click)="delete(service.serviceId)">Xóa</button>
-          </td>
-        </tr>
-        <tr *ngIf="services.length === 0" class="empty-row">
-          <td colspan="4">Không có dịch vụ nào (hoặc không tìm thấy kết quả).</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="card-footer" *ngIf="totalPages > 0">
-    <div class="pagination-summary">
-      Hiển thị {{ services.length }} / Tổng số {{ totalCount }} mục
-    </div>
-    <div class="pagination-controls">
-      <button 
-        class="btn-page" 
-        [disabled]="currentPage === 1" 
-        (click)="onPageChange(1)">
-        &laquo;
-      </button>
-      <button 
-        class="btn-page" 
-        [disabled]="!hasPreviousPage" 
-        (click)="onPageChange(currentPage - 1)">
-        &lsaquo;
-      </button>
-
-      <span> Trang {{ currentPage }} / {{ totalPages }} </span>
-
-      <button 
-        class="btn-page" 
-        [disabled]="!hasNextPage" 
-        (click)="onPageChange(currentPage + 1)">
-        &rsaquo;
-      </button>
-      <button 
-        class="btn-page" 
-        [disabled]="currentPage === totalPages" 
-        (click)="onPageChange(totalPages)">
-        &raquo;
-      </button>
-    </div>
-  </div>
-
-</div>
-
-
-<dialog #serviceDialog (close)="onDialogClose()">
-  <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
-    <div class="form-header">
-      <h3>{{ isEditMode ? 'Cập nhật Dịch vụ' : 'Thêm mới Dịch vụ' }}</h3>
-      <button type="button" class="btn-close" (click)="hideDialog()">×</button>
-    </div>
-
-    <div class="form-body">
-      <div class="form-group">
-        <label for="name">Tên Dịch vụ</label>
-        <input id="name" type="text" formControlName="name">
-        <small class="form-error" *ngIf="serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched">
-          Tên dịch vụ là bắt buộc.
-        </small>
+    <div class="toolbar">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input type="text" class="search-input" placeholder="Tìm theo tên dịch vụ..."
+          [formControl]="searchControl"
+          (keyup.enter)="onSearch()" />
       </div>
-      
-      <div class="form-group">
-        <label for="price">Giá</label>
-        <input id="price" type="number" step="any" formControlName="price">
-        <small class="form-error" *ngIf="serviceForm.get('price')?.invalid && serviceForm.get('price')?.touched">
-          Giá là bắt buộc và phải lớn hơn 0.
-        </small>
-      </div>
-      
-      <div class="form-group">
-        <label for="status">Trạng thái</label>
-        <select id="status" formControlName="status">
-          <option *ngFor="let option of dialogStatusOptions" [value]="option.value">
+
+      <div class="filter-wrapper">
+        <select class="status-select" [formControl]="statusFilterControl" (change)="onFilterChange()">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
             {{ option.label }}
           </option>
         </select>
       </div>
+
+      <div class="actions-right">
+        <button class="btn-create" type="button" (click)="openCreateModal()">
+          + Thêm mới
+        </button>
+      </div>
     </div>
 
-    <div class="form-footer">
-      <button type="button" class="btn-btn-cancel" (click)="hideDialog()">Hủy</button>
-      <button type="submit" class="btn btn-save" [disabled]="serviceForm.invalid">
-        {{ isEditMode ? 'Cập nhật' : 'Lưu' }}
-      </button>
+    <!-- Loading state có thể thêm sau nếu cần -->
+
+    <div class="table-container">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="sort-header-content">
+                  <span>Tên Dịch vụ</span>
+                </div>
+              </th>
+              <th>
+                <div class="sort-header-content">
+                  <span>Giá</span>
+                </div>
+              </th>
+              <th>
+                <div class="sort-header-content">
+                  <span>Trạng thái</span>
+                </div>
+              </th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="services.length === 0">
+              <td colspan="4" class="no-results">
+                Không có dịch vụ nào (hoặc không tìm thấy kết quả).
+              </td>
+            </tr>
+
+            <tr *ngFor="let service of services">
+              <td class="font-medium">{{ service.name }}</td>
+              <td>{{ service.price | number:'1.0-0' }} VND</td>
+              <td>
+                <span class="status-badge status-{{ service.status | lowercase }}">
+                  {{ service.status === 'Available' ? 'Có sẵn' : 'Không khả dụng' }}
+                </span>
+              </td>
+              <td class="actions">
+                <button type="button" class="action-edit-btn" (click)="openEditModal(service)">
+                  <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
+                  </svg>
+                  Sửa
+                </button>
+
+                <button type="button" class="action-delete-btn" (click)="delete(service.serviceId)">
+                  <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-3h4m-7 3h10" />
+                  </svg>
+                  Xóa
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </form>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <span class="page-info">
+        Trang <span class="font-medium">{{ currentPage }}</span> /
+        <span class="font-medium">{{ totalPages }}</span>
+      </span>
+      <div class="pagination-buttons">
+        <button class="pagination-btn" [disabled]="!hasPreviousPage" (click)="onPageChange(currentPage - 1)">
+          Trước
+        </button>
+        <button class="pagination-btn" [disabled]="!hasNextPage" (click)="onPageChange(currentPage + 1)">
+          Tiếp
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<dialog #serviceDialog class="service-modal" (close)="onDialogClose()">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Cập nhật Dịch vụ' : 'Thêm mới Dịch vụ' }}</h3>
+      <button type="button" class="modal-close" (click)="hideDialog()">×</button>
+    </div>
+
+    <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Tên Dịch vụ <span class="required">*</span></label>
+          <input type="text" class="form-input" formControlName="name" placeholder="Nhập tên dịch vụ" />
+          <small class="form-error" *ngIf="serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched">
+            Tên dịch vụ là bắt buộc.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Giá (VND) <span class="required">*</span></label>
+          <input type="number" class="form-input" formControlName="price" min="0" step="1000" placeholder="0" />
+          <small class="form-error" *ngIf="serviceForm.get('price')?.invalid && serviceForm.get('price')?.touched">
+            Giá phải lớn hơn hoặc bằng 0.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Trạng thái <span class="required">*</span></label>
+          <select class="form-select" formControlName="status">
+            <option *ngFor="let option of dialogStatusOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="hideDialog()">Hủy</button>
+        <button type="submit" class="btn-save" [disabled]="serviceForm.invalid">
+          {{ isEditMode ? 'Cập nhật' : 'Lưu' }}
+        </button>
+      </div>
+    </form>
+  </div>
 </dialog>

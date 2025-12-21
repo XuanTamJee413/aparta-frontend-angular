@@ -165,7 +165,7 @@ export class UtilityBookingManagementComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const map: any = {
-      Approved: 'Đã duyệt (Auto)',
+      Approved: 'Đã duyệt',
       Rejected: 'Đã từ chối',
       Cancelled: 'Đã hủy',
       Pending: 'Chờ xử lý' // Đề phòng dữ liệu cũ

@@ -1,49 +1,69 @@
-<div class="card">
-  <div class="card-header">
-    <h3>Quản lý Đặt Tiện Ích</h3>
-  </div>
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Quản lý Đặt Tiện Ích</h1>
+      <p>Danh sách các đơn đặt chỗ sử dụng tiện ích chung</p>
+    </header>
 
-  <div *ngIf="pageSuccessMessage" class="alert alert-success">
-    {{ pageSuccessMessage }}
-  </div>
-
-  <div class="filter-bar">
-    <div class="filter-group">
-      <label for="search">Tìm kiếm:</label>
-      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Tên cư dân, tiện ích...">
+    <div *ngIf="pageSuccessMessage" class="alert-success">
+      {{ pageSuccessMessage }}
     </div>
 
-    <div class="filter-group">
-      <label for="status">Trạng thái:</label>
-      <select id="status" [formControl]="statusFilterControl" (change)="onFilterChange()">
-        <option *ngFor="let o of statusOptions" [value]="o.value">{{ o.label }}</option>
-      </select>
+    <div class="toolbar">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input type="text" class="search-input" [formControl]="searchControl"
+          placeholder="Tìm theo tên cư dân, tên tiện ích..." (keyup.enter)="onSearch()" />
+      </div>
+
+      <div class="filter-wrapper">
+        <select class="status-select" [formControl]="statusFilterControl" (change)="onFilterChange()">
+          <option *ngFor="let o of statusOptions" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+
+      <div class="actions-right">
+        <button class="btn-create" type="button" (click)="onSearch()">
+          Tìm kiếm
+        </button>
+      </div>
     </div>
 
-    <button class="btn btn-primary" (click)="onSearch()">Tìm kiếm</button>
-  </div>
+    <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
+      <p>Đang tải dữ liệu...</p>
+    </div>
 
-  <div class="card-body">
-    <div class="loading" *ngIf="isLoading">Đang tải dữ liệu...</div>
-
-    <table *ngIf="!isLoading">
+    <ng-container *ngIf="!isLoading">
+      <div class="table-container">
+  <div class="table-wrapper">
+    <table class="data-table">
       <thead>
         <tr>
-          <th>Tiện Ích</th>
-          <th>Cư Dân</th>
-          <th>Thời gian đặt</th>
-          <th>Trạng Thái</th>
-          <th>Ghi Chú</th>
-          <th style="width: 120px;">Hành Động</th>
+          <th class="header-min-width">Tiện Ích</th>
+          <th class="header-min-width">Cư Dân</th>
+          <th class="header-min-width header-long">Thời gian đặt</th>
+          <th class="header-min-width">Trạng Thái</th>
+          <th class="header-min-width header-long">Ghi Chú</th>
+          <th class="header-min-width header-actions">Hành Động</th>
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="bookings.length === 0">
+          <td colspan="6" class="no-results">Không có đơn đặt tiện ích nào phù hợp.</td>
+        </tr>
+
         <tr *ngFor="let b of bookings">
-          <td>
-            <strong>{{ b.utilityName }}</strong><br>
+          <td class="font-medium">
+            <div><strong>{{ b.utilityName }}</strong></div>
             <small class="text-muted">Ngày tạo: {{ b.bookedAt | date:'dd/MM/yyyy HH:mm' }}</small>
           </td>
-          <td>{{ b.residentName }}</td>
+          <td>{{ b.residentName || '—' }}</td>
           <td>
             <div><strong>Bắt đầu:</strong> {{ b.bookingDate | date:'dd/MM HH:mm' }}</div>
             <div *ngIf="isExpired(b.bookingDate)" class="text-expired">(Đã qua giờ)</div>
@@ -54,81 +74,87 @@
             </span>
           </td>
           <td class="note-cell">
-            <div *ngIf="b.residentNote"><strong>Cư dân:</strong> {{ b.residentNote }}</div>
-            <div *ngIf="b.staffNote" class="text-danger mt-1"><strong>Lý do từ chối:</strong> {{ b.staffNote }}</div>
+            <div *ngIf="b.residentNote" class="note-line"><strong>Cư dân:</strong> {{ b.residentNote }}</div>
+            <div *ngIf="b.staffNote" class="note-line text-danger"><strong>Lý do từ chối:</strong> {{ b.staffNote }}</div>
           </td>
-          <td class="action-cell">
-            <button 
-              *ngIf="canReject(b)" 
-              class="btn btn-reject" 
-              (click)="openRejectModal(b)">
+          <td class="actions actions-center">
+            <button type="button" class="action-reject-btn" *ngIf="canReject(b)" (click)="openRejectModal(b)">
+              <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
               Từ chối
             </button>
-            
-            <span *ngIf="!canReject(b) && b.status !== 'Rejected' && b.status !== 'Cancelled'" class="text-muted small">
+
+            <span *ngIf="!canReject(b) && b.status !== 'Rejected' && b.status !== 'Cancelled'" class="no-action-text">
               Không thể thao tác
             </span>
           </td>
         </tr>
-        <tr *ngIf="bookings.length === 0" class="empty-row">
-          <td colspan="6">Không có đơn đặt tiện ích nào.</td>
-        </tr>
       </tbody>
     </table>
   </div>
+</div>
 
-  <div class="card-footer" *ngIf="totalPages > 1">
-    <div class="pagination-summary">
-      Hiển thị {{ bookings.length }} / {{ totalCount }} đơn
-    </div>
-    <div class="pagination-controls">
-      <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(1)">«</button>
-      <button class="btn-page" [disabled]="currentPage <= 1" (click)="onPageChange(currentPage - 1)">‹</button>
-      <span>Trang {{ currentPage }} / {{ totalPages }}</span>
-      <button class="btn-page" [disabled]="currentPage >= totalPages" (click)="onPageChange(currentPage + 1)">›</button>
-      <button class="btn-page" [disabled]="currentPage === totalPages" (click)="onPageChange(totalPages)">»</button>
-    </div>
+      <div class="pagination" *ngIf="totalPages > 1">
+        <span class="page-info">
+          Trang <span class="font-medium">{{ currentPage }}</span> /
+          <span class="font-medium">{{ totalPages }}</span>
+          (Tổng: {{ totalCount }} đơn)
+        </span>
+        <div class="pagination-buttons">
+          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+            Trước
+          </button>
+          <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+            Tiếp
+          </button>
+        </div>
+      </div>
+    </ng-container>
   </div>
 </div>
 
-<dialog #rejectDialog class="modern-dialog" (close)="closeDialog()">
-  <form [formGroup]="rejectForm" (ngSubmit)="confirmReject()" class="dialog-form">
-    <div class="form-header bg-danger-light"> <h3 class="text-danger">Xác nhận Từ chối</h3>
+<!-- Dialog Từ chối đơn đặt -->
+<dialog #rejectDialog (close)="closeDialog()">
+  <form [formGroup]="rejectForm" (ngSubmit)="confirmReject()">
+    <div class="form-header">
+      <h3>Xác nhận Từ chối Đơn Đặt</h3>
       <button type="button" class="btn-close" (click)="closeDialog()">×</button>
     </div>
 
     <div class="form-body">
       <p class="confirm-text">
-        Bạn có chắc chắn muốn từ chối đơn đặt tiện ích này? <br>
+        Bạn có chắc chắn muốn từ chối đơn đặt tiện ích này?<br>
         <small>Hành động này sẽ gửi thông báo đến cư dân.</small>
       </p>
 
       <div class="form-group">
-        <label>Lý do từ chối <span class="required">*</span></label>
-        <textarea 
-          formControlName="staffNote" 
-          rows="4" 
-          placeholder="Vui lòng nhập lý do (VD: Bảo trì đột xuất, Cư dân vi phạm quy định...)"
-          class="form-control"
-          [class.invalid]="rejectForm.get('staffNote')?.invalid && rejectForm.get('staffNote')?.touched"
-        ></textarea>
-        
-        <div *ngIf="rejectForm.get('staffNote')?.invalid && rejectForm.get('staffNote')?.touched" class="form-error">
+        <label for="staffNote">Lý do từ chối <span class="required">*</span></label>
+        <textarea
+          id="staffNote"
+          formControlName="staffNote"
+          rows="4"
+          placeholder="Vui lòng nhập lý do (VD: Bảo trì đột xuất, vi phạm quy định...)"
+          class="form-textarea">
+        </textarea>
+        <small class="form-error"
+          *ngIf="rejectForm.get('staffNote')?.invalid && rejectForm.get('staffNote')?.touched">
           Vui lòng nhập lý do từ chối (tối thiểu 5 ký tự).
-        </div>
+        </small>
       </div>
     </div>
 
-    <div *ngIf="dialogErrorMessage" class="form-error-summary">
+    <div *ngIf="dialogErrorMessage" class="alert-danger">
       {{ dialogErrorMessage }}
     </div>
 
     <div class="form-footer">
-      <button type="button" class="btn btn-secondary" (click)="closeDialog()">Quay lại</button>
+      <button type="button" class="btn btn-cancel" (click)="closeDialog()">
+        Quay lại
+      </button>
       <button type="submit" class="btn btn-danger" [disabled]="rejectForm.invalid">
         Xác nhận Từ chối
       </button>
     </div>
   </form>
 </dialog>
-
