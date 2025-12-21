@@ -5,6 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { InvoiceManagementService } from '../../../../services/finance/invoice-management.service';
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
 import { InvoiceGroupDto, InvoiceDto } from '../../../../models/invoice-management.model';
+import { ProfileService } from '../../../../services/profile.service';
+import { AuthService } from '../../../../services/auth.service';
 
 // Interface for parsed description
 export interface ParsedDescription {
@@ -65,7 +67,9 @@ export class InvoiceManagementComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceManagementService,
     private buildingService: BuildingService,
-    private router: Router
+    private router: Router,
+    private profileService: ProfileService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -75,28 +79,81 @@ export class InvoiceManagementComponent implements OnInit {
   // Tải danh sách tòa nhà
   loadBuildings(): void {
     this.isLoading = true;
-    this.buildingService.getAllBuildings({ take: 100 }).subscribe({
-      next: (response) => {
-        if (response.succeeded && response.data?.items) {
-          this.buildings = response.data.items.filter(b => b.isActive);
-          // Auto-select building đầu tiên
-          if (this.buildings.length > 0 && !this.selectedBuildingId) {
-            this.selectedBuildingId = this.buildings[0].buildingId;
-            // Load invoices based on active tab
-            if (this.activeTab === 'monthly') {
-              this.loadInvoices();
-            } else {
-              this.loadOneTimeInvoices();
+    
+    // Kiểm tra role: tất cả role (trừ admin) chỉ thấy building được gán
+    const user = this.authService.user();
+    const role = user?.role?.toLowerCase();
+    const isAdmin = role === 'admin';
+    
+    if (!isAdmin) {
+      // Load buildings từ profile (assignedBuildings)
+      this.profileService.getProfile().subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.currentAssignments) {
+            // Map currentAssignments thành BuildingDto format
+            this.buildings = response.data.currentAssignments.map(assignment => ({
+              buildingId: assignment.buildingId,
+              name: assignment.buildingName,
+              buildingCode: assignment.buildingId, // Fallback nếu không có code
+              projectId: '',
+              numApartments: 0,
+              numResidents: 0,
+              totalFloors: 0,
+              totalBasements: 0,
+              readingWindowStart: 1,
+              readingWindowEnd: 31,
+              isActive: true,
+              description: '',
+              createdAt: assignment.startDate,
+              updatedAt: assignment.startDate
+            } as BuildingDto));
+            
+            // Auto-select building đầu tiên
+            if (this.buildings.length > 0 && !this.selectedBuildingId) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              // Load invoices based on active tab
+              if (this.activeTab === 'monthly') {
+                this.loadInvoices();
+              } else {
+                this.loadOneTimeInvoices();
+              }
+            }
+          } else {
+            this.buildings = [];
+            this.error = 'Không có building nào được gán cho bạn';
+          }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.error = 'Không thể tải danh sách tòa nhà';
+          this.isLoading = false;
+        }
+      });
+    } else {
+      // Admin hoặc role khác: load tất cả buildings
+      this.buildingService.getAllBuildings({ take: 100 }).subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.items) {
+            this.buildings = response.data.items.filter(b => b.isActive);
+            // Auto-select building đầu tiên
+            if (this.buildings.length > 0 && !this.selectedBuildingId) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              // Load invoices based on active tab
+              if (this.activeTab === 'monthly') {
+                this.loadInvoices();
+              } else {
+                this.loadOneTimeInvoices();
+              }
             }
           }
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.error = 'Không thể tải danh sách tòa nhà';
+          this.isLoading = false;
         }
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.error = 'Không thể tải danh sách tòa nhà';
-        this.isLoading = false;
-      }
-    });
+      });
+    }
   }
 
   // Tải danh sách hóa đơn tháng

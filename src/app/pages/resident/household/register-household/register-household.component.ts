@@ -36,12 +36,15 @@ export class RegisterHousehold implements OnInit {
   confirmingDeleteId = signal<string | null>(null);
 
    onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
+   const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
+      this.memberForm.patchValue({ faceImage: this.selectedFile });
     } else {
       this.selectedFile = null;
+      this.memberForm.patchValue({ faceImage: null });
     }
+    this.memberForm.get('faceImage')?.markAsTouched();
   }
 
   private getApartmentId(): string | null {
@@ -60,7 +63,7 @@ export class RegisterHousehold implements OnInit {
       ]
     ],
       familyRole: [null, Validators.required],
-      dateOfBirth: [''],
+      dateOfBirth: ['', Validators.required],
       gender: [null],
       idNumber: [
         '',
@@ -72,6 +75,7 @@ export class RegisterHousehold implements OnInit {
         [Validators.pattern(/^\d*$/)]
       ],
       nationality: ['Việt Nam'],
+      faceImage: [null, Validators.required]
     });
 
     this.memberForm.get('familyRole')!.valueChanges.subscribe(role => {
@@ -131,6 +135,10 @@ export class RegisterHousehold implements OnInit {
       this.submitSuccess.set(null);
       return;
     }
+    if (!this.selectedFile) {
+        this.submitError.set('Vui lòng chọn ảnh khuôn mặt.');
+        return;
+    }
 
     this.isSubmitting.set(true);
     this.submitError.set(null);
@@ -156,8 +164,10 @@ export class RegisterHousehold implements OnInit {
       next: (created) => {
         console.log('Thêm thành viên thành công:', created);
         this.isSubmitting.set(false);
-        this.memberForm.reset({ nationality: 'Việt Nam' });
+        this.memberForm.reset({ nationality: 'Việt Nam', faceImage: null });
         this.selectedFile = null;
+        const fileInput = document.getElementById('faceImage') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
         this.submitError.set(null);
         this.submitSuccess.set('Thêm thành viên thành công.');
         this.loadMembers();

@@ -7,6 +7,7 @@ import { BuildingService, BuildingDto } from '../../../../services/admin/buildin
 import { MeterReadingStatusDto } from '../../../../models/meter-reading.model';
 import { BillingService } from '../../../../services/billing.service';
 import { AuthService } from '../../../../services/auth.service';
+import { ProfileService } from '../../../../services/profile.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -53,7 +54,8 @@ export class MeterReadingStatusComponent implements OnInit {
     public authService: AuthService,
     private meterReadingService: MeterReadingService,
     private buildingService: BuildingService,
-    private billingService: BillingService
+    private billingService: BillingService,
+    private profileService: ProfileService
   ) {}
 
   ngOnInit(): void {
@@ -102,27 +104,80 @@ export class MeterReadingStatusComponent implements OnInit {
   // Tải danh sách tòa nhà
   loadBuildings(): void {
     this.loadingBuildings = true;
-    this.buildingService.getAllBuildings({ take: 100 }).subscribe({
-      next: (response) => {
-        if (response.succeeded && response.data?.items) {
-          this.buildings = response.data.items.filter(b => b.isActive);
-          this.filteredBuildings = [...this.buildings];
-          // Auto-select building đầu tiên
-          if (this.buildings.length > 0 && !this.selectedBuildingId) {
-            this.selectedBuildingId = this.buildings[0].buildingId;
-            // Tự động load status nếu đã có billing period
-            if (this.billingPeriod) {
-              this.loadStatus();
+    
+    // Kiểm tra role: tất cả role (trừ admin) chỉ thấy building được gán
+    const user = this.authService.user();
+    const role = user?.role?.toLowerCase();
+    const isAdmin = role === 'admin';
+    
+    if (!isAdmin) {
+      // Load buildings từ profile (assignedBuildings) cho tất cả role (manager, finance_staff, operation_staff, etc.)
+      this.profileService.getProfile().subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.currentAssignments) {
+            // Map currentAssignments thành BuildingDto format
+            this.buildings = response.data.currentAssignments.map(assignment => ({
+              buildingId: assignment.buildingId,
+              name: assignment.buildingName,
+              buildingCode: assignment.buildingId, // Fallback nếu không có code
+              projectId: '',
+              numApartments: 0,
+              numResidents: 0,
+              totalFloors: 0,
+              totalBasements: 0,
+              readingWindowStart: 1,
+              readingWindowEnd: 31,
+              isActive: true,
+              description: '',
+              createdAt: assignment.startDate,
+              updatedAt: assignment.startDate
+            } as BuildingDto));
+            
+            this.filteredBuildings = [...this.buildings];
+            // Auto-select building đầu tiên
+            if (this.buildings.length > 0 && !this.selectedBuildingId) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              // Tự động load status nếu đã có billing period
+              if (this.billingPeriod) {
+                this.loadStatus();
+              }
+            }
+          } else {
+            this.buildings = [];
+            this.filteredBuildings = [];
+            this.showError('Không có building nào được gán cho bạn');
+          }
+          this.loadingBuildings = false;
+        },
+        error: (error) => {
+          this.showError('Không thể tải danh sách tòa nhà');
+          this.loadingBuildings = false;
+        }
+      });
+    } else {
+      // Admin: load tất cả buildings
+      this.buildingService.getAllBuildings({ take: 100 }).subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.items) {
+            this.buildings = response.data.items.filter(b => b.isActive);
+            this.filteredBuildings = [...this.buildings];
+            // Auto-select building đầu tiên
+            if (this.buildings.length > 0 && !this.selectedBuildingId) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              // Tự động load status nếu đã có billing period
+              if (this.billingPeriod) {
+                this.loadStatus();
+              }
             }
           }
+          this.loadingBuildings = false;
+        },
+        error: (error) => {
+          this.showError('Không thể tải danh sách tòa nhà');
+          this.loadingBuildings = false;
         }
-        this.loadingBuildings = false;
-      },
-      error: (error) => {
-        this.showError('Không thể tải danh sách tòa nhà');
-        this.loadingBuildings = false;
-      }
-    });
+      });
+    }
   }
 
   // Xử lý khi chọn building

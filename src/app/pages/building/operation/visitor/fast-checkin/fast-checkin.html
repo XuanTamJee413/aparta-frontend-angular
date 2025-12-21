@@ -1,100 +1,95 @@
-<div class="card shadow-sm border-0 container mb-4">
-  <div class="card-header bg-light d-flex justify-content-between align-items-center p-3">
-    <h4 class="card-title mb-0">Check-in nhanh</h4>
-    <button type="button" class="btn-close" (click)="onClose()" aria-label="Close"></button>
+<div class="fast-checkin-card shadow">
+  <div class="card-header-material">
+    <h3>Check-in nhanh</h3>
+    <button mat-icon-button (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
-  <div class="card-body p-4">
-    <form [formGroup]="manualVisitorForm" (ngSubmit)="onManualSubmit()">
 
-      <!-- Mã Căn Hộ -->
-      <div class="form-floating mb-3">
-        <select class="form-select" id="fc-apartmentId" formControlName="apartmentId"
-                [class.is-invalid]="manualVisitorForm.get('apartmentId')?.invalid && manualVisitorForm.get('apartmentId')?.touched">
-          
-          <option value="" disabled>-- Chọn một căn hộ --</option>
-          
-          <option *ngFor="let apt of apartmentList" [value]="apt.apartmentId">
-            {{ apt.code }}
-          </option>
-        </select>
-        
-        <!-- THÊM DẤU SAO ĐỎ -->
-        <label for="fc-apartmentId">Mã căn hộ <span class="text-danger">*</span></label>
-        <div *ngIf="manualVisitorForm.get('apartmentId')?.hasError('required') && manualVisitorForm.get('apartmentId')?.touched" class="invalid-feedback">
-          Vui lòng chọn một căn hộ
+  <form [formGroup]="manualVisitorForm" (ngSubmit)="onManualSubmit()" class="material-form">
+    
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Mã căn hộ</mat-label>
+      <mat-select formControlName="apartmentId" placeholder="Chọn căn hộ">
+        <div class="search-container">
+            <input matInput placeholder="Tìm mã căn hộ..." 
+                   [formControl]="searchControl"
+                   class="search-input"
+                   (keydown)="$event.stopPropagation()">
         </div>
-      </div>
+        <mat-divider></mat-divider>
+        <mat-option *ngFor="let apt of filteredApartments" [value]="apt.apartmentId">
+          {{ apt.code }}
+        </mat-option>
+        <mat-option *ngIf="filteredApartments.length === 0" disabled>
+          Không tìm thấy căn hộ nào
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="manualVisitorForm.get('apartmentId')?.hasError('required')">
+        Vui lòng chọn một căn hộ
+      </mat-error>
+    </mat-form-field>
 
-      <!-- Họ tên -->
-      <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="fc-fullName" formControlName="fullName" placeholder="Nguyễn Văn A"
-               [class.is-invalid]="manualVisitorForm.get('fullName')?.invalid && manualVisitorForm.get('fullName')?.touched">
-        <!-- THÊM DẤU SAO ĐỎ -->
-        <label for="fc-fullName">Họ và tên <span class="text-danger">*</span></label>
-        <div *ngIf="manualVisitorForm.get('fullName')?.hasError('required') && manualVisitorForm.get('fullName')?.touched" class="invalid-feedback">
-          Họ tên là bắt buộc
-        </div>
-      </div>
+    <mat-form-field appearance="outline" class="w-100">
+  <mat-label>Họ và tên khách</mat-label>
+  <input matInput formControlName="fullName" placeholder="Nguyễn Văn A">
+  <mat-icon matSuffix>person</mat-icon>
+  <mat-error *ngIf="manualVisitorForm.get('fullName')?.hasError('required')">Họ tên là bắt buộc</mat-error>
+  <mat-error *ngIf="manualVisitorForm.get('fullName')?.hasError('maxlength')">Họ tên không quá 255 ký tự</mat-error>
+  <mat-error *ngIf="manualVisitorForm.get('fullName')?.hasError('pattern')">Họ tên không được chứa ký tự đặc biệt</mat-error>
+</mat-form-field>
 
-      <!-- SĐT và CCCD -->
-      <div class="row g-2 mb-3">
-        <div class="col-md">
-          <div class="form-floating">
-            <input type="tel" class="form-control" id="fc-phone" formControlName="phone" placeholder="Số điện thoại"
-                   [class.is-invalid]="manualVisitorForm.get('phone')?.invalid && manualVisitorForm.get('phone')?.touched">
-            <label for="fc-phone">Số điện thoại</label>
-            <div *ngIf="manualVisitorForm.get('phone')?.hasError('pattern') && manualVisitorForm.get('phone')?.touched" class="invalid-feedback">
-              Số điện thoại chỉ được chứa số
-            </div>
-            <div *ngIf="manualVisitorForm.get('phone')?.hasError('maxlength') && manualVisitorForm.get('phone')?.touched" class="invalid-feedback">
-              Tối đa 15 ký tự
-            </div>
-          </div>
-        </div>
-        <div class="col-md">
-          <div class="form-floating">
-            <input type="tel" class="form-control" id="fc-idNumber" formControlName="idNumber" placeholder="Số CCCD / Hộ chiếu"
-                   [class.is-invalid]="manualVisitorForm.get('idNumber')?.invalid && manualVisitorForm.get('idNumber')?.touched">
-            <!-- THÊM DẤU SAO ĐỎ -->
-            <label for="fc-idNumber">Số CCCD / Hộ chiếu <span class="text-danger">*</span></label>
-            <div *ngIf="manualVisitorForm.get('idNumber')?.hasError('required') && manualVisitorForm.get('idNumber')?.touched" class="invalid-feedback">
-              CCCD/Hộ chiếu là bắt buộc
-            </div>
-            <div *ngIf="manualVisitorForm.get('idNumber')?.hasError('pattern') && manualVisitorForm.get('idNumber')?.touched" class="invalid-feedback">
-              CCCD/Hộ chiếu chỉ được chứa số
-            </div>
-            <div *ngIf="manualVisitorForm.get('idNumber')?.hasError('maxlength') && manualVisitorForm.get('idNumber')?.touched" class="invalid-feedback">
-              Tối đa 20 ký tự
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="row-flex">
+  <mat-form-field appearance="outline" class="flex-1">
+    <mat-label>Số điện thoại</mat-label>
+    <input matInput formControlName="phone" placeholder="09xxxxxxxx">
+    <mat-icon matSuffix>phone</mat-icon>
+    <mat-error *ngIf="manualVisitorForm.get('phone')?.hasError('pattern')">Số điện thoại phải từ 10 đến 13 số</mat-error>
+  </mat-form-field>
 
-      <!-- Mục đích -->
-      <div class="form-floating mb-3">
-        <textarea class="form-control" id="fc-purpose" formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..." style="height: 100px"></textarea>
-        <label for="fc-purpose">Mục đích</label>
-      </div>
-
-      <!-- Nút bấm -->
-      <div class="d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Hủy</button>
-        <button type="submit" class="btn btn-primary" [disabled]="manualVisitorForm.invalid">
-          <i class="bi bi-check-circle me-2"></i> Tạo và Check-in
-        </button>
-      </div>
-
-    </form>
-  </div>
+  <mat-form-field appearance="outline" class="flex-1">
+    <mat-label>Số CCCD / Hộ chiếu</mat-label>
+    <input matInput formControlName="idNumber">
+    <mat-icon matSuffix>badge</mat-icon>
+    <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('required')">CCCD/Hộ chiếu là bắt buộc</mat-error>
+    <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('pattern')">CCCD chỉ được chứa số</mat-error>
+    <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('maxlength')">Không quá 20 ký tự</mat-error>
+    <mat-hint *ngIf="isDuplicateVisitor && !manualVisitorForm.get('idNumber')?.invalid" style="color: #ffc107; font-weight: 500;">
+    <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;">warning</mat-icon>
+    Khách đã có trong hệ thống. Dữ liệu sẽ được cập nhật mới.
+  </mat-hint>
+  </mat-form-field>
 </div>
 
-<!-- (Alert không đổi) -->
-<div *ngIf="alertMessage" 
-     class="alert alert-dismissible fade show shadow-lg position-fixed bottom-0 end-0 p-3 m-3"
-     [ngClass]="alertType === 'success' ? 'alert-success' : 'alert-danger'"
-     style="z-index: 1080; min-width: 300px;"
-     role="alert">
-  <i class="bi me-2" [ngClass]="alertType === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+<mat-form-field appearance="outline" class="w-100">
+  <mat-label>Mục đích</mat-label>
+  <textarea matInput formControlName="purpose" rows="3" placeholder="Giao hàng, thăm người thân..."></textarea>
+  <mat-error *ngIf="manualVisitorForm.get('purpose')?.hasError('maxlength')">Mục đích không quá 500 ký tự</mat-error>
+  <mat-error *ngIf="manualVisitorForm.get('purpose')?.hasError('pattern')">Mục đích chứa ký tự không hợp lệ</mat-error>
+</mat-form-field>
+
+    <div class="actions">
+      <button mat-button type="button" (click)="onClose()">HỦY BỎ</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="manualVisitorForm.invalid">
+        TẠO & CHECK-IN
+      </button>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="alertMessage" class="alert-toast shadow" [ngClass]="alertType">
   {{ alertMessage }}
-  <button type="button" class="btn-close" (click)="alertMessage = null" aria-label="Close"></button>
 </div>
+<ng-template #confirmDialog>
+  <h2 mat-dialog-title style="color: #856404;">
+    <mat-icon style="vertical-align: middle;">report_problem</mat-icon> Xác nhận khách cũ
+  </h2>
+  <mat-dialog-content>
+    <p>Số CCCD này đã tồn tại trong hệ thống.</p>
+    <p>Bạn có chắc chắn muốn <b>cập nhật thông tin mới nhất</b> cho khách này và thực hiện Check-in ngay không?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>HỦY BỎ</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">ĐỒNG Ý & TẠO</button>
+  </mat-dialog-actions>
+</ng-template>

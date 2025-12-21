@@ -10,8 +10,9 @@
           </div>
           <div class="card-body">
             <form [formGroup]="memberForm" (ngSubmit)="onSubmit()">
+
               <div class="mb-3">
-                <label for="name" class="form-label">Họ và Tên</label>
+                <label for="name" class="form-label">Họ và Tên <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="name" formControlName="name" [class.is-invalid]="
                    memberForm.get('name')?.touched &&
                   (memberForm.get('name')?.hasError('required') ||
@@ -25,9 +26,8 @@
                 }
               </div>
 
-
               <div class="mb-3">
-                <label for="familyRole" class="form-label">Quan hệ với chủ hộ</label>
+                <label for="familyRole" class="form-label">Quan hệ với chủ hộ <span class="text-danger">*</span></label>
                 <select class="form-select" id="familyRole" formControlName="familyRole"
                   [class.is-invalid]="isInvalid('familyRole')">
                   <option [value]="null" disabled>-- Chọn quan hệ --</option>
@@ -44,8 +44,17 @@
               </div>
 
               <div class="mb-3">
-                <label for="dateOfBirth" class="form-label">Ngày sinh</label>
-                <input type="date" class="form-control" id="dateOfBirth" formControlName="dateOfBirth">
+                <label for="dateOfBirth" class="form-label">Ngày sinh <span class="text-danger">*</span></label>
+
+                <input type="date" class="form-control" id="dateOfBirth" formControlName="dateOfBirth"
+                  [class.is-invalid]="
+                    memberForm.get('dateOfBirth')?.touched &&
+                    memberForm.get('dateOfBirth')?.hasError('required')
+                  ">
+
+                @if (memberForm.get('dateOfBirth')?.touched && memberForm.get('dateOfBirth')?.hasError('required')) {
+                <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
+                }
               </div>
 
               <div class="mb-3">
@@ -58,7 +67,7 @@
               </div>
 
               <div class="mb-3">
-                <label for="idNumber" class="form-label">Số CCCD</label>
+                <label for="idNumber" class="form-label">Số CCCD <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="idNumber" formControlName="idNumber" [class.is-invalid]="
                     memberForm.get('idNumber')?.touched &&
                     (memberForm.get('idNumber')?.hasError('required') ||
@@ -86,11 +95,15 @@
               </div>
 
               <div class="mb-3">
-                <label for="faceImage" class="form-label">Ảnh khuôn mặt (tùy chọn)</label>
+                <label for="faceImage" class="form-label">Ảnh khuôn mặt <span class="text-danger">*</span></label>
                 <input type="file" class="form-control" id="faceImage" accept="image/*"
-                  (change)="onFileSelected($event)">
-              </div>
+                  (change)="onFileSelected($event)"
+                  [class.is-invalid]="memberForm.get('faceImage')?.touched && memberForm.get('faceImage')?.invalid">
 
+                @if (memberForm.get('faceImage')?.touched && memberForm.get('faceImage')?.hasError('required')) {
+                <div class="invalid-feedback">Vui lòng chọn ảnh khuôn mặt.</div>
+                }
+              </div>
 
               <div class="mb-3">
                 <label for="nationality" class="form-label">Quốc tịch</label>
@@ -121,7 +134,6 @@
                 {{ submitSuccess() }}
               </div>
               }
-
 
             </form>
           </div>
@@ -167,7 +179,6 @@
                         alt="Avatar" class="rounded-circle" width="40" height="40"
                         style="object-fit: cover; border: 1px solid #dee2e6;">
                     </td>
-
                     <td>{{ member.name }}</td>
                     <td>{{ member.familyRole }}</td>
                     <td>{{ member.idNumber }}</td>

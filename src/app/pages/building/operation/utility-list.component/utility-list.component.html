@@ -1,132 +1,164 @@
-<div class="card">
-  <div class="card-header">
-    <h3>Quản lý Tiện ích</h3>
-    <button class="btn btn-add-new" (click)="openCreateModal()">
-      &#43; Thêm mới
-    </button>
-  </div>
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>Quản lý Tiện ích</h1>
+      <p>Danh sách các tiện ích chung của tòa nhà</p>
+    </header>
 
-    <div class="filter-bar">
-    <div class="filter-group">
-      <label for="search">Tìm theo tên:</label>
-      <input id="search" type="text" [formControl]="searchControl" (keyup.enter)="onSearch()" placeholder="Nhập tên dịch vụ...">
+    <div class="toolbar">
+      <div class="search-wrapper">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input type="text" class="search-input" [formControl]="searchControl"
+          placeholder="Tìm theo tên tiện ích..." (keyup.enter)="onSearch()" />
+      </div>
+
+      <div class="filter-wrapper">
+        <select class="status-select" [formControl]="statusFilterControl" (change)="onFilterChange()">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="actions-right">
+        <button class="btn-create" type="button" (click)="openCreateModal()">
+          + Thêm mới
+        </button>
+      </div>
     </div>
-    
-    <div class="filter-group">
-      <label for="statusFilter">Lọc theo trạng thái:</label>
-      <select id="statusFilter" [formControl]="statusFilterControl" (change)="onFilterChange()">
-        <option *ngFor="let option of statusOptions" [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+
+    <div *ngIf="isLoading" class="text-center" style="padding: 2rem;">
+      <p>Đang tải dữ liệu...</p>
     </div>
 
-    <button class="btn btn-filter" (click)="onSearch()">Tìm kiếm / Lọc</button>
-  </div>
-  
-  <div class="card-body">
-    <table>
-      <thead>
-        <tr>
-          <th>Tên Tiện ích</th>
-          <th>Vị trí</th>
-          <th>Giờ mở cửa</th>
-          <th>Thời gian (kỳ)</th>
-          <th>Trạng thái</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let utility of utilities">
-          <td>{{ utility.name }}</td>
-          <td>{{ utility.location }}</td>
-          <td>
-          <span *ngIf="utility.openTime && utility.closeTime">
-            {{ utility.openTime | slice:0:5 }} - {{ utility.closeTime | slice:0:5 }}
-          </span>
-          <span *ngIf="!utility.openTime" class="text-muted">24/7</span>
-        </td>
-          <td>{{ utility.periodTime }}</td> 
-          <td>
-            <span class="status-badge status-{{ utility.status | lowercase }}">
-              {{ utility.status }}
-            </span>
-          </td>
-          <td class="action-cell">
-            <button class="btn btn-edit" (click)="openEditModal(utility)">Sửa</button>
-            <!-- <button class="btn btn-delete" (click)="deleteUtility(utility.utilityId)">Xóa</button> -->
-          </td>
-        </tr>
-        <tr *ngIf="utilities.length === 0" class="empty-row"> <td colspan="5">Không có tiện ích nào.</td> </tr>
-      </tbody>
-    </table>
-  </div>
+    <ng-container *ngIf="!isLoading">
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="header-min-width">Tên Tiện ích</th>
+                <th class="header-min-width">Tòa nhà</th>
+                <th class="header-min-width">Vị trí</th>
+                <th class="header-min-width">Giờ mở cửa</th>
+                <th class="header-min-width">Trạng thái</th>
+                <th class="header-min-width header-actions">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="utilities.length === 0">
+                <td colspan="7" class="no-results">
+                  Không có tiện ích nào phù hợp.
+                </td>
+              </tr>
 
-  <div class="pagination" *ngIf="totalPages > 0">
-    <button 
-      (click)="onPageChange(currentPage - 1)" 
-      [disabled]="!hasPreviousPage">
-      &laquo; Trang trước
-    </button>
-    
-    <span>
-      Trang {{ currentPage }} / {{ totalPages }} (Tổng: {{ totalCount }} items)
-    </span>
-    
-    <button 
-      (click)="onPageChange(currentPage + 1)" 
-      [disabled]="!hasNextPage">
-      Trang sau &raquo;
-    </button>
-  </div>
+              <tr *ngFor="let utility of utilities">
+                <td class="font-medium">{{ utility.name }}</td>
+                <td>{{ getBuildingName(utility.buildingId) }}</td>
+                <td>{{ utility.location || '—' }}</td>
+                <td>
+                  <span *ngIf="utility.openTime && utility.closeTime">
+                    {{ utility.openTime | slice:0:5 }} - {{ utility.closeTime | slice:0:5 }}
+                  </span>
+                  <span *ngIf="!utility.openTime && !utility.closeTime">24/7</span>
+                </td>
+                <td>
+                  <span class="status-badge status-{{ utility.status | lowercase }}">
+                    {{ utility.status }}
+                  </span>
+                </td>
+                <td class="actions">
+                  <button type="button" class="action-edit-btn" (click)="openEditModal(utility)">
+                    <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z" />
+                    </svg>
+                    Sửa
+                  </button>
 
+                  <button type="button" class="action-delete-btn" (click)="deleteUtility(utility.utilityId)">
+                    <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-3h4m-7 3h10" />
+                    </svg>
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination" *ngIf="totalPages > 1">
+        <span class="page-info">
+          Trang <span class="font-medium">{{ currentPage }}</span> /
+          <span class="font-medium">{{ totalPages }}</span>
+          (Tổng: {{ totalCount }} tiện ích)
+        </span>
+        <div class="pagination-buttons">
+          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+            Trước
+          </button>
+          <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+            Tiếp
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
 </div>
 
-
+<!-- Dialog thêm/sửa tiện ích -->
 <dialog #utilityDialog (close)="onDialogClose()">
-  
   <form [formGroup]="utilityForm" (ngSubmit)="saveUtility()">
-    
     <div class="form-header">
-      <h3>{{ isEditMode ? 'Cập nhật Tiện ích' : 'Thêm mới Tiện ích' }}</h3> 
+      <h3>{{ isEditMode ? 'Cập nhật Tiện ích' : 'Thêm mới Tiện ích' }}</h3>
       <button type="button" class="btn-close" (click)="hideDialog()">×</button>
     </div>
 
     <div class="form-body">
-      
       <div class="form-group">
-        <label for="name">Tên Tiện ích</label>
-        <input id="name" type="text" formControlName="name">
-        <small class="form-error" *ngIf="utilityForm.get('name')?.invalid && utilityForm.get('name')?.touched">
-          Tên tiện ích là bắt buộc.
+        <label for="buildingId">Thuộc Tòa nhà <span class="required">*</span></label>
+        <select id="buildingId" formControlName="buildingId">
+          <option value="" disabled>-- Chọn tòa nhà --</option>
+          <option *ngFor="let b of buildings" [value]="b.buildingId">{{ b.name }}</option>
+        </select>
+        <small class="form-error" *ngIf="utilityForm.get('buildingId')?.invalid && utilityForm.get('buildingId')?.touched">
+          Vui lòng chọn tòa nhà.
         </small>
-      </div>
-      
-      <div class="form-group">
-        <label for="location">Vị trí</label>
-        <input id="location" type="text" formControlName="location">
-        <small class="form-error" *ngIf="utilityForm.get('location')?.invalid && utilityForm.get('location')?.touched">
-          Vị trí là bắt buộc.
-        </small>
-      </div>
-      
-      <div class="form-row-group" style="display: flex; gap: 15px;">
-            <div class="form-group" style="flex: 1;">
-                <label for="openTime">Giờ mở cửa</label>
-                <input id="openTime" type="time" formControlName="openTime">
-            </div>
-            <div class="form-group" style="flex: 1;">
-                <label for="closeTime">Giờ đóng cửa</label>
-                <input id="closeTime" type="time" formControlName="closeTime">
-            </div>
       </div>
 
       <div class="form-group">
-        <label for="periodTime">Thời gian (kỳ)</label>
-        <input id="periodTime" type="number" step="any" formControlName="periodTime">
-        <small class="form-error" *ngIf="utilityForm.get('periodTime')?.invalid && utilityForm.get('periodTime')?.touched">
-          Thời gian là bắt buộc và phải lớn hơn 1.
-        </small>
+        <label for="name">Tên Tiện ích</label>
+        <input id="name" type="text" formControlName="name">
+      </div>
+
+      <div class="form-group">
+        <label for="location">Vị trí (Số tầng/Phòng)</label>
+        <input id="location" type="text" formControlName="location">
+      </div>
+
+      <div class="form-row-group">
+        <div class="form-group">
+          <label for="openTime">Giờ mở cửa</label>
+          <input id="openTime" type="time" formControlName="openTime">
+        </div>
+        <div class="form-group">
+          <label for="closeTime">Giờ đóng cửa</label>
+          <input id="closeTime" type="time" formControlName="closeTime">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="periodTime">Thời gian mỗi slot (giờ)</label>
+        <input id="periodTime" type="number" step="0.5" formControlName="periodTime">
       </div>
 
       <div class="form-group">
@@ -137,7 +169,6 @@
           </option>
         </select>
       </div>
-
     </div>
 
     <div class="form-footer">
@@ -146,6 +177,5 @@
         {{ isEditMode ? 'Cập nhật' : 'Lưu' }}
       </button>
     </div>
-    
   </form>
 </dialog>

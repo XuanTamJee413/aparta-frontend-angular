@@ -4,7 +4,7 @@
       <div class="header-row">
         <div>
           <h1>Chi tiết Hóa đơn</h1>
-          <p>Thông tin chi tiết và các khoản phí của hóa đơn</p>
+          <p>Mã hóa đơn: {{ invoiceDetail?.invoiceId || 'N/A' }}</p>
         </div>
         <button class="back-btn" (click)="goBack()">
           <svg class="back-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -16,24 +16,28 @@
     </header>
 
     <!-- Loading State -->
-    @if (isLoading) {
-      <div class="text-center" style="padding: 2rem;">
-        <p>Đang tải dữ liệu...</p>
-      </div>
-    }
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
 
     <!-- Error State -->
-    @if (error && !isLoading) {
-      <div class="alert alert-danger" style="margin-top: 1.5rem;">
-        {{ error }}
-      </div>
-    }
+    <div *ngIf="error && !isLoading" class="alert-error">
+      <strong>Lỗi!</strong> {{ error }}
+    </div>
 
-    <!-- Invoice Detail -->
-    @if (!isLoading && !error && invoiceDetail) {
-      <!-- Thông tin tổng -->
-      <div class="info-section">
-        <h2 class="section-title">Thông tin tổng</h2>
+    <!-- Invoice Content -->
+    <div *ngIf="!isLoading && !error && invoiceDetail" class="invoice-content">
+      <!-- Invoice Header Info -->
+      <section class="info-section">
+        <div class="section-header">
+          <div>
+            <h2>Thông tin Hóa đơn</h2>
+          </div>
+          <span [class]="'status-badge ' + getStatusClass(invoiceDetail.status)">
+            {{ getStatusLabel(invoiceDetail.status) }}
+          </span>
+        </div>
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">Căn hộ:</span>
@@ -48,16 +52,6 @@
             <span class="info-value">{{ invoiceDetail.feeType }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Tổng tiền:</span>
-            <span class="info-value total-amount">{{ formatCurrency(invoiceDetail.price) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Trạng thái:</span>
-            <span [class]="getStatusClass(invoiceDetail.status)">
-              {{ getStatusLabel(invoiceDetail.status) }}
-            </span>
-          </div>
-          <div class="info-item">
             <span class="info-label">Ngày bắt đầu:</span>
             <span class="info-value">{{ formatDate(invoiceDetail.startDate) }}</span>
           </div>
@@ -70,53 +64,97 @@
             <span class="info-value">{{ invoiceDetail.staffName || 'N/A' }}</span>
           </div>
         </div>
-        @if (invoiceDetail.description) {
-          <div class="description-box">
-            <span class="description-label">Mô tả:</span>
-            <span class="description-text">{{ invoiceDetail.description }}</span>
-          </div>
-        }
-      </div>
+      </section>
 
-      <!-- Bảng chi tiết Items -->
-      <div class="items-section">
-        <h2 class="section-title">Chi tiết các khoản phí</h2>
-        <div class="table-container">
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Mô tả</th>
-                  <th>Số lượng</th>
-                  <th>Đơn giá</th>
-                  <th>Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of invoiceDetail.items; track item.id) {
-                  <tr>
-                    <td>{{ item.description }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ formatCurrency(item.unitPrice) }}</td>
-                    <td class="font-medium">{{ formatCurrency(getItemAmount(item)) }}</td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="4" class="no-results">Không có chi tiết khoản phí nào.</td>
-                  </tr>
-                }
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="3" class="total-label">Tổng cộng:</td>
-                  <td>{{ formatCurrency(invoiceDetail.price) }}</td>
-                </tr>
-              </tfoot>
-            </table>
+      <!-- Description Section -->
+      <section class="info-section" *ngIf="invoiceDetail.description">
+        <div class="section-header">
+          <div>
+            <h2>Mô tả</h2>
           </div>
         </div>
-      </div>
-    }
+        <div class="description-content">
+          @let parsed = parseDescription(invoiceDetail.description);
+          <p class="description-main-text">{{ parsed.itemDescription }}</p>
+          
+          <div *ngIf="invoiceDetail.feeType === 'ONE_TIME'" class="description-details-compact">
+            <div class="details-row" *ngIf="parsed.note">
+              <div class="detail-item-compact">
+                <span class="detail-label-compact">Ghi chú:</span>
+                <span class="detail-value-compact">{{ parsed.note }}</span>
+              </div>
+            </div>
+            <div class="evidence-section" *ngIf="parsed.evidenceUrls.length > 0">
+              <span class="evidence-label">Ảnh bằng chứng ({{ parsed.evidenceUrls.length }})</span>
+              <div class="evidence-grid">
+                <div class="evidence-card" *ngFor="let url of parsed.evidenceUrls; let i = index">
+                  <div class="evidence-image-wrapper">
+                    <img 
+                      [src]="url" 
+                      [alt]="'Bằng chứng ' + (i + 1)" 
+                      class="evidence-image"
+                      (click)="viewEvidence(url)"
+                      (error)="$event.target.style.display='none'" />
+                    <div class="evidence-overlay">
+                      <button 
+                        type="button"
+                        class="evidence-view-btn"
+                        (click)="viewEvidence(url)"
+                        title="Xem ảnh {{ i + 1 }}">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Xem ảnh
+                      </button>
+                    </div>
+                  </div>
+                  <p class="evidence-number">Ảnh {{ i + 1 }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Invoice Items Section -->
+      <section class="info-section">
+        <div class="section-header">
+          <div>
+            <h2>Chi tiết các khoản phí</h2>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>Mô tả</th>
+                <th class="text-right">Số lượng</th>
+                <th class="text-right">Đơn giá</th>
+                <th class="text-right">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of invoiceDetail.items">
+                <td class="item-name">{{ item.description }}</td>
+                <td class="text-right">{{ item.quantity }}</td>
+                <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+                <td class="text-right item-amount">{{ formatCurrency(getItemAmount(item)) }}</td>
+              </tr>
+              <tr *ngIf="invoiceDetail.items.length === 0">
+                <td colspan="4" class="empty-message">Không có chi tiết khoản phí nào.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="total-box">
+          <div class="total-row">
+            <span class="total-label">Tổng cộng:</span>
+            <span class="total-amount">{{ formatCurrency(invoiceDetail.price) }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </div>
 
