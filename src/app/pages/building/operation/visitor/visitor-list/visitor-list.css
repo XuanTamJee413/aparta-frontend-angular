@@ -183,8 +183,7 @@ mat-paginator {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background-color: rgba(255, 255, 255, 0.7); /* Overlay màu trắng mờ */
-  z-index: 1050;
+background-color: rgba(0, 0, 0, 0.5);  z-index: 1050;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -228,7 +227,103 @@ mat-paginator {
   margin-top: 8px;
   color: #333333;
 }
+/* Container cho các nút hành động để chúng không bị dính nhau */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
 
+.action-buttons button mat-icon {
+  margin-right: 4px; /* Khoảng cách giữa icon và chữ */
+}
+
+/* Tùy chỉnh màu sắc cho Chips */
+.status-pending {
+  background-color: #fff3e0 !important; /* Cam nhạt */
+  color: #ef6c00 !important;
+  border: 1px solid #ffe0b2;
+}
+
+.status-checkin {
+  background-color: #e8f5e9 !important; /* Xanh lá nhạt */
+  color: #2e7d32 !important;
+  border: 1px solid #c8e6c9;
+}
+
+.status-checkout {
+  background-color: #eceff1 !important; /* Xám */
+  color: #455a64 !important;
+}
+
+.status-cancelled {
+  background-color: #ffebee !important; /* Đỏ nhạt */
+  color: #c62828 !important;
+}
+
+/* Container chính của Popup xác nhận */
+.confirm-card mat-card {
+  padding: 0 !important; /* Xóa padding mặc định để Header có màu nền riêng nếu muốn */
+  border-radius: 16px !important; /* Bo góc mềm mại hơn */
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25) !important; /* Đổ bóng chuyên nghiệp */
+  border: none !important;
+}
+
+/* Tiêu đề hộp thoại */
+.confirm-card mat-card-header {
+  background-color: #f8f9fa; /* Nền xám cực nhẹ cho tiêu đề */
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #eee;
+  margin: 0 !important;
+}
+
+.confirm-card mat-card-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #202124;
+  margin: 0 !important;
+}
+
+/* Phần nội dung tin nhắn */
+.confirm-card mat-card-content {
+  padding: 32px 24px !important;
+}
+
+.confirm-card p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #5f6368; /* Màu chữ xám nhẹ nhàng hơn đen */
+  text-align: center; /* Căn giữa tin nhắn cho cân đối */
+}
+
+/* Khu vực các nút bấm */
+.confirm-card mat-card-actions {
+  padding: 12px 20px !important;
+  background-color: #f8f9fa;
+  gap: 12px; /* Khoảng cách giữa 2 nút */
+}
+
+/* Tùy chỉnh nút bấm */
+.confirm-card button {
+  padding: 0 24px !important;
+  height: 40px !important;
+  border-radius: 20px !important; /* Nút bo tròn kiểu hiện đại (Pill shape) */
+  font-weight: 500 !important;
+  text-transform: none !important; /* Bỏ viết hoa toàn bộ nếu có */
+  letter-spacing: 0.3px;
+}
+
+/* Nút hủy */
+.confirm-card button[mat-button] {
+  color: #5f6368 !important;
+}
+
+/* Nút xác nhận khi rê chuột vào */
+.confirm-card button[mat-raised-button]:hover {
+  filter: brightness(0.9);
+}
 /* HELPER */
 .my-2 { margin: 16px 0; }
 .hidden { display: none; }

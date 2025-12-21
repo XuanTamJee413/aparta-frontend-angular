@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -19,14 +19,16 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 
-import { 
-  VisitorService, 
-  VisitLogStaffViewDto, 
-  ApartmentDto, 
-  VisitorQueryParams 
+import {
+  VisitorService,
+  VisitLogStaffViewDto,
+  ApartmentDto,
+  VisitorQueryParams
 } from '../../../../../services/resident/visitor.service';
 
-import { FastCheckin } from '../fast-checkin/fast-checkin'; 
+import { FastCheckin } from '../fast-checkin/fast-checkin';
+
+export type VisitorAction = 'checkin' | 'checkout' | 'reject';
 
 @Component({
   selector: 'app-visitor-list',
@@ -56,7 +58,7 @@ import { FastCheckin } from '../fast-checkin/fast-checkin';
 export class VisitorList implements OnInit {
 
   isLoading = false;
-  showFastCheckin = false; 
+  showFastCheckin = false;
 
   isModalVisible = false;
   selectedVisitor: VisitLogStaffViewDto | null = null;
@@ -64,11 +66,18 @@ export class VisitorList implements OnInit {
   alertType: 'success' | 'danger' = 'success';
   private alertTimeout: any;
 
-  apartmentList: ApartmentDto[] = []; 
-  
+
+  isConfirmVisible = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmActionType: VisitorAction | null = null;
+  pendingActionLog: VisitLogStaffViewDto | null = null;
+  apartmentList: ApartmentDto[] = [];
+
+
   // Dữ liệu bảng
   paginatedVisitors: any | null = null;
-  
+
   // --- UI CONFIG CHO MAT-TABLE ---
   // Định nghĩa các cột sẽ hiển thị
   displayedColumns: string[] = ['visitorInfo', 'checkinTime', 'status', 'actions'];
@@ -76,12 +85,12 @@ export class VisitorList implements OnInit {
   queryParams: VisitorQueryParams = {
     pageNumber: 1,
     pageSize: 10,
-    apartmentId: '', 
+    apartmentId: '',
     searchTerm: '',
     sortColumn: 'checkinTime',
     sortDirection: 'desc'
   };
-  
+
   private searchSubject = new Subject<string>();
 
   constructor(
@@ -90,11 +99,11 @@ export class VisitorList implements OnInit {
 
   ngOnInit(): void {
     this.loadAllVisitors();
-    this.loadApartments(); 
+    this.loadApartments();
 
     this.searchSubject.pipe(
-      debounceTime(500), 
-      distinctUntilChanged() 
+      debounceTime(500),
+      distinctUntilChanged()
     ).subscribe(searchTerm => {
       this.queryParams.searchTerm = searchTerm;
       this.queryParams.pageNumber = 1;
@@ -125,12 +134,12 @@ export class VisitorList implements OnInit {
             checkoutTime: checkoutTimeStr ? new Date(checkoutTimeStr) : null
           };
         });
-        
+
         this.paginatedVisitors = {
-          ...data, 
-          items: processedItems 
+          ...data,
+          items: processedItems
         };
-        
+
         this.isLoading = false;
       },
       error: (err) => {
@@ -155,28 +164,28 @@ export class VisitorList implements OnInit {
       }
     });
   }
-// Trong class VisitorList
-onSearchInput(event: Event): void {
-  const searchTerm = (event.target as HTMLInputElement).value;
-  this.searchSubject.next(searchTerm); // Gửi giá trị vào Subject để debounce (tránh gọi API liên tục)
-}
+  // Trong class VisitorList
+  onSearchInput(event: Event): void {
+    const searchTerm = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(searchTerm); // Gửi giá trị vào Subject để debounce (tránh gọi API liên tục)
+  }
   // Cập nhật sự kiện change cho MatSelect
   onApartmentFilterChange(apartmentId: string): void {
     this.queryParams.apartmentId = apartmentId;
-    this.queryParams.pageNumber = 1; 
+    this.queryParams.pageNumber = 1;
     this.loadAllVisitors();
   }
 
   // Cập nhật sort cho MatSort header
-  onSortChange(sortState: {active: string, direction: string}): void {
+  onSortChange(sortState: { active: string, direction: string }): void {
     // MatSort direction trả về '' hoặc 'asc' hoặc 'desc'
     if (sortState.direction) {
-        this.queryParams.sortColumn = sortState.active;
-        this.queryParams.sortDirection = sortState.direction;
+      this.queryParams.sortColumn = sortState.active;
+      this.queryParams.sortDirection = sortState.direction;
     } else {
-        // Mặc định
-        this.queryParams.sortColumn = 'checkinTime';
-        this.queryParams.sortDirection = 'desc';
+      // Mặc định
+      this.queryParams.sortColumn = 'checkinTime';
+      this.queryParams.sortDirection = 'desc';
     }
     this.queryParams.pageNumber = 1;
     this.loadAllVisitors();
@@ -200,51 +209,60 @@ onSearchInput(event: Event): void {
   }
 
   onCheckIn(visitor: VisitLogStaffViewDto): void {
-    if (visitor.status === 'Checked-in' || visitor.status === 'Checked-out' || visitor.status === 'Cancelled') {
-      return;
-    }
-
-    this.visitorService.checkInVisitor(visitor.visitLogId).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          this.showAlert(response.message || `Đã check-in cho khách: ${visitor.visitorFullName}`, 'success');
-          this.loadAllVisitors(); 
-        } else {
-          this.showAlert(response.message || 'Lỗi: Không thể check-in', 'danger');
-        }
-      },
-      error: (err) => {
-        this.showAlert(err?.error?.message || 'Lỗi máy chủ: Không thể check-in', 'danger');
-        console.error(err);
-      }
-    });
+  if (visitor.status === 'Checked-in' || visitor.status === 'Checked-out' || visitor.status === 'Cancelled' || visitor.status === 'Rejected') {
+    return;
   }
+
+  this.visitorService.checkInVisitor(visitor.visitLogId).subscribe({
+    next: (response) => {
+      if (response.succeeded) {
+        this.showAlert(response.message || `Đã check-in cho khách: ${visitor.visitorFullName}`, 'success');
+        this.loadAllVisitors();
+      } else {
+        this.showAlert(response.message || 'Lỗi: Không thể check-in', 'danger');
+        this.loadAllVisitors(); // Tải lại ngay cả khi succeeded = false
+      }
+    },
+    error: (err) => {
+      // Lấy thông báo lỗi chi tiết từ Backend (ValidationException)
+      const errorMessage = err?.error?.message || 'Lỗi máy chủ: Không thể check-in';
+      this.showAlert(errorMessage, 'danger');
+      
+      // TẢI LẠI DỮ LIỆU MỚI NHẤT ĐỂ ĐỒNG BỘ NÚT BẤM
+      this.loadAllVisitors();
+    }
+  });
+}
 
   onCheckOut(visitor: VisitLogStaffViewDto): void {
-    if (visitor.status !== 'Checked-in') {
-      return;
-    }
-
-    this.visitorService.checkOutVisitor(visitor.visitLogId).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          this.showAlert(response.message || `Đã check-out cho khách: ${visitor.visitorFullName}`, 'success');
-          this.loadAllVisitors(); 
-        } else {
-          this.showAlert(response.message || 'Lỗi: Không thể check-out', 'danger');
-        }
-      },
-      error: (err) => {
-        this.showAlert(err?.error?.message || 'Lỗi máy chủ: Không thể check-out', 'danger');
-        console.error(err);
-      }
-    });
+  if (visitor.status !== 'Checked-in') {
+    return;
   }
+
+  this.visitorService.checkOutVisitor(visitor.visitLogId).subscribe({
+    next: (response) => {
+      if (response.succeeded) {
+        this.showAlert(response.message || `Đã check-out cho khách: ${visitor.visitorFullName}`, 'success');
+        this.loadAllVisitors();
+      } else {
+        this.showAlert(response.message || 'Lỗi: Không thể check-out', 'danger');
+        this.loadAllVisitors();
+      }
+    },
+    error: (err) => {
+      const errorMessage = err?.error?.message || 'Lỗi máy chủ: Không thể check-out';
+      this.showAlert(errorMessage, 'danger');
+      
+      // ĐỒNG BỘ LẠI TRẠNG THÁI TRÊN MÀN HÌNH
+      this.loadAllVisitors();
+    }
+  });
+}
 
   onFastCheckinSuccess(visitorName: string): void {
     this.showAlert(`Đã tạo và check-in khách: ${visitorName}`, 'success');
     this.showFastCheckin = false;
-    this.loadAllVisitors(); 
+    this.loadAllVisitors();
   }
 
   onFastCheckinClose(): void {
@@ -252,16 +270,80 @@ onSearchInput(event: Event): void {
   }
 
   // Helper cho màu sắc chip
-  getStatusColor(status: string): 'primary' | 'accent' | 'warn' | undefined {
+  // Thay thế hàm getStatusColor cũ bằng hàm này
+  getStatusClass(status: string): string {
+    if (!status) return '';
     switch (status.toLowerCase()) {
-      case 'checked-in': return 'primary'; // Xanh
-      case 'pending': return 'accent'; // Vàng/Cam (tùy theme)
-      case 'cancelled': return 'warn'; // Đỏ
-      case 'checked-out': return undefined; // Xám mặc định
-      default: return undefined;
+      case 'checked-in': return 'status-checkin';
+      case 'pending': return 'status-pending';
+      case 'cancelled': // Khớp với enum Backend
+      case 'rejected':  // Khớp với enum Backend
+        return 'status-cancelled'; // Màu đỏ/vàng cảnh báo
+      case 'checked-out': return 'status-checkout';
+      default: return '';
     }
   }
 
+  openConfirmPopup(type: VisitorAction, log: VisitLogStaffViewDto): void {
+    this.pendingActionLog = log;
+    this.confirmActionType = type;
+    this.isConfirmVisible = true;
+
+    // Cấu hình nội dung Popup dựa trên loại hành động
+    const config = {
+      checkin: {
+        title: 'Xác nhận Check-in',
+        message: `Check-in cho khách: ${log.visitorFullName}?`
+      },
+      checkout: {
+        title: 'Xác nhận Check-out',
+        message: `Check-out cho khách: ${log.visitorFullName}?`
+      },
+      reject: {
+        title: 'Từ chối truy cập',
+        message: `Bạn chắc chắn muốn từ chối yêu cầu của khách ${log.visitorFullName}?`
+      }
+    };
+
+    const selectedConfig = config[type];
+    this.confirmTitle = selectedConfig.title;
+    this.confirmMessage = selectedConfig.message;
+  }
+
+  /**
+   * Thực thi API sau khi người dùng bấm nút "Xác nhận" trên Popup
+   */
+ executeConfirmAction(): void {
+  if (!this.pendingActionLog || !this.confirmActionType) return;
+
+  const log = this.pendingActionLog;
+  const action = this.confirmActionType;
+  this.isConfirmVisible = false;
+
+  if (action === 'checkin') {
+    this.onCheckIn(log);
+  } else if (action === 'checkout') {
+    this.onCheckOut(log);
+  } else if (action === 'reject') {
+    this.visitorService.rejectVisitor(log.visitLogId).subscribe({
+      next: (response) => {
+        this.showAlert(response?.message || 'Đã từ chối yêu cầu khách thăm', 'success');
+        this.loadAllVisitors();
+      },
+      error: (err) => {
+        // Hiển thị lỗi như: "Yêu cầu này đã được từ chối bởi nhân viên khác"
+        const errorMessage = err?.error?.message || 'Lỗi: Không thể từ chối';
+        this.showAlert(errorMessage, 'danger');
+        
+        // TẢI LẠI TRANG ĐỂ CẬP NHẬT TRẠNG THÁI MỚI NHẤT
+        this.loadAllVisitors();
+      }
+    });
+  }
+
+  this.pendingActionLog = null;
+  this.confirmActionType = null;
+}
   private showAlert(message: string, type: 'success' | 'danger'): void {
     this.alertMessage = message;
     this.alertType = type;
