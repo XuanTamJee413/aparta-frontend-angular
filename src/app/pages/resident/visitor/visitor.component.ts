@@ -84,7 +84,7 @@ export class VisitorComponent implements OnInit {
   private residentApartmentId: string = '';
   isDuplicateVisitor = false;
   @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
-
+  @ViewChild('confirmDeleteDialog') confirmDeleteDialog!: TemplateRef<any>;
   isLoadingHistory = false;
   displayedColumns: string[] = ['visitorFullName', 'purpose', 'checkinTime', 'status', 'actions'];
   history: any[] = [];
@@ -141,10 +141,10 @@ export class VisitorComponent implements OnInit {
 
     this.loadHistory();
     this.visitorForm.get('idNumber')?.valueChanges.pipe(
-      debounceTime(500), 
+      debounceTime(500),
       distinctUntilChanged()
     ).subscribe(val => {
-      if (val && val.length >= 10) { 
+      if (val && val.length >= 10) {
         this.visitorService.checkVisitorExist(val).subscribe(res => {
           if (res.exists) {
             this.isDuplicateVisitor = true;
@@ -223,7 +223,7 @@ export class VisitorComponent implements OnInit {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result === true) {
-          this.executeSubmit(); 
+          this.executeSubmit();
         }
       });
     } else {
@@ -323,21 +323,26 @@ export class VisitorComponent implements OnInit {
     this.resetForm();
   }
 
-  // Hàm xử lý Xóa
+  // Hàm xử lý cancel
   deleteVisit(log: VisitLogStaffViewDto): void {
-    if (!confirm(`Bạn có chắc muốn xóa lịch hẹn với ${log.visitorFullName}?`)) return;
+    const dialogRef = this.dialog.open(this.confirmDeleteDialog, {
+      width: '400px',
+      data: log
+    });
 
-    this.visitorService.deleteVisitLog(log.visitLogId).subscribe({
-      next: () => {
-        this.snackBar.open('Đã xóa thành công.', 'Đóng', { duration: 3000 });
-        this.loadHistory();
-
-        // Nếu đang sửa đúng cái log vừa xóa thì reset form
-        if (this.editingLogId === log.visitLogId) {
-          this.cancelEdit();
-        }
-      },
-      error: (err) => this.handleError(err, 'Xóa thất bại')
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.visitorService.deleteVisitLog(log.visitLogId).subscribe({
+          next: () => {
+            this.snackBar.open('Đã hủy lịch hẹn thành công.', 'Đóng', { duration: 3000 });
+            this.loadHistory();
+            if (this.editingLogId === log.visitLogId) {
+              this.cancelEdit();
+            }
+          },
+          error: (err) => this.handleError(err, 'Hủy thất bại')
+        });
+      }
     });
   }
 
