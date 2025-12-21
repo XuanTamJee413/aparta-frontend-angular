@@ -43,9 +43,9 @@
     </div>
     <div class="summary-card">
       <div>
-        <span class="summary-title">Trung bình tháng</span>
-        <span class="summary-value">{{ getAverageMonthly() | currency:'VND':'symbol':'1.0-0' }}</span>
-        <span class="summary-meta">3 tháng gần nhất</span>
+        <span class="summary-title">Tháng này đã đóng</span>
+        <span class="summary-value">{{ getCurrentMonthPaid() | currency:'VND':'symbol':'1.0-0' }}</span>
+        <span class="summary-meta">{{ getCurrentMonthLabel() }}</span>
       </div>
       <div class="summary-icon icon-blue">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
