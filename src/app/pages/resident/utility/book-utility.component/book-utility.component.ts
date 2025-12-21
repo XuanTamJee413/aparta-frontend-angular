@@ -76,7 +76,7 @@ export class BookUtilityComponent implements OnInit {
       status: 'Available'
     };
 
-    this.utilityService.getUtilities(params).subscribe({
+    this.utilityService.getUtilitiesForResident(params).subscribe({
       next: (data) => {
         this.utilities = data.items;
       },

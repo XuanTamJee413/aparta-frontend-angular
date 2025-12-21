@@ -1,515 +1,422 @@
-.btn-reject {
-  background-color: #dc3545; /* Màu đỏ */
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
+:host {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-.btn-reject:hover {
-  background-color: #bb2d3b;
+.container {
+  background-color: #f9fafb;
+  min-height: 100vh;
+  padding: 2rem;
 }
-
-/* Text expired */
-.text-expired {
-  color: #dc3545;
-  font-size: 0.85em;
-  font-style: italic;
-}
-
-/* Header Dialog Reject */
-.bg-danger-light {
-  background-color: #fff5f5;
-  border-bottom: 1px solid #dc3545;
-}
-
-.bg-danger-light h3 {
-  color: #dc3545;
-}
-
 
 .card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin: 20px;
-  padding: 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
 }
 
-.card-header {
+header h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+header p {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Toolbar */
+.toolbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5e5e5;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
-.card-header h3 {
-  margin: 0;
-  font-size: 24px;
+.search-wrapper {
+  position: relative;
+  flex: 1 1 400px;
+  min-width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding-left: 0.75rem;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.search-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9ca3af;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  color: #111827;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px #4f46e5;
+}
+
+.filter-wrapper {
+  flex: 0 1 auto;
+}
+
+.status-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px #4f46e5;
+}
+
+.actions-right {
+  margin-left: auto;
+}
+
+.btn-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
   font-weight: 600;
-  color: #333;
-}
-
-.btn {
-  padding: 8px 16px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
+  background: #2563eb;
+  color: #ffffff;
 }
 
-.btn-add-new {
-  background-color: #28a745;
-  color: #fff;
+.btn-create:hover {
+  filter: brightness(1.05);
 }
 
-.btn-add-new:hover {
-  background-color: #218838;
+/* Table */
+.table-container {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.btn-edit {
-  background-color: #007bff;
-  color: #fff;
-  margin-right: 8px;
+.table-wrapper {
+  min-width: 900px; /* Đủ rộng để tránh co cột quá mức */
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
-.btn-edit:hover {
-  background-color: #0056b3;
-}
-
-.btn-delete {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-.btn-delete:hover {
-  background-color: #c82333;
-}
-
-.card-body {
-  padding: 20px 0;
-}
-
-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Arial', sans-serif;
 }
 
-th, td {
-  padding: 12px 15px;
+.data-table thead {
+  background-color: #f9fafb;
+}
+
+.data-table th {
+  padding: 0.75rem 1.5rem;
   text-align: left;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #333;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
   text-transform: uppercase;
-  font-size: 14px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  min-width: 120px;
 }
 
-td {
-  color: #555;
+.header-long {
+  min-width: 180px;
 }
 
-tr:hover {
-  background-color: #f1f3f5;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-available {
-  background-color: #e6f4ea;
-  color: #28a745;
-}
-
-.status-unavailable {
-  background-color: #f8d7da;
-  color: #dc3545;
-}
-
-.action-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 100%;     /* full height của ô */
-  min-height: 89px; /* tùy chỉnh theo UI của bạn */
-}
-
-.empty-row td {
+.header-actions {
+  min-width: 150px;
   text-align: center;
-  color: #888;
-  padding: 20px;
-  font-style: italic;
 }
 
-/* Filter Bar Styling */
-.filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 15px 0;
-  border-bottom: 1px solid #e5e5e5;
-  flex-wrap: wrap;
+.data-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top; /* Quan trọng: thẳng hàng border */
 }
 
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-}
-
-.filter-group label {
-  font-size: 14px;
+.data-table td.font-medium {
   font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
+  color: #111827;
+  white-space: normal; /* Cho phép wrap trong cell */
 }
 
-.filter-group input,
-.filter-group select {
-  padding: 8px 12px;
-  border: 1px solid #d1d3e2;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #333;
-  background: #fff;
-  transition: border-color 0.3s ease;
+/* Cột Ghi Chú */
+.note-cell {
+  max-width: 280px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-.filter-group input:focus,
-.filter-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+.note-line {
+  display: block;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  font-size: 0.875rem;
 }
 
-.filter-group input::placeholder {
-  color: #999;
+.note-line:last-child {
+  margin-bottom: 0;
 }
 
-.btn-filter {
-  background-color: #007bff;
-  color: #fff;
+/* Cột Hành Động */
+.actions-center {
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
-.btn-filter:hover {
-  background-color: #0056b3;
-}
-
-/* Card Footer (Pagination) Styling */
-.card-footer {
-  display: flex;
-  justify-content: space-between;
+.action-reject-btn {
+  display: inline-flex;
   align-items: center;
-  padding-top: 15px;
-  border-top: 1px solid #e5e5e5;
-}
-
-.pagination-summary {
-  font-size: 14px;
-  color: #555;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-page {
-  background: #f8f9fa;
-  color: #333;
-  border: 1px solid #d1d3e2;
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 4px;
-}
-
-.btn-page:hover:not(:disabled) {
-  background: #e9ecef;
-  color: #000;
-}
-
-.btn-page:disabled {
-  background: #f8f9fa;
-  color: #ccc;
-  cursor: not-allowed;
-}
-
-.pagination-controls span {
-  font-size: 14px;
-  color: #333;
-}
-
-/* Dialog Styling */
-dialog {
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background-color: #fecaca;
+  color: #991b1b;
   border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  padding: 20px;
-  max-width: 500px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.action-reject-btn:hover {
+  background-color: #fca5a5;
+}
+
+.action-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.no-action-text {
+  color: #9ca3af;
+  font-size: 0.8125rem;
+  display: block;
+  padding: 0.5rem 0;
+}
+
+/* Status badge & alerts */
+.status-badge {
+  display: inline-block;      /* Quan trọng: cho phép control white-space tốt hơn */
+  white-space: nowrap !important;  /* Buộc không xuống dòng */
+  padding: 0.35rem 0.65rem;   /* Tăng padding nhẹ để text dài vẫn thoải mái */
+  min-width: 80px;            /* Đảm bảo badge có chiều rộng tối thiểu */
+  text-align: center;         /* Căn giữa text bên trong badge */
+  overflow: hidden;           /* Phòng hờ nếu quá dài (hiếm) */
+  text-overflow: ellipsis;
+}
+
+.status-active, .status-đang hoạt động, .status-approved { /* Thêm các status phổ biến */
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-rejected, .status-từ chối {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.alert-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.alert-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.text-expired {
+  color: #dc2626;
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
+
+/* Pagination & others */
+.pagination {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-info {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.pagination-buttons button {
+  padding: 0.35rem 0.85rem;
+}
+
+/* Dialog */
+dialog {
+  max-width: 600px;
   width: 90%;
-  background: #fff;
-  animation: fadeIn 0.3s ease-in-out;
+  border-radius: 0.75rem;
+  border: none;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
 }
 
 dialog::backdrop {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 1.5rem;
 }
 
 .form-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: 20px;
-  color: #555;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 5px 10px;
+  color: #6b7280;
 }
 
-.btn-close:hover {
-  color: #000;
+.form-body .form-group {
+  margin-bottom: 1rem;
 }
 
-.form-body {
-  padding: 20px 0;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
+.form-body label {
   display: block;
-  font-size: 14px;
+  margin-bottom: 0.35rem;
   font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
+  color: #374151;
 }
 
-.form-group input,
-.form-group select {
+.form-body input,
+.form-body select {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #d1d3e2;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-}
-
-.form-error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
-  display: block;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
 }
 
 .form-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding-top: 15px;
-  border-top: 1px solid #e5e5e5;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
 }
 
 .btn-cancel {
-  background-color: #6c757d;
-  color: #fff;
-}
-
-.btn-cancel:hover {
-  background-color: #5a6268;
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .btn-save {
-  background-color: #28a745;
-  color: #fff;
-}
-
-.btn-save:hover {
-  background-color: #218838;
+  background-color: #2563eb;
+  color: white;
 }
 
 .btn-save:disabled {
-  background-color: #cccccc;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* Alert success */
+.alert-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
 
+/* Alert danger trong dialog */
+.alert-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
 
-/* Animation for dialog */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
+/* Text expired */
+.text-expired {
+  color: #dc2626;
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .search-wrapper {
+    flex-basis: 100%;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .filter-wrapper, .actions-right {
+    flex-basis: auto;
   }
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .card {
-    margin: 10px;
-    padding: 15px;
-  }
-
-  th, td {
-    padding: 8px;
-    font-size: 12px;
-  }
-
-  .btn {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .card-header h3 {
-    font-size: 20px;
-  }
-
-  .filter-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .filter-group {
-    min-width: 100%;
-  }
-
-  .card-footer {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .pagination-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  dialog {
-    width: 95%;
-    padding: 15px;
-  }
-
-  .form-header h3 {
-    font-size: 18px;
-  }
-
-  .form-group input,
-  .form-group select {
-    font-size: 12px;
-    padding: 8px;
-  }
-}
-
-
-
-
-/* Dùng chung với ServiceList / TaskList */
-.note-cell {
-  max-width: 200px;
-  white-space: normal; /* CHO PHÉP XUỐNG DÒNG */
-  word-wrap: break-word; /* TỰ NGẮT DÒNG NẾU TỪ QUÁ DÀI */
-  overflow: visible; /* KHÔNG ẨN NỮA */
-  text-overflow: initial; /* BỎ ... */
-}
-
-.text-danger {
-  color: #e74c3c;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-/* Status badge */
-.status-pending    { background: #fff3cd; color: #856404; }
-.status-approved   { background: #d4edda; color: #155724; }
-.status-rejected   { background: #f8d7da; color: #721c24; }
-.status-cancelled  { background: #e2e3e5; color: #495057; }
-
-/* Dialog đẹp hơn */
-.modern-dialog {
-  max-width: 500px;
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-  padding: 0;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.modern-dialog::backdrop {
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(5px);
-}
-
-.dialog-form {
-  background: white;
-  border-radius: 16px;
-}
-
-.form-header {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 16px 16px 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.form-header h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.form-body {
-  padding: 1.5rem;
-}
-
-.form-footer {
-  padding: 1rem 1.5rem;
-  background: #f8f9fa;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  border-radius: 0 0 16px 16px;
+@media (max-width: 640px) {
+  .card { padding: 1.5rem; }
+  header h1 { font-size: 1.5rem; }
+  .btn-create { width: 100%; justify-content: center; }
+  .note-cell { max-width: 200px; font-size: 0.8125rem; }
+  .action-reject-btn { padding: 0.5rem 1rem; font-size: 0.8125rem; }
 }
