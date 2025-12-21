@@ -22,6 +22,9 @@ export interface ContractDto {
   endDate: string | null;
   image?: string | null;
   createdAt?: string | null;
+  contractType?: string;
+  depositAmount?: number | null;
+  totalValue?: number | null;
 }
 
 export interface ContractQueryParameters {
@@ -30,19 +33,23 @@ export interface ContractQueryParameters {
   sortOrder?: string | null;
 }
 
-export interface ContractCreateDto {
-  apartmentId: string;
-  startDate: string;
-  endDate: string | null;
-  image?: string | null;
+export interface MemberInputDto {
+  fullName: string;
+  phoneNumber?: string | null;
+  identityCard?: string | null;
+  email?: string | null;
+  roleName: string; // "owner", "tenant", "family_member"
+  isAppAccess: boolean;
+  isRepresentative: boolean;
+}
 
-  ownerName: string;
-  ownerEmail: string;
-  ownerPhoneNumber: string;
-  ownerIdNumber: string;
-  ownerGender: string;
-  ownerDateOfBirth: string;
-  ownerNationality: string;
+export interface CreateContractRequestDto {
+  apartmentId: string;
+  contractNumber: string;
+  contractType: string; // "Lease" or "Sale"
+  startDate: string;
+  endDate: string;
+  members: MemberInputDto[];
 }
 
 export interface AvailableApartmentDto {
@@ -51,13 +58,8 @@ export interface AvailableApartmentDto {
 }
 
 export interface ContractUpdateDto {
-  startDate?: string;
   endDate?: string | null;
   image?: string | null;
-
-  ownerName?: string;
-  ownerEmail?: string;
-  ownerPhoneNumber?: string;
 }
 
 interface ApartmentListItemFromApi {
@@ -122,8 +124,8 @@ export class ContractManagementService {
     return this.http.get<ContractDto>(`${this.apiUrl}/${id}`);
   }
 
-  createContract(dto: ContractCreateDto): Observable<ContractDto> {
-    return this.http.post<ContractDto>(this.apiUrl, dto);
+  createContract(dto: CreateContractRequestDto): Observable<ApiResponse<ContractDto>> {
+    return this.http.post<ApiResponse<ContractDto>>(this.apiUrl, dto);
   }
 
 
