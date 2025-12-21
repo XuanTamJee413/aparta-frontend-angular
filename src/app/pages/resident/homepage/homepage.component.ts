@@ -99,7 +99,7 @@ import { InvoiceDto } from '../../../models/invoice.model';
               }
             </ul>
           }
-          <a routerLink="/send-proposal" class="btn btn-secondary">Xem tất cả đề xuất</a>
+          <a routerLink="/send-proposal" class="btn btn-primary">Xem tất cả đề xuất</a>
         </section>
       </div>
     </div>
@@ -179,7 +179,7 @@ import { InvoiceDto } from '../../../models/invoice.model';
       border-bottom: 1px solid #f1f3f5;
     }
     .item-list li:last-child { border-bottom: none; }
-    .item-name { font-weight: 600; }
+    .item-name { font-weight: 500; }
     .item-date { font-size: 0.85rem; color: #6c757d; display: block; }
     .item-amount { font-weight: 600; margin-right: 1rem; }
 
