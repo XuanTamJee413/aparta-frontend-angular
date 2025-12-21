@@ -227,6 +227,13 @@ export class InvoiceManagementComponent implements OnInit {
               }
             });
           });
+
+          // Sắp xếp theo thời gian tạo (mới nhất trước)
+          this.oneTimeInvoices.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA; // Giảm dần (mới nhất trước)
+          });
         } else {
           this.oneTimeInvoices = [];
           this.error = response.message || 'Không thể tải danh sách hóa đơn';
@@ -257,6 +264,13 @@ export class InvoiceManagementComponent implements OnInit {
           this.flatInvoices.push(flatInvoice);
         }
       });
+    });
+
+    // Sắp xếp theo thời gian tạo (mới nhất trước)
+    this.flatInvoices.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA; // Giảm dần (mới nhất trước)
     });
   }
 
