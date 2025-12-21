@@ -193,16 +193,31 @@ export class InvoiceComponent implements OnInit {
     return paid.length > 0 ? paid[0].updatedAt : null;
   }
 
-  getAverageMonthly(): number {
-    const recentPaid = this.invoices
-      .filter(inv => inv.status === 'PAID')
-      .sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime())
-      .slice(0, 3);
-    
-    if (recentPaid.length === 0) return 0;
-    
-    const total = recentPaid.reduce((sum, inv) => sum + (inv.price || 0), 0);
-    return total / recentPaid.length;
+  getCurrentMonthPaid(): number {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const currentMonthPaid = this.invoices
+      .filter(inv => {
+        if (inv.status !== 'PAID') return false;
+        
+        try {
+          const endDate = new Date(inv.endDate);
+          return endDate.getMonth() === currentMonth && endDate.getFullYear() === currentYear;
+        } catch {
+          return false;
+        }
+      });
+
+    return currentMonthPaid.reduce((sum, inv) => sum + (inv.price || 0), 0);
+  }
+
+  getCurrentMonthLabel(): string {
+    const now = new Date();
+    const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                       'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+    return `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
   }
 
   //Kiểm tra xem invoice có quá hạn không

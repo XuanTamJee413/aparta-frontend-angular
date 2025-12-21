@@ -15,6 +15,7 @@ import {
 } from '../../../../models/meter-reading.model';
 import { ProfileService } from '../../../../services/profile.service';
 import { AuthService } from '../../../../services/auth.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-meter-reading-form',
@@ -115,34 +116,71 @@ export class MeterReadingFormComponent implements OnInit {
       this.profileService.getProfile().subscribe({
         next: (response) => {
           if (response.succeeded && response.data?.currentAssignments) {
-            // Map currentAssignments thành BuildingDto format
-            this.buildings = response.data.currentAssignments.map(assignment => ({
-              buildingId: assignment.buildingId,
-              name: assignment.buildingName,
-              buildingCode: assignment.buildingId, // Fallback nếu không có code
-              projectId: '',
-              numApartments: 0,
-              numResidents: 0,
-              totalFloors: 0,
-              totalBasements: 0,
-              readingWindowStart: 1,
-              readingWindowEnd: 31,
-              isActive: true,
-              description: '',
-              createdAt: assignment.startDate,
-              updatedAt: assignment.startDate
-            } as BuildingDto));
+            const buildingIds = response.data.currentAssignments.map(a => a.buildingId);
             
-            if (this.buildings.length > 0) {
-              this.selectedBuildingId = this.buildings[0].buildingId;
-              this.selectedBuilding = this.buildings[0];
-              this.loadApartments();
+            if (buildingIds.length === 0) {
+              this.buildings = [];
+              this.showError('Không có building nào được gán cho bạn');
+              this.loadingBuildings = false;
+              return;
             }
+
+            // Load thông tin đầy đủ của từng building để lấy readingWindowStart và readingWindowEnd
+            const buildingObservables = buildingIds.map(buildingId => 
+              this.buildingService.getBuildingById(buildingId)
+            );
+
+            // Gọi song song tất cả requests
+            forkJoin(buildingObservables).subscribe({
+              next: (responses) => {
+                this.buildings = responses
+                  .filter(r => r.succeeded && r.data)
+                  .map(r => r.data!)
+                  .filter(b => b.isActive);
+                
+                if (this.buildings.length > 0) {
+                  this.selectedBuildingId = this.buildings[0].buildingId;
+                  this.selectedBuilding = this.buildings[0];
+                  this.loadApartments();
+                } else {
+                  this.showError('Không có building nào được gán cho bạn');
+                }
+                this.loadingBuildings = false;
+              },
+              error: (error) => {
+                // Fallback: dùng thông tin từ profile nếu không load được chi tiết
+                if (response.succeeded && response.data?.currentAssignments) {
+                  this.buildings = response.data.currentAssignments.map(assignment => ({
+                    buildingId: assignment.buildingId,
+                    name: assignment.buildingName,
+                    buildingCode: assignment.buildingId,
+                    projectId: '',
+                    numApartments: 0,
+                    numResidents: 0,
+                    totalFloors: 0,
+                    totalBasements: 0,
+                    readingWindowStart: 1,
+                    readingWindowEnd: 31,
+                    isActive: true,
+                    description: '',
+                    createdAt: assignment.startDate,
+                    updatedAt: assignment.startDate
+                  } as BuildingDto));
+                  
+                  if (this.buildings.length > 0) {
+                    this.selectedBuildingId = this.buildings[0].buildingId;
+                    this.selectedBuilding = this.buildings[0];
+                    this.loadApartments();
+                  }
+                }
+                this.loadingBuildings = false;
+              }
+            });
           } else {
             this.buildings = [];
             this.showError('Không có building nào được gán cho bạn');
+            this.loadingBuildings = false;
           }
-          this.loadingBuildings = false;
         },
         error: (error) => {
           this.showError('Không thể tải danh sách tòa nhà');
