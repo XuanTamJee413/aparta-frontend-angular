@@ -36,6 +36,11 @@ export class RegisterVehicle implements OnInit {
   listSuccess = signal<string | null>(null);
   listError = signal<string | null>(null);
   readonly vehicleTypes = ['Xe đạp', 'Xe ô tô', 'Xe máy', 'Xe điện'];
+  readonly MAX_VEHICLES = 3;
+  isVehicleLimitReached = () => {
+  return this.myVehicles().length >= this.MAX_VEHICLES;
+};
+
 
   submitting = signal(false);
   error = signal<string | null>(null);
@@ -146,6 +151,13 @@ export class RegisterVehicle implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.isVehicleLimitReached()) {
+    this.error.set(
+      `Mỗi căn hộ chỉ được đăng ký tối đa ${this.MAX_VEHICLES} đơn đăng ký phương tiện.`
+    );
+    return;
+  }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

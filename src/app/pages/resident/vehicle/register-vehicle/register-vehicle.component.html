@@ -7,6 +7,18 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
       <div class="form-group">
+        <label for="info" class="form-label">Loại xe</label>
+        <select id="info" class="form-select" formControlName="info">
+          <option value="" disabled>-- Vui lòng chọn --</option>
+          @for (type of vehicleTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+          }
+        </select>
+        @if (form.controls.info.invalid && (form.controls.info.dirty || form.controls.info.touched)) {
+        <div class="form-error">Vui lòng chọn loại xe.</div>
+        }
+      </div>
+      <div class="form-group">
         <label for="vehicleNumber" class="form-label">Biển số xe</label>
         <input id="vehicleNumber" type="text" class="form-control" formControlName="vehicleNumber"
           [placeholder]="vehiclePlaceholder" />
@@ -43,18 +55,13 @@
         }
       </div>
 
-      <div class="form-group">
-        <label for="info" class="form-label">Loại xe</label>
-        <select id="info" class="form-select" formControlName="info">
-          <option value="" disabled>-- Vui lòng chọn --</option>
-          @for (type of vehicleTypes; track type) {
-          <option [value]="type">{{ type }}</option>
-          }
-        </select>
-        @if (form.controls.info.invalid && (form.controls.info.dirty || form.controls.info.touched)) {
-        <div class="form-error">Vui lòng chọn loại xe.</div>
-        }
+
+      @if (isVehicleLimitReached()) {
+      <div class="alert-danger" style="margin-bottom: 1rem;">
+        Bạn đã đăng ký đủ <strong>3 phương tiện</strong>.
+        Vui lòng hủy bớt phương tiện cũ để đăng ký mới.
       </div>
+      }
 
       @if (success()) {
       <div class="alert-success">{{ success() }}</div>
@@ -64,7 +71,8 @@
       }
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting()">
+        <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting() || isVehicleLimitReached()">
+
           @if (submitting()) {
           <span>Đang gửi...</span>
           } @else {
