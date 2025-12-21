@@ -32,35 +32,42 @@ export const RESIDENT_ROUTES: Routes = [
   },
   {
     path: 'my-invoice-detail/:id',
-    canActivate: [authCanActivate],
+    canActivate: [authCanActivate, permissionGuard('invoice.resident.read')],
     component: MyInvoiceDetailComponent
   },
   {
     path: 'booking-service',
+    canActivate: [permissionGuard('utility.create')],
     component: BookServiceComponent
   },
   {
     path: 'my-booking-service',
+    canActivate: [permissionGuard('utility.read')],
     component: MyBookingsComponent
   },
   {
     path: 'booking-utility',
+    canActivate: [permissionGuard('utility.create')],
     component: BookUtilityComponent
   },
   {
     path: 'my-booking-utility',
+    canActivate: [permissionGuard('utility.read')],
     component: MyUtilityBookingsComponent
   },
   {
     path: 'news',
+    canActivate: [permissionGuard('news.read')],
     component: NewsListComponent
   },
   {
     path: 'visitor',
+    canActivate: [permissionGuard('visitor.create')],
     component: VisitorComponent
   },
   {
     path: 'household',
+    canActivate: [permissionGuard('apartmentmember.read')],
     component: RegisterHousehold
   },
   {
@@ -69,14 +76,17 @@ export const RESIDENT_ROUTES: Routes = [
   },
   {
     path: 'facility',
+    canActivate: [permissionGuard('utility.read')],
     component: FacilityComponent
   },
   {
     path: 'profile',
+    canActivate: [permissionGuard('user.read')],
     component: ProfileComponent
   },
   {
     path: 'editprofile',
+    canActivate: [permissionGuard('user.update')],
     component: EditProfileComponent
   },
   {
@@ -85,6 +95,7 @@ export const RESIDENT_ROUTES: Routes = [
   },
   {
     path: 'send-proposal',
+    canActivate: [permissionGuard('proposal.create')],
     component: ResidentProposalComponent
   },
   {

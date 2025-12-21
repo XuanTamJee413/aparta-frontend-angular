@@ -48,6 +48,12 @@
                   </div>
                 </th>
 
+                <th>
+                  <div class="sort-header-content">
+                    <span>Loại hợp đồng</span>
+                  </div>
+                </th>
+
                 <th class="sortable-header" (click)="onSort('startDate')">
                   <div class="sort-header-content">
                     <span>Ngày bắt đầu</span>
@@ -59,18 +65,6 @@
                     </span>
                   </div>
                 </th>
-
-                <!-- <th class="sortable-header" (click)="onSort('endDate')">
-                  <div class="sort-header-content">
-                    <span>Ngày kết thúc</span>
-                    <span class="sort-icon">
-                      <ng-container *ngIf="sortBy === 'endDate'; else endDefault">
-                        {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                      </ng-container>
-                      <ng-template #endDefault>⇅</ng-template>
-                    </span>
-                  </div>
-                </th> -->
 
                 <th>Thao tác</th>
               </tr>
@@ -87,8 +81,12 @@
                   {{ contract.apartmentCode || contract.apartmentId }}
                 </td>
                 <td>{{ contract.ownerName || '—' }}</td>
+                <td>
+                  <span [class.badge-sale]="contract.contractType === 'Sale'" [class.badge-lease]="contract.contractType === 'Lease'" class="contract-type-badge">
+                    {{ contract.contractType === 'Sale' ? 'Mua bán' : 'Thuê' }}
+                  </span>
+                </td>
                 <td>{{ contract.startDate | date: 'yyyy-MM-dd' }}</td>
-                <!-- <td>{{ contract.endDate ? (contract.endDate | date: 'yyyy-MM-dd') : '—' }}</td> -->
 
                 <td class="actions">
                   <button type="button" class="action-view" (click)="onView(contract.contractId)">
