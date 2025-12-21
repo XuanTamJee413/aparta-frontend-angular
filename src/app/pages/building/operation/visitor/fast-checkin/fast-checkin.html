@@ -54,6 +54,10 @@
     <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('required')">CCCD/Hộ chiếu là bắt buộc</mat-error>
     <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('pattern')">CCCD chỉ được chứa số</mat-error>
     <mat-error *ngIf="manualVisitorForm.get('idNumber')?.hasError('maxlength')">Không quá 20 ký tự</mat-error>
+    <mat-hint *ngIf="isDuplicateVisitor && !manualVisitorForm.get('idNumber')?.invalid" style="color: #ffc107; font-weight: 500;">
+    <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;">warning</mat-icon>
+    Khách đã có trong hệ thống. Dữ liệu sẽ được cập nhật mới.
+  </mat-hint>
   </mat-form-field>
 </div>
 
@@ -76,3 +80,16 @@
 <div *ngIf="alertMessage" class="alert-toast shadow" [ngClass]="alertType">
   {{ alertMessage }}
 </div>
+<ng-template #confirmDialog>
+  <h2 mat-dialog-title style="color: #856404;">
+    <mat-icon style="vertical-align: middle;">report_problem</mat-icon> Xác nhận khách cũ
+  </h2>
+  <mat-dialog-content>
+    <p>Số CCCD này đã tồn tại trong hệ thống.</p>
+    <p>Bạn có chắc chắn muốn <b>cập nhật thông tin mới nhất</b> cho khách này và thực hiện Check-in ngay không?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>HỦY BỎ</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">ĐỒNG Ý & TẠO</button>
+  </mat-dialog-actions>
+</ng-template>

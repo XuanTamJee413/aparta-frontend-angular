@@ -49,6 +49,9 @@
           <mat-error *ngIf="visitorForm.get('idNumber')?.hasError('maxlength')">
             Tối đa 20 ký tự
           </mat-error>
+          <mat-hint *ngIf="isDuplicateVisitor && !visitorForm.get('idNumber')?.invalid" style="color: #ffc107;">
+            Khách đã tồn tại. Hệ thống sẽ xác nhận cập nhật khi bạn nhấn Đăng ký.
+          </mat-hint>
         </mat-form-field>
       </div>
 
@@ -56,7 +59,7 @@
       <mat-form-field appearance="outline">
         <mat-label>Mục đích</mat-label>
         <textarea matInput formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..."></textarea>
-        
+
         <mat-error *ngIf="visitorForm.get('purpose')?.hasError('pattern')">
           Mục đích không được chứa ký tự đặc biệt (&lt; &gt; / ' ...)
         </mat-error>
@@ -188,3 +191,16 @@
 
   </mat-card-content>
 </mat-card>
+<ng-template #confirmDialog>
+  <h2 mat-dialog-title class="text-warning">
+    <mat-icon>priority_high</mat-icon> Xác nhận cập nhật
+  </h2>
+  <mat-dialog-content>
+    <p>Số CCCD này đã tồn tại trong hệ thống.</p>
+    <p>Bạn có chắc chắn muốn <b>cập nhật thông tin mới</b> cho khách này và tiếp tục đăng ký không?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Hủy bỏ</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">Đồng ý & Đăng ký</button>
+  </mat-dialog-actions>
+</ng-template>
