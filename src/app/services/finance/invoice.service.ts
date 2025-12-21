@@ -28,10 +28,10 @@ export class InvoiceService {
 
   /**
    * Get user's own invoice detail (for residents)
-   * GET /api/invoices/my-invoices/{invoiceId}
+   * GET /api/Invoice/my-invoices/{invoiceId}
    */
   getMyInvoiceDetail(invoiceId: string): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/invoice/${invoiceId}`);
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/my-invoices/${invoiceId}`);
   }
 
   /**
