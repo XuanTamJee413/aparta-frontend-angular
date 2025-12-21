@@ -104,8 +104,10 @@ export class VisitorList implements OnInit {
 
   loadAllVisitors(): void {
     this.isLoading = true;
-    this.visitorService.getAllVisitors(this.queryParams).subscribe({
+    // Đổi getAllVisitors thành getStaffVisitLogs
+    this.visitorService.getStaffVisitLogs(this.queryParams).subscribe({
       next: (data) => {
+        // 'data' ở đây đã được pipe(map(res => res.data)) trong Service nên nó là PagedList
         const processedItems = data.items.map(log => {
           let checkinTimeStr = (log as any).checkinTime;
           let checkoutTimeStr = (log as any).checkoutTime;
@@ -140,22 +142,24 @@ export class VisitorList implements OnInit {
   }
 
   loadApartments(): void {
+    // Đảm bảo getAllApartments() trả về Observable<ApartmentDto[]>
     this.visitorService.getAllApartments().subscribe({
       next: (data) => {
+        // Kiểm tra nếu data là mảng trực tiếp (do Service đã map qua response.data)
         this.apartmentList = data.sort((a, b) => a.code.localeCompare(b.code));
       },
       error: (err) => {
         console.error('Lỗi tải danh sách căn hộ', err);
+        // Có thể Backend yêu cầu buildingId hoặc quyền cụ thể
         this.showAlert('Không thể tải danh sách căn hộ', 'danger');
       }
     });
   }
-
-  onSearchInput(event: Event): void {
-    const searchTerm = (event.target as HTMLInputElement).value;
-    this.searchSubject.next(searchTerm);
-  }
-
+// Trong class VisitorList
+onSearchInput(event: Event): void {
+  const searchTerm = (event.target as HTMLInputElement).value;
+  this.searchSubject.next(searchTerm); // Gửi giá trị vào Subject để debounce (tránh gọi API liên tục)
+}
   // Cập nhật sự kiện change cho MatSelect
   onApartmentFilterChange(apartmentId: string): void {
     this.queryParams.apartmentId = apartmentId;

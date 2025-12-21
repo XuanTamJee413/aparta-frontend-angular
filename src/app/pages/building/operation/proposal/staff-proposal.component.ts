@@ -29,38 +29,48 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
     styleUrls: ['./staff-proposal.component.css']
 })
 export class StaffProposalComponent implements OnInit {
-    
+
     private proposalService = inject(ProposalService);
     private snackBar = inject(MatSnackBar);
 
     // Bảng và Phân trang
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
-    
+
     dataSource = new MatTableDataSource<ProposalDto>([]);
-    displayedColumns: string[] = ['residentName', 'contentPreview', 'status', 'createdAt', 'actions'];
-    
+    displayedColumns: string[] = ['title', 'type', 'residentName', 'contentPreview', 'status', 'createdAt', 'actions'];
+    typeFilterControl = new FormControl('');
+
+    proposalTypes: any[] = [];
     // Tham số Query
     searchControl = new FormControl('');
     statusFilterControl = new FormControl('Pending'); // Mặc định chỉ xem trạng thái Chờ xử lý
-    
+
     resultsLength = 0;
     isLoadingResults = true;
-    
+
     // Chi tiết và Trả lời
     selectedProposal: ProposalDto | null = null;
     replyControl = new FormControl('', [Validators.required, Validators.maxLength(2000)]);
     isReplying = false;
 
     ngOnInit(): void {
+        this.loadProposalTypes();
         this.loadInitialData();
     }
-    
+loadProposalTypes(): void {
+    this.proposalService.getProposalTypes().subscribe(types => {
+        this.proposalTypes = types;
+    });
+}
     ngAfterViewInit(): void {
         // Kết hợp Paginator và Sort (Logic phân trang/sắp xếp tự động)
         this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 
-        merge(this.sort.sortChange, this.paginator.page, this.searchControl.valueChanges.pipe(debounceTime(400)), this.statusFilterControl.valueChanges)
+        merge(this.sort.sortChange, this.paginator.page,
+            this.searchControl.valueChanges.pipe(debounceTime(400)),
+            this.statusFilterControl.valueChanges,
+            this.typeFilterControl.valueChanges)
             .pipe(
                 startWith({}),
                 switchMap(() => {
@@ -85,8 +95,9 @@ export class StaffProposalComponent implements OnInit {
         const params: ProposalQueryParams = {
             pageNumber: this.paginator.pageIndex + 1,
             pageSize: this.paginator.pageSize,
-            searchTerm: this.searchControl.value || undefined,
-            status: this.statusFilterControl.value || undefined,
+            searchTerm: this.searchControl.value ?? '',
+            status: this.statusFilterControl.value ?? '',
+            type: this.typeFilterControl.value ?? '',
             sortColumn: this.sort.active,
             sortDirection: this.sort.direction as 'asc' | 'desc',
         };
@@ -94,19 +105,19 @@ export class StaffProposalComponent implements OnInit {
     }
 
     // --- HÀM XỬ LÝ GIAO DIỆN VÀ CHI TIẾT ---
-    
+
     openDetails(proposal: ProposalDto): void {
         this.proposalService.getProposalDetail(proposal.proposalId).subscribe(
             detail => {
                 this.selectedProposal = detail;
                 this.replyControl.setValue(detail.reply || ''); // Load nội dung trả lời (nếu đã có)
-                
+
                 // Mở modal hoặc hiển thị khu vực chi tiết (tùy thuộc vào thiết kế UI)
             },
             err => this.snackBar.open('Không thể tải chi tiết đề xuất.', 'Đóng', { duration: 3000 })
         );
     }
-    
+
     // Hàm gửi trả lời
     submitReply(): void {
         if (this.replyControl.invalid || !this.selectedProposal) return;
@@ -134,7 +145,7 @@ export class StaffProposalComponent implements OnInit {
         this.replyControl.reset();
         this.loadInitialData(); // Tải lại danh sách để xem trạng thái mới nhất
     }
-    
+
     loadInitialData(): void {
         // Tải lại dữ liệu (chủ yếu gọi hàm trong ngAfterViewInit)
         this.searchControl.setValue(this.searchControl.value);

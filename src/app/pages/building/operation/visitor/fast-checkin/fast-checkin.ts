@@ -1,87 +1,119 @@
-// SỬA 1: Xóa 'Input'
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-// SỬA 2: Thêm 'ApartmentDto' (vẫn giữ nguyên)
+// Material Imports
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
 import { VisitorCreateDto, VisitorService, ApartmentDto } from '../../../../../services/resident/visitor.service';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-fast-checkin',
   standalone: true, 
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule
   ],
   templateUrl: './fast-checkin.html',
   styleUrl: './fast-checkin.css'
 })
 export class FastCheckin implements OnInit {
   
-  // --- Thuộc tính Form ---
   manualVisitorForm!: FormGroup;
-  
-  // SỬA 3: Xóa @Input() và biến nó thành một biến local
   apartmentList: ApartmentDto[] = [];
+  
+  // Logic Search cho Combobox
+  filteredApartments: ApartmentDto[] = [];
+  searchControl = new FormControl('');
 
-  // --- Outputs (Phát sự kiện ra component cha) ---
   @Output() checkinSuccess = new EventEmitter<string>();
   @Output() closeForm = new EventEmitter<void>();
 
-  // --- Trạng thái Alert ---
   alertMessage: string | null = null;
   alertType: 'success' | 'danger' = 'success';
   private alertTimeout: any;
 
-  // --- Constructor ---
   constructor(
     private fb: FormBuilder,
     private visitorService: VisitorService
   ) {}
 
-  // --- Lifecycle Hooks ---
   ngOnInit(): void {
-    this.manualVisitorForm = this.fb.group({
-      fullName: ['', Validators.required],
-      phone: ['', [
-        Validators.maxLength(15),
-        Validators.pattern('^[0-9]*$')
-      ]],
-      idNumber: ['', [
-        Validators.required,
-        Validators.maxLength(20),
-        Validators.pattern('^[0-9]+$')
-      ]],
-      purpose: [''],
-      apartmentId: ['', Validators.required] 
-    });
+  this.manualVisitorForm = this.fb.group({
+    // Họ tên: Bắt buộc, tối đa 255 ký tự, không ký tự đặc biệt (chỉ chữ, số, khoảng trắng)
+    fullName: ['', [
+      Validators.required,
+      Validators.maxLength(255),
+      Validators.pattern(/^[\p{L}0-9\s]+$/u) // Thêm cờ 'u' để hỗ trợ unicode tiếng Việt
+    ]],
 
-    // SỬA 4: Component con tự gọi API
-    this.loadApartments();
-  }
+    // SĐT: Từ 10 đến 13 số
+    phone: ['', [
+      Validators.pattern(/^[0-9]{10,13}$/)
+    ]],
 
-  // SỬA 5: Thêm hàm loadApartments vào component con
+    // CCCD: Bắt buộc, tối đa 20 ký tự, chỉ chứa số
+    idNumber: ['', [
+      Validators.required,
+      Validators.maxLength(20),
+      Validators.pattern(/^[0-9]+$/)
+    ]],
+
+    // Mục đích: Tối đa 500 ký tự, cho phép chữ, số, dấu phẩy, chấm, gạch ngang
+    purpose: ['', [
+      Validators.maxLength(500),
+      Validators.pattern(/^[\p{L}0-9\s,.-]+$/u)
+    ]],
+
+    // Căn hộ: Bắt buộc
+    apartmentId: ['', Validators.required]
+  });
+
+  this.loadApartments();
+
+  this.searchControl.valueChanges.subscribe(value => {
+    this.filterApartments(value || '');
+  });
+}
+
   loadApartments(): void {
     this.visitorService.getAllApartments().subscribe({
       next: (data) => {
         this.apartmentList = data.sort((a, b) => a.code.localeCompare(b.code));
+        this.filteredApartments = this.apartmentList; // Ban đầu hiển thị tất cả
       },
       error: (err) => {
-        console.error('Lỗi tải danh sách căn hộ (trong fast-checkin)', err);
-        // Hiển thị lỗi ngay trong form con
+        console.error('Lỗi tải danh sách căn hộ', err);
         this.showAlert('Không thể tải danh sách căn hộ', 'danger');
       }
     });
   }
 
+  filterApartments(searchText: string) {
+    const filterValue = searchText.toLowerCase();
+    this.filteredApartments = this.apartmentList.filter(apt => 
+      apt.code.toLowerCase().includes(filterValue)
+    );
+  }
 
-  // --- (Các hàm onManualSubmit, resetManualForm, onClose, showAlert giữ nguyên) ---
-  
+  // Ngăn chặn việc đóng select khi click vào ô input search
+  stopPropagation(event: Event) {
+    event.stopPropagation();
+  }
+
   onManualSubmit(): void {
-    if (this.manualVisitorForm.invalid) {
-      this.manualVisitorForm.markAllAsTouched();
-      return;
-    }
+    if (this.manualVisitorForm.invalid) return;
 
     const dto: VisitorCreateDto = {
       ...this.manualVisitorForm.value,
@@ -95,24 +127,14 @@ export class FastCheckin implements OnInit {
         this.resetManualForm();
       },
       error: (err) => {
-        if (err.error && err.error.message) {
-          this.showAlert(err.error.message, 'danger');
-        } 
-        else if (err.error && err.error.errors) {
-            const firstErrorKey = Object.keys(err.error.errors)[0];
-            const firstErrorMessage = err.error.errors[firstErrorKey][0];
-            this.showAlert(firstErrorMessage, 'danger');
-        }
-        else {
-          this.showAlert('Lỗi: Không thể đăng ký khách.', 'danger');
-        }
-        console.error(err);
+        this.showAlert(err.error?.message || 'Lỗi: Không thể đăng ký khách.', 'danger');
       }
     });
   }
 
   resetManualForm(): void {
     this.manualVisitorForm.reset();
+    this.searchControl.setValue('');
   }
 
   onClose(): void {
@@ -124,8 +146,6 @@ export class FastCheckin implements OnInit {
     this.alertMessage = message;
     this.alertType = type;
     if (this.alertTimeout) clearTimeout(this.alertTimeout);
-    this.alertTimeout = setTimeout(() => {
-      this.alertMessage = null;
-    }, 5000);
+    this.alertTimeout = setTimeout(() => this.alertMessage = null, 5000);
   }
 }
