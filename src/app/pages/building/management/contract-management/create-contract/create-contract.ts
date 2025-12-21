@@ -103,7 +103,7 @@ export class CreateContract implements OnInit {
       identityCard: ['', [Validators.required, Validators.maxLength(20), Validators.pattern('^[0-9]+$')]],
       email: ['', [Validators.required, Validators.email]],
       isPrimaryRole: [false],
-      isAppAccess: [false],
+      isAppAccess: [true],
       isRepresentative: [false]
     });
   }
