@@ -49,6 +49,9 @@
           <mat-error *ngIf="visitorForm.get('idNumber')?.hasError('maxlength')">
             Tối đa 20 ký tự
           </mat-error>
+          <mat-hint *ngIf="isDuplicateVisitor && !visitorForm.get('idNumber')?.invalid" style="color: #ffc107;">
+            Khách đã tồn tại. Hệ thống sẽ xác nhận cập nhật khi bạn nhấn Đăng ký.
+          </mat-hint>
         </mat-form-field>
       </div>
 
@@ -56,7 +59,7 @@
       <mat-form-field appearance="outline">
         <mat-label>Mục đích</mat-label>
         <textarea matInput formControlName="purpose" placeholder="Ví dụ: Giao hàng, bạn bè tới chơi..."></textarea>
-        
+
         <mat-error *ngIf="visitorForm.get('purpose')?.hasError('pattern')">
           Mục đích không được chứa ký tự đặc biệt (&lt; &gt; / ' ...)
         </mat-error>
@@ -169,15 +172,19 @@
 
         <!-- Cột Hành động (Sửa/Xóa) -->
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef> </th>
+          <th mat-header-cell *matHeaderCellDef> Thao tác </th>
           <td mat-cell *matCellDef="let log" align="right">
-            <button mat-icon-button (click)="editVisit(log)" [disabled]="log.status !== 'Pending'" title="Sửa">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteVisit(log)" [disabled]="log.status !== 'Pending'"
-              title="Hủy">
-              <mat-icon>delete</mat-icon>
-            </button>
+            <div class="d-flex gap-2 justify-content-end">
+              <button mat-stroked-button color="primary" size="small" (click)="editVisit(log)"
+                [disabled]="log.status !== 'Pending'">
+                <mat-icon>edit</mat-icon> Sửa
+              </button>
+
+              <button mat-stroked-button color="warn" size="small" (click)="deleteVisit(log)"
+                [disabled]="log.status !== 'Pending'">
+                <mat-icon>cancel</mat-icon> Hủy
+              </button>
+            </div>
           </td>
         </ng-container>
 
@@ -188,3 +195,29 @@
 
   </mat-card-content>
 </mat-card>
+<ng-template #confirmDialog>
+  <h2 mat-dialog-title class="text-warning">
+    <mat-icon>priority_high</mat-icon> Xác nhận cập nhật
+  </h2>
+  <mat-dialog-content>
+    <p>Số CCCD này đã tồn tại trong hệ thống.</p>
+    <p>Bạn có chắc chắn muốn <b>cập nhật thông tin mới</b> cho khách này và tiếp tục đăng ký không?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Hủy bỏ</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">Đồng ý & Đăng ký</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #confirmDeleteDialog let-data>
+  <h2 mat-dialog-title class="text-danger">
+    <mat-icon>help_outline</mat-icon> Xác nhận hủy
+  </h2>
+  <mat-dialog-content>
+    <p>Bạn có chắc chắn muốn hủy lịch hẹn thăm của khách <b>{{data.visitorFullName}}</b> không?</p>
+    <p class="text-muted small">* Hành động này không thể hoàn tác.</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Quay lại</button>
+    <button mat-raised-button color="warn" [mat-dialog-close]="true">Xác nhận Hủy</button>
+  </mat-dialog-actions>
+</ng-template>

@@ -61,4 +61,9 @@ export class ContractDetail implements OnInit {
     const c = this.contract();
     return c ? this.contractService.getContractPdfUrl(c.contractId) : null;
   }
+
+  formatCurrency(amount: number | null | undefined): string {
+    if (!amount) return '0 ₫';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, ViewChild, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -11,6 +11,8 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { VisitorCreateDto, VisitorService, ApartmentDto } from '../../../../../services/resident/visitor.service';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-fast-checkin',
@@ -23,13 +25,15 @@ import { MatDividerModule } from '@angular/material/divider';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    MatDialogModule
   ],
   templateUrl: './fast-checkin.html',
   styleUrl: './fast-checkin.css'
 })
 export class FastCheckin implements OnInit {
-  
+  isDuplicateVisitor = false;
+  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
   manualVisitorForm!: FormGroup;
   apartmentList: ApartmentDto[] = [];
   
@@ -46,7 +50,8 @@ export class FastCheckin implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private visitorService: VisitorService
+    private visitorService: VisitorService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +84,27 @@ export class FastCheckin implements OnInit {
     // Căn hộ: Bắt buộc
     apartmentId: ['', Validators.required]
   });
-
+this.manualVisitorForm.get('idNumber')?.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(val => {
+      if (val && val.length >= 10) { // Check khi đủ độ dài số CCCD
+        this.visitorService.checkVisitorExist(val).subscribe(res => {
+          if (res.exists) {
+            this.isDuplicateVisitor = true;
+            // Auto-fill thông tin cũ cho Staff đỡ phải nhập lại
+            this.manualVisitorForm.patchValue({
+              fullName: res.fullName,
+              phone: res.phone
+            }, { emitEvent: false });
+          } else {
+            this.isDuplicateVisitor = false;
+          }
+        });
+      } else {
+        this.isDuplicateVisitor = false;
+      }
+    });
   this.loadApartments();
 
   this.searchControl.valueChanges.subscribe(value => {
@@ -115,16 +140,36 @@ export class FastCheckin implements OnInit {
   onManualSubmit(): void {
     if (this.manualVisitorForm.invalid) return;
 
+    if (this.isDuplicateVisitor) {
+      const dialogRef = this.dialog.open(this.confirmDialog, {
+        width: '400px',
+        disableClose: true
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === true) {
+          this.executeSubmit();
+        }
+      });
+    } else {
+      this.executeSubmit();
+    }
+  }
+
+  private executeSubmit(): void {
     const dto: VisitorCreateDto = {
       ...this.manualVisitorForm.value,
-      checkinTime: new Date().toISOString(), 
-      status: 'Checked-in' 
+      checkinTime: new Date().toISOString(),
+      status: 'Checked-in'
     };
 
     this.visitorService.createVisitor(dto).subscribe({
       next: (createdVisitor) => {
+        // Thông báo nếu có cập nhật thông tin khách cũ
+        const successMsg = createdVisitor.isUpdated ? 'Cập nhật & Check-in thành công' : 'Check-in thành công';
         this.checkinSuccess.emit(createdVisitor.fullName);
         this.resetManualForm();
+        this.isDuplicateVisitor = false;
       },
       error: (err) => {
         this.showAlert(err.error?.message || 'Lỗi: Không thể đăng ký khách.', 'danger');

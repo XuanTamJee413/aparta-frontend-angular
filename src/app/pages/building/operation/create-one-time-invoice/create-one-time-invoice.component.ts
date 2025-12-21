@@ -8,6 +8,8 @@ import { ApartmentService, Apartment } from '../../../../services/building/apart
 import { BuildingService, BuildingDto } from '../../../../services/admin/building.service';
 import { UserService } from '../../../../services/user.service';
 import { ReceiptPreviewComponent } from './receipt-preview/receipt-preview.component';
+import { ProfileService } from '../../../../services/profile.service';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-create-one-time-invoice',
@@ -56,7 +58,9 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     private apartmentService: ApartmentService,
     private buildingService: BuildingService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private profileService: ProfileService,
+    private authService: AuthService
   ) {}
 
   // Khởi tạo component - Tự động tải danh sách tòa nhà khi component được load
@@ -66,21 +70,66 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
 
   // Tải danh sách tòa nhà từ API - Chỉ lấy các tòa nhà đang hoạt động (isActive = true) - Tự động chọn tòa nhà đầu tiên nếu chưa có tòa nhà nào được chọn
   loadBuildings(): void {
-    this.buildingService.getAllBuildings({ take: 100 }).subscribe({
-      next: (response) => {
-        if (response.succeeded && response.data?.items) {
-          this.buildings = response.data.items.filter(b => b.isActive);
-          if (this.buildings.length > 0 && !this.selectedBuildingId) {
-            this.selectedBuildingId = this.buildings[0].buildingId;
-            this.selectedBuilding = this.buildings[0];
-            this.onBuildingChange();
+    // Kiểm tra role: tất cả role (trừ admin) chỉ thấy building được gán
+    const user = this.authService.user();
+    const role = user?.role?.toLowerCase();
+    const isAdmin = role === 'admin';
+    
+    if (!isAdmin) {
+      // Load buildings từ profile (assignedBuildings) cho tất cả role
+      this.profileService.getProfile().subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.currentAssignments) {
+            // Map currentAssignments thành BuildingDto format
+            this.buildings = response.data.currentAssignments.map(assignment => ({
+              buildingId: assignment.buildingId,
+              name: assignment.buildingName,
+              buildingCode: assignment.buildingId, // Fallback nếu không có code
+              projectId: '',
+              numApartments: 0,
+              numResidents: 0,
+              totalFloors: 0,
+              totalBasements: 0,
+              readingWindowStart: 1,
+              readingWindowEnd: 31,
+              isActive: true,
+              description: '',
+              createdAt: assignment.startDate,
+              updatedAt: assignment.startDate
+            } as BuildingDto));
+            
+            if (this.buildings.length > 0 && !this.selectedBuildingId) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              this.selectedBuilding = this.buildings[0];
+              this.onBuildingChange();
+            }
+          } else {
+            this.buildings = [];
+            this.error = 'Không có building nào được gán cho bạn';
           }
+        },
+        error: (error) => {
+          this.error = 'Không thể tải danh sách tòa nhà';
         }
-      },
-      error: (error) => {
-        this.error = 'Không thể tải danh sách tòa nhà';
-      }
-    });
+      });
+    } else {
+      // Admin: load tất cả buildings
+      this.buildingService.getAllBuildings({ take: 100 }).subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.items) {
+            this.buildings = response.data.items.filter(b => b.isActive);
+            if (this.buildings.length > 0 && !this.selectedBuildingId) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              this.selectedBuilding = this.buildings[0];
+              this.onBuildingChange();
+            }
+          }
+        },
+        error: (error) => {
+          this.error = 'Không thể tải danh sách tòa nhà';
+        }
+      });
+    }
   }
 
   // Xử lý khi người dùng thay đổi tòa nhà được chọn - Tự động tải lại danh sách căn hộ và bảng giá của tòa nhà mới

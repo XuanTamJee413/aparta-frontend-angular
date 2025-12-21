@@ -110,7 +110,9 @@ private apiBaseUrl = environment.apiUrl;
   createVisitor(dto: VisitorCreateDto): Observable<VisitorDto> {
     return this.http.post<VisitorDto>(`${this.visitLogApiUrl}/fast-checkin`, dto);
   }
-
+checkVisitorExist(idNumber: string) {
+  return this.http.get<any>(`${this.visitLogApiUrl}/check-visitor/${idNumber}`);
+}
   // 5. Cập nhật thông tin khách (Giữ nguyên URL nhưng logic Backend đã được bạn sửa lỗi Duplicate)
   updateVisitLog(id: string, dto: VisitLogUpdateDto): Observable<any> {
     return this.http.put<ApiResponse<any>>(`${this.visitLogApiUrl}/${id}/info`, dto);
@@ -124,6 +126,9 @@ private apiBaseUrl = environment.apiUrl;
   checkOutVisitor(visitLogId: string): Observable<ApiResponse<any>> {
     return this.http.put<ApiResponse<any>>(`${this.visitLogApiUrl}/${visitLogId}/checkout`, {});
   }
+  rejectVisitor(id: string): Observable<any> {
+  return this.http.put(`${this.visitLogApiUrl}/${id}/reject`, {});
+}
 
   deleteVisitLog(id: string): Observable<any> {
     return this.http.delete<ApiResponse<any>>(`${this.visitLogApiUrl}/${id}`);

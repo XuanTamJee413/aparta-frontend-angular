@@ -13,6 +13,8 @@ import {
   MeterReadingDto,
   MeterReadingCheckResponse
 } from '../../../../models/meter-reading.model';
+import { ProfileService } from '../../../../services/profile.service';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-meter-reading-form',
@@ -67,7 +69,9 @@ export class MeterReadingFormComponent implements OnInit {
   constructor(
     private meterReadingService: MeterReadingService,
     private buildingService: BuildingService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private profileService: ProfileService,
+    private authService: AuthService
   ) {
     this.meterReadingForm = this.fb.group({
       readings: this.fb.array([])
@@ -100,23 +104,71 @@ export class MeterReadingFormComponent implements OnInit {
   // Tải danh sách tòa nhà
   loadBuildings(): void {
     this.loadingBuildings = true;
-    this.buildingService.getAllBuildings({ take: 100 }).subscribe({
-      next: (response) => {
-        if (response.succeeded && response.data?.items) {
-          this.buildings = response.data.items.filter(b => b.isActive);
-          if (this.buildings.length > 0) {
-            this.selectedBuildingId = this.buildings[0].buildingId;
-            this.selectedBuilding = this.buildings[0];
-            this.loadApartments();
+    
+    // Kiểm tra role: tất cả role (trừ admin) chỉ thấy building được gán
+    const user = this.authService.user();
+    const role = user?.role?.toLowerCase();
+    const isAdmin = role === 'admin';
+    
+    if (!isAdmin) {
+      // Load buildings từ profile (assignedBuildings) cho tất cả role
+      this.profileService.getProfile().subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.currentAssignments) {
+            // Map currentAssignments thành BuildingDto format
+            this.buildings = response.data.currentAssignments.map(assignment => ({
+              buildingId: assignment.buildingId,
+              name: assignment.buildingName,
+              buildingCode: assignment.buildingId, // Fallback nếu không có code
+              projectId: '',
+              numApartments: 0,
+              numResidents: 0,
+              totalFloors: 0,
+              totalBasements: 0,
+              readingWindowStart: 1,
+              readingWindowEnd: 31,
+              isActive: true,
+              description: '',
+              createdAt: assignment.startDate,
+              updatedAt: assignment.startDate
+            } as BuildingDto));
+            
+            if (this.buildings.length > 0) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              this.selectedBuilding = this.buildings[0];
+              this.loadApartments();
+            }
+          } else {
+            this.buildings = [];
+            this.showError('Không có building nào được gán cho bạn');
           }
+          this.loadingBuildings = false;
+        },
+        error: (error) => {
+          this.showError('Không thể tải danh sách tòa nhà');
+          this.loadingBuildings = false;
         }
-        this.loadingBuildings = false;
-      },
-      error: (error) => {
-        this.showError('Không thể tải danh sách tòa nhà');
-        this.loadingBuildings = false;
-      }
-    });
+      });
+    } else {
+      // Admin: load tất cả buildings
+      this.buildingService.getAllBuildings({ take: 100 }).subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data?.items) {
+            this.buildings = response.data.items.filter(b => b.isActive);
+            if (this.buildings.length > 0) {
+              this.selectedBuildingId = this.buildings[0].buildingId;
+              this.selectedBuilding = this.buildings[0];
+              this.loadApartments();
+            }
+          }
+          this.loadingBuildings = false;
+        },
+        error: (error) => {
+          this.showError('Không thể tải danh sách tòa nhà');
+          this.loadingBuildings = false;
+        }
+      });
+    }
   }
 
   // Xử lý khi thay đổi tòa nhà
