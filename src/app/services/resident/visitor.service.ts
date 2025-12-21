@@ -126,6 +126,9 @@ checkVisitorExist(idNumber: string) {
   checkOutVisitor(visitLogId: string): Observable<ApiResponse<any>> {
     return this.http.put<ApiResponse<any>>(`${this.visitLogApiUrl}/${visitLogId}/checkout`, {});
   }
+  rejectVisitor(id: string): Observable<any> {
+  return this.http.put(`${this.visitLogApiUrl}/${id}/reject`, {});
+}
 
   deleteVisitLog(id: string): Observable<any> {
     return this.http.delete<ApiResponse<any>>(`${this.visitLogApiUrl}/${id}`);

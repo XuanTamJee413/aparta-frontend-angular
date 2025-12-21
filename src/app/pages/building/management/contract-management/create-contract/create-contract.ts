@@ -59,11 +59,12 @@ export class CreateContract implements OnInit {
     private router: Router,
     private location: Location
   ) {
+    const today = this.getTodayIso();
     this.contractForm = this.fb.group({
       apartmentId: [null, [Validators.required]],
       contractNumber: ['', [Validators.required, Validators.maxLength(50)]],
       contractType: ['Sale', [Validators.required]],
-      startDate: ['', [Validators.required]],
+      startDate: [today, [Validators.required]],
       endDate: ['', [Validators.required]],
       members: this.fb.array([])
     }, { validators: endDateAfterStartValidator() });
@@ -103,7 +104,7 @@ export class CreateContract implements OnInit {
       identityCard: ['', [Validators.required, Validators.maxLength(20), Validators.pattern('^[0-9]+$')]],
       email: ['', [Validators.required, Validators.email]],
       isPrimaryRole: [false],
-      isAppAccess: [false],
+      isAppAccess: [true],
       isRepresentative: [false]
     });
   }
@@ -120,8 +121,10 @@ export class CreateContract implements OnInit {
 
   private getTodayIso(): string {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString().slice(0, 10);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private addDays(dateIso: string, days: number): string {

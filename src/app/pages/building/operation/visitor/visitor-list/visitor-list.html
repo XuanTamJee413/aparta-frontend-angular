@@ -51,11 +51,14 @@
         <table mat-table [dataSource]="paginatedVisitors?.items || []" matSort (matSortChange)="onSortChange($event)"
           [matSortActive]="queryParams.sortColumn || 'checkinTime'"
           [matSortDirection]="queryParams.sortDirection === 'asc' ? 'asc' : 'desc'">
+
           <ng-container matColumnDef="visitorInfo">
             <th mat-header-cell *matHeaderCellDef mat-sort-header="visitorFullName"> Khách & Căn hộ </th>
             <td mat-cell *matCellDef="let log">
-              <div class="visitor-info-cell" (click)="openVisitorDetails(log)">
-                <span class="visitor-name">{{log.visitorFullName}}</span>
+              <div class="visitor-info-cell">
+                <span class="visitor-name clickable-name" (click)="openVisitorDetails(log)" matTooltip="Xem chi tiết">
+                  {{log.visitorFullName}}
+                </span>
                 <span class="apartment-code">{{log.apartmentCode}}</span>
               </div>
             </td>
@@ -81,33 +84,36 @@
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
-            <td mat-cell *matCellDef="let log">
-              <mat-chip-set>
-                <mat-chip [color]="getStatusColor(log.status)" highlighted>
-                  {{log.status}}
-                </mat-chip>
-              </mat-chip-set>
-            </td>
-          </ng-container>
-
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="text-end"> Hành động </th>
             <td mat-cell *matCellDef="let log" class="text-end">
-              <button mat-icon-button color="primary" matTooltip="Check-in" (click)="onCheckIn(log)"
-                [disabled]="log.status === 'Checked-in' || log.status === 'Checked-out' || log.status === 'Cancelled'">
-                <mat-icon>login</mat-icon>
-              </button>
+              <div class="action-buttons">
+                <button mat-stroked-button color="primary" (click)="openConfirmPopup('checkin', log)" [disabled]="log.status === 'Checked-in' || 
+                    log.status === 'Checked-out' || 
+                    log.status === 'Cancelled' || 
+                    log.status === 'Rejected'">
+                  <mat-icon>login</mat-icon> Check-in
+                </button>
 
-              <button mat-icon-button color="warn" matTooltip="Check-out" (click)="onCheckOut(log)"
-                [disabled]="log.status !== 'Checked-in'">
-                <mat-icon>logout</mat-icon>
-              </button>
+                <button mat-stroked-button color="accent" (click)="openConfirmPopup('checkout', log)"
+                  [disabled]="log.status !== 'Checked-in' || log.status === 'Cancelled'">
+                  <mat-icon>logout</mat-icon> Check-out
+                </button>
 
-              <button mat-icon-button (click)="openVisitorDetails(log)">
-                <mat-icon>info</mat-icon>
-              </button>
+                <button mat-stroked-button color="warn" (click)="openConfirmPopup('reject', log)"
+                  [disabled]="log.status !== 'Pending' || log.status === 'Cancelled'">
+                  <mat-icon>block</mat-icon> Từ chối
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
+            <td mat-cell *matCellDef="let log">
+              <mat-chip [class]="getStatusClass(log.status)">
+                {{log.status}}
+              </mat-chip>
             </td>
           </ng-container>
 
@@ -159,7 +165,9 @@
         <div class="detail-row">
           <span class="label">Trạng thái:</span>
           <mat-chip-set>
-            <mat-chip [color]="getStatusColor(selectedVisitor.status)" highlighted>{{selectedVisitor.status}}</mat-chip>
+            <mat-chip [class]="getStatusClass(selectedVisitor.status)">
+              {{selectedVisitor.status}}
+            </mat-chip>
           </mat-chip-set>
         </div>
         <mat-divider class="my-2"></mat-divider>
@@ -180,6 +188,25 @@
 
       <mat-card-actions align="end">
         <button mat-button (click)="closeVisitorDetails()">Đóng</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="isConfirmVisible" (click)="isConfirmVisible = false">
+  <div class="confirm-card" (click)="$event.stopPropagation()">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ confirmTitle }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p style="padding: 20px 0; font-size: 16px;">{{ confirmMessage }}</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button (click)="isConfirmVisible = false">Hủy</button>
+        <button mat-raised-button [color]="confirmActionType === 'reject' ? 'warn' : 'primary'"
+          (click)="executeConfirmAction()">
+          Xác nhận
+        </button>
       </mat-card-actions>
     </mat-card>
   </div>
