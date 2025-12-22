@@ -156,7 +156,8 @@ export class ManagerDashboardComponent implements OnInit {
 
   // Apartment Status Chart (Doughnut)
   apartmentStatusChartData: ChartConfiguration<'doughnut'>['data'] = {
-    labels: ['Đã Bán', 'Chưa bán'],
+    // Đã Bán + Đang Thuê được gom chung vào một nhóm "Đang sử dụng"
+    labels: ['Đang sử dụng', 'Chưa bán'],
     datasets: [
       {
         data: [0, 0],
@@ -266,7 +267,8 @@ export class ManagerDashboardComponent implements OnInit {
 
   loadRevenueChart(): void {
     this.loadingRevenue = true;
-    this.dashboardService.getRevenueByProject(this.selectedYear).subscribe({
+    // Tổng quan doanh thu theo tháng dựa trên các tòa nhà mà manager/staff đang quản lý
+    this.dashboardService.getRevenueByBuilding(this.selectedYear).subscribe({
       next: (response) => {
         const projects = response?.data || [];
         if (response.succeeded) {

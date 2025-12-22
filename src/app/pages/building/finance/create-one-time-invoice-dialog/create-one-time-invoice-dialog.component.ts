@@ -88,14 +88,17 @@ export class CreateOneTimeInvoiceDialogComponent implements OnInit, OnChanges {
     
     this.apartmentService.getApartments({
       buildingId: this.buildingId,
-      status: 'Đã thuê',
+      status: null,
       searchTerm: null,
       sortBy: null,
       sortOrder: null
     }).subscribe({
       next: (response) => {
         if (response.succeeded && response.data) {
-          this.apartments = response.data;
+          // Lọc các căn hộ đang sử dụng (Đã Bán / Đang Thuê)
+          this.apartments = response.data.filter(a =>
+            this.isEligibleApartmentStatus(a.status)
+          );
         }
       },
       error: (error) => {
@@ -127,6 +130,15 @@ export class CreateOneTimeInvoiceDialogComponent implements OnInit, OnChanges {
         console.error('Error loading price quotations:', error);
       }
     });
+  }
+
+  // Căn hộ hợp lệ cho phiếu thu một lần: Đã Bán hoặc Đang Thuê
+  private isEligibleApartmentStatus(status: string | null | undefined): boolean {
+    if (!status) return false;
+    const normalized = status.trim();
+    return normalized === 'Đã Bán'
+      || normalized === 'Đang Thuê'
+      || normalized === 'Đã thuê';
   }
 
   onQuotationChange(): void {

@@ -141,18 +141,21 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
     }
   }
 
-  // Tải danh sách căn hộ của tòa nhà được chọn - Chỉ lấy các căn hộ có trạng thái "Đã Bán"
+  // Tải danh sách căn hộ của tòa nhà được chọn - Lấy các căn hộ đang sử dụng (Đã Bán / Đang Thuê)
   loadApartments(): void {
     this.apartmentService.getApartments({
       buildingId: this.selectedBuildingId,
-      status: 'Đã Bán',
+      status: null,
       searchTerm: null,
       sortBy: null,
       sortOrder: null
     }).subscribe({
       next: (response) => {
         if (response.succeeded && response.data) {
-          this.apartments = response.data;
+          // Chỉ giữ lại căn hộ có trạng thái phù hợp để tạo phiếu thu
+          this.apartments = response.data.filter(a =>
+            this.isEligibleApartmentStatus(a.status)
+          );
         } else {
           this.apartments = [];
         }
@@ -161,6 +164,15 @@ export class CreateOneTimeInvoiceComponent implements OnInit {
         this.apartments = [];
       }
     });
+  }
+
+  // Căn hộ hợp lệ cho phiếu thu một lần: Đã Bán hoặc Đang Thuê
+  private isEligibleApartmentStatus(status: string | null | undefined): boolean {
+    if (!status) return false;
+    const normalized = status.trim();
+    return normalized === 'Đã Bán'
+      || normalized === 'Đang Thuê'
+      || normalized === 'Đã thuê';
   }
 
   // Tải danh sách bảng giá của tòa nhà được chọn - Chỉ lấy các bảng giá có phương thức tính là "Một lần" (ONE_TIME)
