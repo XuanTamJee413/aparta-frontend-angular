@@ -17,7 +17,9 @@
                 <label class="form-label">
                   Họ và Tên <span class="text-danger">*</span>
                 </label>
-                <input type="text" class="form-control" formControlName="name" [class.is-invalid]="isInvalid('name')">
+                <input type="text" class="form-control"
+                  formControlName="name"
+                  [class.is-invalid]="isInvalid('name')">
                 <div class="invalid-feedback" *ngIf="memberForm.get('name')?.hasError('required')">
                   Vui lòng nhập họ tên.
                 </div>
@@ -31,7 +33,9 @@
                 <label class="form-label">
                   Quan hệ với chủ hộ <span class="text-danger">*</span>
                 </label>
-                <select class="form-select" formControlName="familyRole" [class.is-invalid]="isInvalid('familyRole')">
+                <select class="form-select"
+                  formControlName="familyRole"
+                  [class.is-invalid]="isInvalid('familyRole')">
                   <option [value]="null" disabled>-- Chọn quan hệ --</option>
                   <option value="Vợ">Vợ</option>
                   <option value="Chồng">Chồng</option>
@@ -48,9 +52,26 @@
                 <label class="form-label">
                   Ngày sinh <span class="text-danger">*</span>
                 </label>
-                <input type="date" class="form-control" formControlName="dateOfBirth"
-                  [class.is-invalid]="isInvalid('dateOfBirth')">
-                <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
+                <input type="date"
+                  class="form-control"
+                  formControlName="dateOfBirth"
+                  [class.is-invalid]="
+                    isInvalid('dateOfBirth') ||
+                    memberForm.hasError('spouseUnder18')
+                  ">
+
+                <div class="invalid-feedback"
+                  *ngIf="memberForm.get('dateOfBirth')?.hasError('required')">
+                  Vui lòng chọn ngày sinh.
+                </div>
+
+                <div class="invalid-feedback"
+                  *ngIf="
+                    memberForm.hasError('spouseUnder18') &&
+                    memberForm.get('dateOfBirth')?.touched
+                  ">
+                  Vợ / Chồng phải đủ 18 tuổi trở lên.
+                </div>
               </div>
 
               <!-- GIỚI TÍNH -->
@@ -69,16 +90,21 @@
                   Số CCCD
                   <span class="text-danger" *ngIf="isIdRequired()"> *</span>
                 </label>
-                <input type="text" class="form-control" formControlName="idNumber"
+                <input type="text"
+                  class="form-control"
+                  formControlName="idNumber"
                   [class.is-invalid]="isInvalid('idNumber')">
 
-                <div class="invalid-feedback" *ngIf="memberForm.get('idNumber')?.hasError('required')">
+                <div class="invalid-feedback"
+                  *ngIf="memberForm.get('idNumber')?.hasError('required')">
                   Vui lòng nhập CCCD.
                 </div>
-                <div class="invalid-feedback" *ngIf="memberForm.get('idNumber')?.hasError('pattern')">
+                <div class="invalid-feedback"
+                  *ngIf="memberForm.get('idNumber')?.hasError('pattern')">
                   CCCD chỉ gồm chữ số.
                 </div>
-                <div class="invalid-feedback" *ngIf="memberForm.get('idNumber')?.hasError('idNumberExists')">
+                <div class="invalid-feedback"
+                  *ngIf="memberForm.get('idNumber')?.hasError('idNumberExists')">
                   CCCD đã tồn tại.
                 </div>
               </div>
@@ -86,7 +112,9 @@
               <!-- SĐT -->
               <div class="mb-3">
                 <label class="form-label">Số điện thoại</label>
-                <input type="tel" class="form-control" formControlName="phoneNumber"
+                <input type="tel"
+                  class="form-control"
+                  formControlName="phoneNumber"
                   [class.is-invalid]="memberForm.get('phoneNumber')?.hasError('pattern')">
                 <div class="invalid-feedback">Số điện thoại chỉ gồm chữ số.</div>
               </div>
@@ -94,17 +122,23 @@
               <!-- ẢNH -->
               <div class="mb-3">
                 <label class="form-label">Ảnh khuôn mặt</label>
-                <input type="file" class="form-control" accept="image/*" (change)="onFileSelected($event)">
+                <input type="file"
+                  class="form-control"
+                  accept="image/*"
+                  (change)="onFileSelected($event)">
               </div>
 
               <!-- QUỐC TỊCH -->
               <div class="mb-3">
                 <label class="form-label">Quốc tịch</label>
-                <input type="text" class="form-control" formControlName="nationality">
+                <input type="text"
+                  class="form-control"
+                  formControlName="nationality">
               </div>
 
               <!-- SUBMIT -->
-              <button type="submit" class="btn btn-success w-100"
+              <button type="submit"
+                class="btn btn-success w-100"
                 [disabled]="memberForm.invalid || memberForm.pending || isSubmitting()">
                 <span *ngIf="isSubmitting()" class="spinner-border spinner-border-sm me-1"></span>
                 Thêm thành viên
@@ -142,14 +176,17 @@
                   <th>Quan hệ</th>
                   <th>CCCD</th>
                   <th>Ngày sinh</th>
-                  <th>Giới Tính</th>
+                  <th>Giới tính</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let m of members()">
                   <td>
-                    <img [src]="m.faceImageUrl || 'https://ui-avatars.com/api/?name=' + m.name + '&background=random'"
-                      alt="Ảnh" class="rounded-circle" width="40" height="40"
+                    <img
+                      [src]="m.faceImageUrl || 'https://ui-avatars.com/api/?name=' + m.name + '&background=random'"
+                      class="rounded-circle"
+                      width="40"
+                      height="40"
                       style="object-fit: cover; border: 1px solid #dee2e6;">
                   </td>
                   <td>{{ m.name }}</td>

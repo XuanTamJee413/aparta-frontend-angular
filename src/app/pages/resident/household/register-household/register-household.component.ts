@@ -10,7 +10,11 @@ import {
   ValidationErrors
 } from '@angular/forms';
 import { of, map, catchError } from 'rxjs';
-import { HouseholdService, ApartmentMemberCreateDto, ApartmentMemberDto } from '../../../../services/resident/household.service';
+import {
+  HouseholdService,
+  ApartmentMemberCreateDto,
+  ApartmentMemberDto
+} from '../../../../services/resident/household.service';
 import { AuthService } from '../../../../services/auth.service';
 
 @Component({
@@ -48,13 +52,17 @@ export class RegisterHousehold implements OnInit {
       phoneNumber: ['', Validators.pattern(/^\d*$/)],
       nationality: ['Việt Nam'],
       faceImage: [null]
+    }, {
+      validators: this.spouseAgeValidator()
     });
 
+    // Auto set gender
     this.memberForm.get('familyRole')!.valueChanges.subscribe(r => {
       if (r === 'Vợ' || r === 'Mẹ') this.memberForm.get('gender')?.setValue('Nữ');
-      if (r === 'Chồng' || r === 'Bố') this.memberForm.get('gender')?.setValue('Nam');
+      else if (r === 'Chồng' || r === 'Bố') this.memberForm.get('gender')?.setValue('Nam');
     });
 
+    // CCCD required if age >= 14
     this.memberForm.get('dateOfBirth')!.valueChanges.subscribe(date => {
       const idCtrl = this.memberForm.get('idNumber');
       if (!date || !idCtrl) return;
@@ -72,6 +80,19 @@ export class RegisterHousehold implements OnInit {
     });
 
     this.loadMembers();
+  }
+
+  private spouseAgeValidator() {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const role = group.get('familyRole')?.value;
+      const dob = group.get('dateOfBirth')?.value;
+
+      if (!role || !dob) return null;
+      if (role !== 'Vợ' && role !== 'Chồng') return null;
+
+      const age = this.calculateAge(dob);
+      return age < 18 ? { spouseUnder18: true } : null;
+    };
   }
 
   private calculateAge(dob: string | Date): number {
