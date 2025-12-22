@@ -66,12 +66,18 @@
                   </div>
                 </th>
 
+                <th>
+                  <div class="sort-header-content">
+                    <span>Trạng thái</span>
+                  </div>
+                </th>
+
                 <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="pagedContracts.length === 0">
-                <td colspan="5" class="no-results">
+                <td colspan="6" class="no-results">
                   Không tìm thấy hợp đồng nào phù hợp.
                 </td>
               </tr>
@@ -87,6 +93,11 @@
                   </span>
                 </td>
                 <td>{{ contract.startDate | date: 'yyyy-MM-dd' }}</td>
+                <td>
+                  <span [class.badge-active]="!isExpired(contract)" [class.badge-expired]="isExpired(contract)" class="status-badge">
+                    {{ isExpired(contract) ? 'Hết hiệu lực' : 'Còn hiệu lực' }}
+                  </span>
+                </td>
 
                 <td class="actions">
                   <button type="button" class="action-view" (click)="onView(contract.contractId)">
@@ -108,14 +119,14 @@
                     Sửa
                   </button>
 
-                  <!-- <button type="button" class="action-delete-btn" (click)="onDelete(contract.contractId)"
-                    *ngIf="!isHistorical(contract)">
+                  <button type="button" class="action-delete-btn" (click)="onDelete(contract.contractId)"
+                    *ngIf="isExpired(contract)">
                     <svg class="action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-3h4m-7 3h10" />
                     </svg>
                     Hủy
-                  </button> -->
+                  </button>
                 </td>
 
               </tr>

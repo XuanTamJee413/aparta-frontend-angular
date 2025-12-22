@@ -4,6 +4,7 @@ import {
   AbstractControl,
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
@@ -13,6 +14,10 @@ import {
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { finalize } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { startWith, map, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatIconModule } from '@angular/material/icon';
 import {
   AvailableApartmentDto,
   CreateContractRequestDto,
@@ -38,13 +43,15 @@ function endDateAfterStartValidator(): ValidatorFn {
 @Component({
   selector: 'app-create-contract',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatAutocompleteModule, MatIconModule],
   templateUrl: './create-contract.component.html',
   styleUrls: ['./create-contract.component.css']
 })
 export class CreateContract implements OnInit {
 
   contractForm: FormGroup;
+  apartmentSearchControl!: FormControl;
+  filteredApartments$!: Observable<AvailableApartmentDto[]>;
 
   availableApartments = signal<AvailableApartmentDto[]>([]);
   apartmentsLoading = signal(true);
@@ -60,6 +67,8 @@ export class CreateContract implements OnInit {
     private location: Location
   ) {
     const today = this.getTodayIso();
+    this.apartmentSearchControl = this.fb.control('');
+    
     this.contractForm = this.fb.group({
       apartmentId: [null, [Validators.required]],
       contractNumber: ['', [Validators.required, Validators.maxLength(50)]],
@@ -75,6 +84,21 @@ export class CreateContract implements OnInit {
 
   ngOnInit(): void {
     this.loadAvailableApartments();
+
+    // Setup autocomplete filter with debounce to avoid searching too frequently
+    this.filteredApartments$ = this.apartmentSearchControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(300), // Delay 300ms before filtering
+      distinctUntilChanged(),
+      map((value: string | AvailableApartmentDto | null) => {
+        // If value is an object (selected apartment), show all apartments
+        if (typeof value === 'object' || !value) {
+          return this.availableApartments().slice();
+        }
+        // If value is a string, filter by that string
+        return this._filterApartments(value as string);
+      })
+    );
 
     const initialType = this.contractForm.get('contractType')?.value;
     this.setDefaultDatesForType(initialType);
@@ -98,7 +122,7 @@ export class CreateContract implements OnInit {
   }
 
   createMemberForm(): FormGroup {
-    return this.fb.group({
+    const group = this.fb.group({
       fullName: ['', [Validators.required, Validators.maxLength(100)]],
       phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10,11}$')]],
       identityCard: ['', [Validators.required, Validators.maxLength(20), Validators.pattern('^[0-9]+$')]],
@@ -107,6 +131,7 @@ export class CreateContract implements OnInit {
       isAppAccess: [true],
       isRepresentative: [false]
     });
+    return group;
   }
 
   addMember(): void {
@@ -205,6 +230,31 @@ export class CreateContract implements OnInit {
     return type === 'Sale' ? 'Chủ sở hữu' : 'Người thuê';
   }
 
+  private _filterApartments(value: string): AvailableApartmentDto[] {
+    const filterValue = value.toLowerCase();
+    return this.availableApartments().filter(apt => 
+      (apt.code && apt.code.toLowerCase().includes(filterValue))
+    );
+  }
+
+  displayApartmentFn = (apt: AvailableApartmentDto): string => {
+    return apt && apt.code ? apt.code : '';
+  }
+
+  onApartmentInputFocus(): void {
+    // When autocomplete input is focused, show all apartments if search is empty
+    if (!this.apartmentSearchControl.value) {
+      this.apartmentSearchControl.setValue('');
+    }
+  }
+
+  onApartmentSelected(event: any): void {
+    const selectedApt = event.option.value as AvailableApartmentDto;
+    this.contractForm.patchValue({ apartmentId: selectedApt.apartmentId });
+    // Clear search control to show full list on next open
+    this.apartmentSearchControl.setValue('', { emitEvent: false });
+  }
+
   private normalizeRolesForType(type: string): void {
     // When contract type changes, keep existing primary role assignments
     // No need to reset as isPrimaryRole is type-agnostic
@@ -216,23 +266,13 @@ export class CreateContract implements OnInit {
       return;
     }
 
+    // When primary role is selected, set isRepresentative = true for that member
     // Only one member can have primary role and be representative
     this.members.controls.forEach((ctrl, idx) => {
       ctrl.patchValue(
         { isPrimaryRole: idx === index, isRepresentative: idx === index },
         { emitEvent: false }
       );
-    });
-  }
-
-  onRepresentativeChange(index: number, checked: boolean): void {
-    if (!checked) {
-      this.members.at(index).patchValue({ isRepresentative: false }, { emitEvent: false });
-      return;
-    }
-
-    this.members.controls.forEach((ctrl, idx) => {
-      ctrl.patchValue({ isRepresentative: idx === index }, { emitEvent: false });
     });
   }
 

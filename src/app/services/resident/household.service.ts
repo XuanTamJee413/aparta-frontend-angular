@@ -41,8 +41,11 @@ export class HouseholdService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/ApartmentMembers`;
 
-  getMembersByApartment(apartmentId: string): Observable<ApartmentMemberDto[]> {
-    const params = new HttpParams().set('apartmentId', apartmentId);
+  getMembersByApartment(apartmentId: string, status?: string): Observable<ApartmentMemberDto[]> {
+    let params = new HttpParams().set('apartmentId', apartmentId);
+    if (status) {
+      params = params.set('status', status);
+    }
     return this.http.get<ApiResponse<ApartmentMemberDto[]>>(this.apiUrl, { params }).pipe(
       map((resp: ApiResponse<ApartmentMemberDto[]>) => {
         if (resp && resp.succeeded && resp.data && Array.isArray(resp.data)) {

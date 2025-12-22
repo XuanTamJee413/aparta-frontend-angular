@@ -10,26 +10,37 @@
       <h2 class="form-section-header">Thông tin Hợp đồng</h2>
       <div class="form-grid">
         <div class="form-group full-width">
-          <label for="apartmentId">Căn hộ</label>
-          <select
-            id="apartmentId"
-            formControlName="apartmentId"
-            [class.is-invalid]="isInvalid('apartmentId')"
-          >
-            <option [ngValue]="null" disabled>
-              {{ apartmentsLoading() ? 'Đang tải...' : '--- Chọn căn hộ ---' }}
-            </option>
+          <label for="apartmentId">Căn hộ <span class="text-danger">*</span></label>
+          
+          <div class="select2-wrapper" [class.disabled]="apartmentsLoading()">
+            <input type="text" 
+                   class="form-control select2-input" 
+                   placeholder="Nhập mã hoặc căn hộ để tìm kiếm..."
+                   [formControl]="apartmentSearchControl" 
+                   [matAutocomplete]="auto"
+                   (matAutocompleteActivated)="onApartmentInputFocus()"
+                   #apartmentInput="matAutocompleteTrigger"
+                   [class.is-invalid]="isInvalid('apartmentId')">
+            
+            <mat-icon class="select2-arrow" (click)="apartmentInput.openPanel()" style="cursor: pointer;">arrow_drop_down</mat-icon>
 
-            @if (apartmentsError()) {
-              <option [ngValue]="null" disabled>{{ apartmentsError() }}</option>
-            } @else {
-              @for (apt of availableApartments(); track apt.apartmentId) {
-                <option [value]="apt.apartmentId">{{ apt.code }}</option>
-              }
-            }
-          </select>
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayApartmentFn" (optionSelected)="onApartmentSelected($event)">
+              <mat-option *ngIf="(filteredApartments$ | async)?.length === 0" disabled>
+                <span class="text-muted small">Không tìm thấy căn hộ nào</span>
+              </mat-option>
+
+              <mat-option *ngFor="let apt of (filteredApartments$ | async)" [value]="apt">
+                <span class="fw-medium">{{ apt.code }}</span>
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+          
           @if (isInvalid('apartmentId')) {
             <div class="invalid-feedback">Vui lòng chọn căn hộ.</div>
+          }
+
+          @if (apartmentsError()) {
+            <div class="help-text text-danger">{{ apartmentsError() }}</div>
           }
 
           @if (
@@ -71,34 +82,39 @@
           }
         </div>
 
-        <div class="form-group">
-          <label for="startDate">Ngày bắt đầu</label>
-          <input
-            type="date"
-            id="startDate"
-            formControlName="startDate"
-            [class.is-invalid]="isInvalid('startDate')"
-          >
-          @if (isInvalid('startDate')) {
-            <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
-          }
-        </div>
+        @if (contractForm.get('contractType')?.value !== 'Sale') {
+          <div class="form-group">
+            <label for="startDate">Ngày bắt đầu</label>
+            <input
+              type="date"
+              id="startDate"
+              formControlName="startDate"
+              [class.is-invalid]="isInvalid('startDate')"
+              readonly
+            >
+            @if (isInvalid('startDate')) {
+              <div class="invalid-feedback">Vui lòng chọn ngày bắt đầu.</div>
+            }
+          </div>
+        }
 
-        <div class="form-group">
-          <label for="endDate">Ngày kết thúc</label>
-          <input
-            type="date"
-            id="endDate"
-            formControlName="endDate"
-            [class.is-invalid]="isInvalid('endDate') || contractForm.errors?.['endBeforeStart']"
-          >
-          @if (isInvalid('endDate')) {
-            <div class="invalid-feedback">Vui lòng chọn ngày kết thúc.</div>
-          }
-          @if (contractForm.errors?.['endBeforeStart']) {
-            <div class="invalid-feedback">Ngày kết thúc phải lớn hơn ngày bắt đầu.</div>
-          }
-        </div>
+        @if (contractForm.get('contractType')?.value !== 'Sale') {
+          <div class="form-group">
+            <label for="endDate">Ngày kết thúc</label>
+            <input
+              type="date"
+              id="endDate"
+              formControlName="endDate"
+              [class.is-invalid]="isInvalid('endDate') || contractForm.errors?.['endBeforeStart']"
+            >
+            @if (isInvalid('endDate')) {
+              <div class="invalid-feedback">Vui lòng chọn ngày kết thúc.</div>
+            }
+            @if (contractForm.errors?.['endBeforeStart']) {
+              <div class="invalid-feedback">Ngày kết thúc phải lớn hơn ngày bắt đầu.</div>
+            }
+          </div>
+        }
 
       </div>
 
@@ -111,12 +127,15 @@
         @for (member of members.controls; track i; let i = $index) {
           <div [formGroupName]="i" class="member-card">
             <div class="member-header">
-              <h3>Thành viên {{ i + 1 }}</h3>
+              <div>
+                <h3>Thành viên {{ i + 1 }}</h3>
+                <p class="member-subtitle">Thành viên đăng ký sử dụng app</p>
+              </div>
               @if (members.length > 1) {
                 <button type="button" class="btn btn-sm btn-danger" (click)="removeMember(i)">Xóa</button>
               }
             </div>
-
+            
             <div class="form-grid">
               <div class="form-group">
                 <label [for]="'fullName-' + i">Họ và tên *</label>
@@ -205,19 +224,19 @@
                 </div>
               </div>
 
-              <div class="form-group">
+              <!-- <div class="form-group">
                 <label>
-                  <input type="checkbox" formControlName="isAppAccess" [disabled]="true">
-                  Cho phép truy cập ứng dụng
+                  <input type="checkbox" formControlName="isAppAccess" style="pointer-events: none; opacity: 0.5;">
+                  <span style="opacity: 0.5;">Cho phép truy cập ứng dụng</span>
                 </label>
               </div>
 
               <div class="form-group">
                 <label>
-                  <input type="checkbox" formControlName="isRepresentative" (change)="onRepresentativeChange(i, $event.target.checked)">
-                  Đại diện hợp đồng
+                  <input type="checkbox" formControlName="isRepresentative" style="pointer-events: none; opacity: 0.5;">
+                  <span style="opacity: 0.5;">Đại diện hợp đồng</span>
                 </label>
-              </div>
+              </div> -->
             </div>
           </div>
         }

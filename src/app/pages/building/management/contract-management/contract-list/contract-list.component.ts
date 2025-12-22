@@ -46,6 +46,15 @@ export class ContractList implements OnInit {
     return this.filteredContracts.slice(startIndex, startIndex + this.pageSize);
   }
 
+  isExpired(contract: ContractDto): boolean {
+    if (!contract.endDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = new Date(contract.endDate);
+    endDate.setHours(0, 0, 0, 0);
+    return endDate < today;
+  }
+
   constructor(
     private contractService: ContractManagementService,
     private router: Router

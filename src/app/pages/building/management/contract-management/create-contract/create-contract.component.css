@@ -233,3 +233,58 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+/* Select2-style autocomplete wrapper */
+.select2-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select2-input {
+  padding-right: 2.5rem;
+}
+
+.select2-arrow {
+  position: absolute;
+  right: 0.75rem;
+  font-size: 1.5rem;
+  color: #6b7280;
+  pointer-events: auto;
+}
+
+.select2-arrow:hover {
+  color: #374151;
+}
+
+.member-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: #f9fafb;
+}
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.member-header > div {
+  flex: 1;
+}
+
+.member-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.25rem 0;
+}
+
+.member-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-style: italic;
+}

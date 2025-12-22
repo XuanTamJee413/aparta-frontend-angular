@@ -110,7 +110,7 @@ export class RegisterHousehold implements OnInit {
       return;
     }
 
-    this.householdService.getMembersByApartment(apartmentId).subscribe({
+    this.householdService.getMembersByApartment(apartmentId, 'Đang cư trú').subscribe({
       next: (data) => { this.members.set(data); this.isLoading.set(false); },
       error: (err) => {
         this.isLoading.set(false);
