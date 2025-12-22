@@ -55,7 +55,7 @@ export class BookUtilityComponent implements OnInit {
   ) {
     this.bookingForm = this.fb.group({
       bookingDate: ['', Validators.required], 
-      bookedAt: ['', Validators.required],     
+      duration: [60, [Validators.required, Validators.min(15)]],     
       residentNote: ['']
     });
   }
@@ -65,9 +65,8 @@ export class BookUtilityComponent implements OnInit {
     this.loadHistory(); // Tải luôn lịch sử khi vào trang
   }
 
-  // ==========================================
-  // PHẦN 1: DANH SÁCH & ĐẶT TIỆN ÍCH
-  // ==========================================
+  //  DANH SÁCH & ĐẶT TIỆN ÍCH
+
 
   loadAvailableUtilities(): void {
     const params: UtilityQueryParameters = {
@@ -84,23 +83,52 @@ export class BookUtilityComponent implements OnInit {
     });
   }
 
-  openBookingModal(utility: UtilityDto): void {
+ openBookingModal(utility: UtilityDto): void {
     this.selectedUtility = utility;
     this.dialogErrorMessage = null;
     this.pageSuccessMessage = null;
-    this.bookedSlots = []; 
+    this.bookedSlots = [];
     
     const nowStr = this.getLocalIsoString(new Date());
-    const todayStr = nowStr.split('T')[0]; 
     
     this.bookingForm.reset({
       bookingDate: nowStr,
-      bookedAt: nowStr,
+      duration: 60, // Reset về 60 phút
       residentNote: ''
     });
+
+    // [QUAN TRỌNG] Cập nhật Validator Max (Quy đổi giờ của tiện ích sang phút)
+    const durationControl = this.bookingForm.get('duration');
     
+    if (utility.periodTime) {
+        // periodTime đang là giờ (VD: 2.0), nhân 60 để ra phút (120)
+        const maxMinutes = utility.periodTime * 60;
+        
+        durationControl?.setValidators([
+            Validators.required, 
+            Validators.min(15), // Tối thiểu 15 phút
+            Validators.max(maxMinutes)
+        ]);
+    } else {
+        durationControl?.setValidators([Validators.required, Validators.min(15)]);
+    }
+    durationControl?.updateValueAndValidity();
+
     this.onDateChange(nowStr);
     this.dialog.nativeElement.showModal();
+  }
+
+  // Getter tính giờ kết thúc (Input là phút)
+  get calculatedEndTime(): Date | null {
+    const val = this.bookingForm.value;
+    if (!val.bookingDate || !val.duration) return null;
+
+    const startDate = new Date(val.bookingDate);
+    const minutes = Number(val.duration);
+    
+    // Công thức: start + (số phút * 60 giây * 1000 ms)
+    const endTime = new Date(startDate.getTime() + (minutes * 60 * 1000));
+    return endTime;
   }
 
   closeDialog(): void {
@@ -132,9 +160,16 @@ export class BookUtilityComponent implements OnInit {
 
     const val = this.bookingForm.value;
     
-    if (new Date(val.bookedAt) <= new Date(val.bookingDate)) {
-      this.dialogErrorMessage = "Thời gian kết thúc phải sau thời gian bắt đầu.";
-      return;
+    // Tính toán bookedAt (Giờ kết thúc)
+    const startDate = new Date(val.bookingDate);
+    const durationMinutes = Number(val.duration);
+    
+    // Cộng phút vào
+    const endDate = new Date(startDate.getTime() + (durationMinutes * 60 * 1000));
+
+    if (endDate <= startDate) {
+       this.dialogErrorMessage = "Thời gian không hợp lệ.";
+       return;
     }
 
     this.isLoading = true;
@@ -143,7 +178,7 @@ export class BookUtilityComponent implements OnInit {
     const dto: UtilityBookingCreateDto = {
       utilityId: this.selectedUtility.utilityId,
       bookingDate: this.toLocalISOString(val.bookingDate),
-      bookedAt: this.toLocalISOString(val.bookedAt),
+      bookedAt: this.toLocalISOString(endDate.toISOString()), // Convert endDate sang string chuẩn
       residentNote: val.residentNote
     };
 
@@ -152,11 +187,9 @@ export class BookUtilityComponent implements OnInit {
         this.isLoading = false;
         this.closeDialog();
         
-        // Thông báo thành công
         this.pageSuccessMessage = `Đã gửi yêu cầu đặt ${utilityName} thành công!`;
         setTimeout(() => this.pageSuccessMessage = null, 3000);
 
-        // QUAN TRỌNG: Tải lại lịch sử ngay sau khi đặt
         this.loadHistory(); 
       },
       error: (err: HttpErrorResponse) => {
@@ -166,9 +199,9 @@ export class BookUtilityComponent implements OnInit {
     });
   }
 
-  // ==========================================
-  // PHẦN 2: LỊCH SỬ & HỦY ĐẶT (Merge từ Component cũ)
-  // ==========================================
+
+  // LỊCH SỬ & HỦY ĐẶT
+
 
   loadHistory(): void {
     this.isHistoryLoading = true;

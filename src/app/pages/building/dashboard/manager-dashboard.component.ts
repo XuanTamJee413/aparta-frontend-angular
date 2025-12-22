@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, Chart, CategoryScale, LinearScale, BarElement, ArcElement, Legend, Tooltip, BarController, DoughnutController, LineElement, PointElement, LineController } from 'chart.js';
-import { DashboardService, ProjectApartmentStatus } from '../../../services/dashboard.service';
+import { DashboardService, BuildingApartmentStatus, BuildingRevenue } from '../../../services/dashboard.service';
 import { MeterReadingService } from '../../../services/operation/meter-reading.service';
 import { BillingService } from '../../../services/billing.service';
 import { ProfileService } from '../../../services/profile.service';
@@ -137,7 +137,7 @@ export class ManagerDashboardComponent implements OnInit {
   
   // Apartment Status Details
   showApartmentStatusDetails = false;
-  projectDetails: ProjectApartmentStatus[] = [];
+  projectDetails: BuildingApartmentStatus[] = [];
   loadingProjectDetails = false;
   apartmentStatusChartDataMap: Map<string, ChartConfiguration<'doughnut'>['data']> = new Map();
   
@@ -146,7 +146,7 @@ export class ManagerDashboardComponent implements OnInit {
   apartmentItemsPerPage = 3;
   
   showRevenueDetails = false;
-  revenueProjectDetails: any[] = [];
+  revenueProjectDetails: BuildingRevenue[] = [];
   loadingRevenueDetails = false;
   projectChartDataMap: Map<string, ChartConfiguration<'line'>['data']> = new Map();
   
@@ -156,7 +156,8 @@ export class ManagerDashboardComponent implements OnInit {
 
   // Apartment Status Chart (Doughnut)
   apartmentStatusChartData: ChartConfiguration<'doughnut'>['data'] = {
-    labels: ['Đã Bán', 'Chưa bán'],
+    // Đã Bán + Đang Thuê được gom chung vào một nhóm "Đang sử dụng"
+    labels: ['Đang sử dụng', 'Chưa bán'],
     datasets: [
       {
         data: [0, 0],
@@ -266,31 +267,32 @@ export class ManagerDashboardComponent implements OnInit {
 
   loadRevenueChart(): void {
     this.loadingRevenue = true;
-    this.dashboardService.getStatistics().subscribe({
+    // Tổng quan doanh thu theo tháng dựa trên các tòa nhà mà manager/staff đang quản lý
+    this.dashboardService.getRevenueByBuilding(this.selectedYear).subscribe({
       next: (response) => {
-        if (response.succeeded && response.data) {
-          // Filter revenue by selected year
-          const yearData = response.data.revenueByMonth.filter(r => {
-            const year = parseInt(r.month.split('/')[1]);
-            return year === this.selectedYear;
-          });
-
+        const projects = response?.data || [];
+        if (response.succeeded) {
           // Create chart data for 12 months
           const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
           const monthLabels = months.map(month => {
             const monthNum = parseInt(month);
             return `Tháng ${monthNum}`;
           });
-          
-          const revenueData = months.map(month => {
+
+          // Aggregate revenue across managed buildings for each month
+          const revenueData = months.map((month, idx) => {
             const monthKey = `${month}/${this.selectedYear}`;
-            const found = yearData.find(r => r.month === monthKey);
-            return found ? found.revenue : 0;
+            return projects.reduce((sum, project) => {
+              const found = project.revenueByMonth.find((r: any) => r.month === monthKey);
+              return sum + (found?.revenue || 0);
+            }, 0);
           });
 
-          // Update chart
+          // Update chart + monthly revenue card (current month)
           this.revenueChartData.labels = monthLabels;
           this.revenueChartData.datasets[0].data = revenueData;
+          const currentMonthIdx = new Date().getMonth(); // 0-based
+          this.monthlyRevenue = revenueData[currentMonthIdx] || 0;
         }
         this.loadingRevenue = false;
       },
@@ -310,26 +312,43 @@ export class ManagerDashboardComponent implements OnInit {
         if (response.succeeded && response.data) {
           const data = response.data;
           
-          // Update overview cards
-          this.totalBuildings = data.totalBuildings;
-          this.totalApartments = data.totalApartments;
-          this.monthlyRevenue = data.monthlyRevenue;
+          // Update overview cards (some will be overridden by filtered calculations)
+          this.totalBuildings = this.managedBuildingIds.length || data.totalBuildings;
           this.pendingMeterReadings = data.pendingMeterReadings || 0;
           this.unpaidInvoices = data.unpaidInvoices || 0;
-          
-          // Revenue table will be loaded by loadAvailableYears
-          
-          // Update apartment status chart
-          this.apartmentStatusChartData.datasets[0].data = [
-            data.apartmentStatus.occupied,
-            data.apartmentStatus.vacant
-          ];
         }
+        // After basic stats, load filtered aggregates
+        this.loadApartmentStatusAggregate();
         this.loadAdditionalData();
       },
       error: (error) => {
         console.error('Error loading dashboard data:', error);
         this.loading = false;
+      }
+    });
+  }
+
+  private loadApartmentStatusAggregate(): void {
+    this.dashboardService.getApartmentStatusByProject().subscribe({
+      next: (response) => {
+        const projects = response?.data || [];
+        if (response.succeeded) {
+          const totalSold = projects.reduce((sum, p) => sum + (p.soldApartments || 0), 0);
+          const totalUnsold = projects.reduce((sum, p) => sum + (p.unsoldApartments || 0), 0);
+          const total = projects.reduce((sum, p) => sum + (p.totalApartments || 0), 0);
+
+          this.totalApartments = total;
+          this.soldApartments = totalSold;
+
+          // Update apartment status chart (overall view)
+          this.apartmentStatusChartData.datasets[0].data = [
+            totalSold,
+            totalUnsold
+          ];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading apartment status aggregate:', error);
       }
     });
   }
@@ -383,10 +402,11 @@ export class ManagerDashboardComponent implements OnInit {
 
   loadProjectDetails(): void {
     this.loadingProjectDetails = true;
-    this.dashboardService.getApartmentStatusByProject().subscribe({
+    this.dashboardService.getApartmentStatusByBuilding().subscribe({
       next: (response) => {
-        if (response.succeeded && response.data) {
-          this.projectDetails = response.data;
+        const projects = response?.data || [];
+        if (response.succeeded) {
+          this.projectDetails = projects;
           this.buildApartmentStatusCharts();
         }
         this.loadingProjectDetails = false;
@@ -430,7 +450,7 @@ export class ManagerDashboardComponent implements OnInit {
         ]
       };
       
-      this.apartmentStatusChartDataMap.set(project.projectId, chartData);
+      this.apartmentStatusChartDataMap.set(project.buildingId, chartData);
     });
   }
 
@@ -488,10 +508,11 @@ export class ManagerDashboardComponent implements OnInit {
 
   loadRevenueDetails(): void {
     this.loadingRevenueDetails = true;
-    this.dashboardService.getRevenueByProject(this.selectedYear).subscribe({
+    this.dashboardService.getRevenueByBuilding(this.selectedYear).subscribe({
       next: (response) => {
-        if (response.succeeded && response.data) {
-          this.revenueProjectDetails = response.data;
+        const projects = response?.data || [];
+        if (response.succeeded) {
+          this.revenueProjectDetails = projects;
           this.buildProjectCharts();
         }
         this.loadingRevenueDetails = false;
@@ -535,7 +556,7 @@ export class ManagerDashboardComponent implements OnInit {
         ]
       };
       
-      this.projectChartDataMap.set(project.projectId, chartData);
+      this.projectChartDataMap.set(project.buildingId, chartData);
     });
   }
 
@@ -681,7 +702,7 @@ export class ManagerDashboardComponent implements OnInit {
   }
 
   // Apartment Status Pagination methods
-  get paginatedApartmentProjects(): ProjectApartmentStatus[] {
+  get paginatedApartmentProjects(): BuildingApartmentStatus[] {
     const startIndex = (this.currentApartmentPage - 1) * this.apartmentItemsPerPage;
     const endIndex = startIndex + this.apartmentItemsPerPage;
     return this.projectDetails.slice(startIndex, endIndex);

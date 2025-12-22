@@ -107,16 +107,13 @@
 <dialog #bookingDialog (close)="closeDialog()" class="booking-modal">
   <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()" class="booking-form">
 
-    <!-- Header -->
     <div class="modal-header">
       <h3>Đặt tiện ích: {{ selectedUtility?.name }}</h3>
       <button type="button" class="btn-close" (click)="closeDialog()" aria-label="Đóng">×</button>
     </div>
 
-    <!-- Body -->
     <div class="modal-body">
 
-      <!-- Thời gian bắt đầu -->
       <div class="form-group">
         <label for="startTime">Thời gian bắt đầu <span class="required">*</span></label>
         <input 
@@ -127,29 +124,44 @@
           (change)="onDateChange(startDateInput.value)"
           class="form-input">
         <small class="form-error" 
-               *ngIf="bookingForm.get('bookingDate')?.invalid && bookingForm.get('bookingDate')?.touched">
-          Vui lòng chọn thời gian bắt đầu hợp lệ.
+          *ngIf="bookingForm.get('bookingDate')?.invalid && bookingForm.get('bookingDate')?.touched">
+          Vui lòng chọn thời gian bắt đầu.
         </small>
       </div>
 
-      <!-- Thời gian kết thúc -->
       <div class="form-group">
-        <label for="endTime">Thời gian kết thúc <span class="required">*</span></label>
+        <label for="duration">Thời gian sử dụng (phút) <span class="required">*</span></label>
         <input 
-          id="endTime"
-          type="datetime-local" 
-          formControlName="bookedAt"
-          class="form-input">
+          id="duration"
+          type="number" 
+          formControlName="duration"
+          min="15"
+          step="15" 
+          class="form-input"
+          placeholder="Nhập số phút (VD: 30, 60, 90...)">
+        
+        <small class="text-muted" *ngIf="selectedUtility?.periodTime">
+          Tối đa: {{ selectedUtility!.periodTime! * 60 }} phút.
+        </small>
+
         <small class="form-error" 
-               *ngIf="bookingForm.get('bookedAt')?.invalid && bookingForm.get('bookedAt')?.touched">
-          Vui lòng chọn thời gian kết thúc hợp lệ.
+          *ngIf="bookingForm.get('duration')?.invalid && bookingForm.get('duration')?.touched">
+          <span *ngIf="bookingForm.get('duration')?.errors?.['required']">Vui lòng nhập thời gian.</span>
+          <span *ngIf="bookingForm.get('duration')?.errors?.['min']">Tối thiểu 15 phút.</span>
+          <span *ngIf="bookingForm.get('duration')?.errors?.['max']">Vượt quá thời gian tối đa cho phép.</span>
         </small>
       </div>
 
-      <!-- Cảnh báo khung giờ đã đặt -->
+      <div class="form-group info-box" *ngIf="calculatedEndTime">
+        <p>
+            Giờ kết thúc dự kiến: 
+            <strong>{{ calculatedEndTime | date:'HH:mm dd/MM/yyyy' }}</strong>
+        </p>
+      </div>
+
       <div class="busy-slots" *ngIf="bookedSlots.length > 0">
         <div class="busy-header">
-          <strong>Cảnh báo: Giờ đã có người đặt trong ngày {{ selectedDate | date:'dd/MM/yyyy' }}</strong>
+          <strong>Lịch đã kín trong ngày {{ selectedDate | date:'dd/MM/yyyy' }}:</strong>
         </div>
         <ul class="busy-list">
           <li *ngFor="let slot of bookedSlots">
@@ -158,31 +170,24 @@
         </ul>
       </div>
 
-      <!-- Ghi chú -->
       <div class="form-group">
         <label for="note">Ghi chú (nếu có)</label>
         <textarea 
           id="note"
           formControlName="residentNote" 
           rows="3"
-          placeholder="Ví dụ: Mang theo 2 người lớn và 1 trẻ em..."
           class="form-textarea"></textarea>
       </div>
 
-      <!-- Thông báo lỗi tổng -->
       <div class="alert alert-danger" *ngIf="dialogErrorMessage">
         {{ dialogErrorMessage }}
       </div>
 
     </div>
 
-    <!-- Footer -->
     <div class="modal-footer">
-      <button type="button" class="btn btn-cancel" (click)="closeDialog()">
-        Hủy bỏ
-      </button>
-      <button type="submit" class="btn btn-primary" 
-              [disabled]="isLoading || bookingForm.invalid">
+      <button type="button" class="btn btn-cancel" (click)="closeDialog()">Hủy bỏ</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading || bookingForm.invalid">
         <span *ngIf="isLoading">Đang gửi...</span>
         <span *ngIf="!isLoading">Xác nhận đặt</span>
       </button>

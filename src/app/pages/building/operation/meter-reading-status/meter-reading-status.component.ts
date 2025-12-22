@@ -59,17 +59,19 @@ export class MeterReadingStatusComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const now = new Date();
+    // Mặc định hiển thị kỳ ghi chỉ số là THÁNG TRƯỚC (giống màn nhập chỉ số)
     this.billingPeriod = this.getCurrentBillingPeriod();
-    this.billingPeriodInput = this.billingPeriod; // Set initial value for month input
+    this.billingPeriodInput = this.billingPeriod; // Set initial value for month input (type="month")
     this.loadBuildings();
   }
 
-  // Lấy billing period hiện tại (yyyy-MM)
+  // Lấy billing period mặc định (yyyy-MM) - là THÁNG TRƯỚC vì ghi/đối soát cho kỳ vừa qua
   getCurrentBillingPeriod(): string {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    // Lấy tháng trước (vd: đang 2025-03 thì kỳ là 2025-02)
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const year = previousMonth.getFullYear();
+    const month = String(previousMonth.getMonth() + 1).padStart(2, '0');
     return `${year}-${month}`;
   }
 
