@@ -35,6 +35,7 @@ export class RegisterHousehold implements OnInit {
   members = signal<ApartmentMemberDto[]>([]);
   isSubmitting = signal(false);
   isLoading = signal(false);
+  loadError = signal<string | null>(null);
   submitError = signal<string | null>(null);
   submitSuccess = signal<string | null>(null);
 
@@ -135,17 +136,19 @@ export class RegisterHousehold implements OnInit {
 
   loadMembers() {
     const id = this.getApartmentId();
-    if (!id) return;
-    this.isLoading.set(true);
-    this.householdService.getMembersByApartment(id).subscribe(d => {
-      this.members.set(d);
+    if (!id) {
       this.isLoading.set(false);
       this.loadError.set('Không tìm thấy apartmentId trong phiên đăng nhập.');
       return;
     }
 
-    this.householdService.getMembersByApartment(apartmentId, 'Đang cư trú').subscribe({
-      next: (data) => { this.members.set(data); this.isLoading.set(false); },
+    this.isLoading.set(true);
+    this.householdService.getMembersByApartment(id, 'Đang cư trú').subscribe({
+      next: (data) => {
+        this.members.set(data);
+        this.isLoading.set(false);
+        this.loadError.set(null);
+      },
       error: (err) => {
         this.isLoading.set(false);
         this.loadError.set('Không thể tải danh sách hộ khẩu. Vui lòng thử lại.');
@@ -154,12 +157,7 @@ export class RegisterHousehold implements OnInit {
     });
   }
 
-  isInvalid(controlName: string): boolean {
-    const control = this.memberForm.get(controlName);
-    return !!control && control.invalid && (control.dirty || control.touched);
-  }
-
-     onSubmit(): void {
+  onSubmit(): void {
     this.memberForm.markAllAsTouched();
     if (this.memberForm.invalid || this.memberForm.pending) return;
 
