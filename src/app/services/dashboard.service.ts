@@ -53,6 +53,14 @@ export class DashboardService {
   getRevenueByProject(year: number): Observable<ApiResponse<ProjectRevenue[]>> {
     return this.http.get<ApiResponse<ProjectRevenue[]>>(`${this.apiUrl}/revenue-by-project?year=${year}`);
   }
+
+  getRevenueByBuilding(year: number): Observable<ApiResponse<BuildingRevenue[]>> {
+    return this.http.get<ApiResponse<BuildingRevenue[]>>(`${this.apiUrl}/revenue-by-building?year=${year}`);
+  }
+
+  getApartmentStatusByBuilding(): Observable<ApiResponse<BuildingApartmentStatus[]>> {
+    return this.http.get<ApiResponse<BuildingApartmentStatus[]>>(`${this.apiUrl}/apartment-status-by-building`);
+  }
 }
 
 export interface ProjectApartmentStatus {
@@ -66,6 +74,21 @@ export interface ProjectApartmentStatus {
 export interface ProjectRevenue {
   projectId: string;
   projectName: string;
+  revenueByMonth: MonthlyRevenue[];
+  totalRevenue: number;
+}
+
+export interface BuildingApartmentStatus {
+  buildingId: string;
+  buildingName: string;
+  totalApartments: number;
+  soldApartments: number;
+  unsoldApartments: number;
+}
+
+export interface BuildingRevenue {
+  buildingId: string;
+  buildingName: string;
   revenueByMonth: MonthlyRevenue[];
   totalRevenue: number;
 }
