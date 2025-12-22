@@ -39,7 +39,10 @@ export class ResidentList implements OnInit {
     isOwned: null,
     searchTerm: null,
     sortBy: 'name',
-    sortOrder: 'asc'
+    sortOrder: 'asc',
+    status: 'Đang cư trú',
+    apartmentId: null,
+    headMemberId: null
   };
 
   private searchDebouncer = new Subject<string>();
@@ -88,6 +91,7 @@ export class ResidentList implements OnInit {
 
     this.query.searchTerm = this.searchTerm || null;
     this.query.isOwned = this.selectedOwnerStatus;
+    this.query.status = this.query.status || 'Đang cư trú';
 
     this.residentService.getMyMembers(this.query).subscribe({
       next: (response: ApiResponse<ApartmentMember[]>) => {

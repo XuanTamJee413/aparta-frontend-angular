@@ -21,8 +21,8 @@
       <div class="filter-wrapper">
         <select class="filter-select" [(ngModel)]="selectedOwnerStatus" (change)="onFilterChange()">
           <option [ngValue]="null">Tất cả các loại</option>
-          <option [ngValue]="true">Chủ Hộ</option>
-          <option [ngValue]="false">Nhân Khẩu</option>
+          <option [ngValue]="true">Có Sở hữu</option>
+          <option [ngValue]="false">Không Sở hữu</option>
         </select>
       </div>
     </div>
@@ -85,7 +85,7 @@
                 {{ apartmentCodeMap[member.apartmentId] || member.apartmentId }}
               </td>
               <td>
-                @if (member.isOwner) {
+                @if (member.headMemberId == null) {
                 <span class="status-owner">Chủ Hộ</span>
                 } @else {
                 <span class="status-member">Nhân Khẩu</span>

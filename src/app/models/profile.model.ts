@@ -5,6 +5,7 @@ export interface UserProfileDto {
   phoneNumber: string;
   avatarUrl?: string | null;
   role: string;
+  contextRole?: string | null;
   apartmentInfo?: string | null;
   managedBuildingNames: string[];
   currentAssignments?: UserAssignmentProfileDto[];

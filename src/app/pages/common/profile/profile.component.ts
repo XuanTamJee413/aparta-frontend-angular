@@ -164,9 +164,21 @@ export class ProfileComponent implements OnInit {
     const role = this.profile.role.toLowerCase();
     if (role === 'admin') return 'Quản trị viên';
     if (role === 'manager') return 'Quản lý';
-    if (role === 'resident') return 'Cư dân';
-    return this.profile.role;
+    if (role === 'finance_staff') return 'Nhân viên Kế toán';
+    if (role === 'security_staff') return 'Nhân viên Bảo vệ';
+    if (role === 'operation_staff') return 'Nhân viên Vận hành';
+    if (role === 'maintenance_staff') return 'Nhân viên Bảo trì';
+    
+    if (role === 'resident') {
+      const context = this.profile.contextRole?.toLowerCase();
+      if (context === 'owner') return 'Cư dân (Chủ sở hữu)';
+      if (context === 'tenant') return 'Cư dân (Người thuê)';
+      if (context === 'family_member') return 'Cư dân (Người nhà)';
+      return 'Cư dân';
     }
+
+    return this.profile.role;
+  }
 
   isAdmin(): boolean {
     return this.profile?.role?.toLowerCase() === 'admin';

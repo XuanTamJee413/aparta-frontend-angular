@@ -14,11 +14,15 @@ export interface ApartmentMemberQueryParameters {
   searchTerm: string | null;
   sortBy: string | null;
   sortOrder: string | null;
+  status: string | null;
+  apartmentId?: string | null;
+  headMemberId?: string | null;
 }
 
 export interface ApartmentMember {
   apartmentMemberId: string;
   apartmentId: string;
+  headMemberId: string | null;
   name: string;
   faceImageUrl: string | null;
   phoneNumber: string | null;
@@ -71,6 +75,15 @@ export class ResidentManagementService {
     }
     if (query.isOwned !== null && query.isOwned !== undefined) {
       params = params.append('IsOwned', query.isOwned);
+    }
+    if (query.status) {
+      params = params.append('Status', query.status);
+    }
+    if (query.apartmentId) {
+      params = params.append('ApartmentId', query.apartmentId);
+    }
+    if (query.headMemberId) {
+      params = params.append('HeadMemberId', query.headMemberId);
     }
     if (query.sortBy) {
       params = params.append('SortBy', query.sortBy);
