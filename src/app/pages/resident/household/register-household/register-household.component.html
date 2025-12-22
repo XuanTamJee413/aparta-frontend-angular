@@ -1,8 +1,9 @@
 <main class="content">
   <div class="container-fluid p-0">
-    <h1 class="h3 mb-3">Khai báo Hộ khẩu</h1>
+    <h1 class="h3 mb-3">Khai báo Nhân khẩu</h1>
 
     <div class="row">
+      <!-- FORM -->
       <div class="col-12 col-lg-5">
         <div class="card">
           <div class="card-header">
@@ -11,25 +12,26 @@
           <div class="card-body">
             <form [formGroup]="memberForm" (ngSubmit)="onSubmit()">
 
+              <!-- HỌ TÊN -->
               <div class="mb-3">
-                <label for="name" class="form-label">Họ và Tên <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="name" formControlName="name" [class.is-invalid]="
-                   memberForm.get('name')?.touched &&
-                  (memberForm.get('name')?.hasError('required') ||
-                   memberForm.get('name')?.hasError('pattern'))
-                   ">
-                @if (memberForm.get('name')?.touched && memberForm.get('name')?.hasError('required')) {
-                <div class="invalid-feedback">Vui lòng nhập họ tên.</div>
-                }
-                @if (memberForm.get('name')?.touched && memberForm.get('name')?.hasError('pattern')) {
-                <div class="invalid-feedback">Họ tên chỉ được chứa chữ, không được chứa số.</div>
-                }
+                <label class="form-label">
+                  Họ và Tên <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" formControlName="name" [class.is-invalid]="isInvalid('name')">
+                <div class="invalid-feedback" *ngIf="memberForm.get('name')?.hasError('required')">
+                  Vui lòng nhập họ tên.
+                </div>
+                <div class="invalid-feedback" *ngIf="memberForm.get('name')?.hasError('pattern')">
+                  Họ tên chỉ được chứa chữ.
+                </div>
               </div>
 
+              <!-- QUAN HỆ -->
               <div class="mb-3">
-                <label for="familyRole" class="form-label">Quan hệ với chủ hộ <span class="text-danger">*</span></label>
-                <select class="form-select" id="familyRole" formControlName="familyRole"
-                  [class.is-invalid]="isInvalid('familyRole')">
+                <label class="form-label">
+                  Quan hệ với chủ hộ <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" formControlName="familyRole" [class.is-invalid]="isInvalid('familyRole')">
                   <option [value]="null" disabled>-- Chọn quan hệ --</option>
                   <option value="Vợ">Vợ</option>
                   <option value="Chồng">Chồng</option>
@@ -38,162 +40,131 @@
                   <option value="Mẹ">Mẹ</option>
                   <option value="Khác">Khác</option>
                 </select>
-                @if (isInvalid('familyRole')) {
                 <div class="invalid-feedback">Vui lòng chọn quan hệ.</div>
-                }
               </div>
 
+              <!-- NGÀY SINH -->
               <div class="mb-3">
-                <label for="dateOfBirth" class="form-label">Ngày sinh <span class="text-danger">*</span></label>
-
-                <input type="date" class="form-control" id="dateOfBirth" formControlName="dateOfBirth"
-                  [class.is-invalid]="
-                    memberForm.get('dateOfBirth')?.touched &&
-                    memberForm.get('dateOfBirth')?.hasError('required')
-                  ">
-
-                @if (memberForm.get('dateOfBirth')?.touched && memberForm.get('dateOfBirth')?.hasError('required')) {
+                <label class="form-label">
+                  Ngày sinh <span class="text-danger">*</span>
+                </label>
+                <input type="date" class="form-control" formControlName="dateOfBirth"
+                  [class.is-invalid]="isInvalid('dateOfBirth')">
                 <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
-                }
               </div>
 
+              <!-- GIỚI TÍNH -->
               <div class="mb-3">
-                <label for="gender" class="form-label">Giới tính</label>
-                <select class="form-select" id="gender" formControlName="gender">
+                <label class="form-label">Giới tính</label>
+                <select class="form-select" formControlName="gender">
                   <option [value]="null">-- Chọn giới tính --</option>
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
                 </select>
               </div>
 
+              <!-- CCCD -->
               <div class="mb-3">
-                <label for="idNumber" class="form-label">Số CCCD <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="idNumber" formControlName="idNumber" [class.is-invalid]="
-                    memberForm.get('idNumber')?.touched &&
-                    (memberForm.get('idNumber')?.hasError('required') ||
-                     memberForm.get('idNumber')?.hasError('pattern')  ||
-                     memberForm.get('idNumber')?.hasError('idNumberExists'))
-                  ">
-                @if (memberForm.get('idNumber')?.touched && memberForm.get('idNumber')?.hasError('required')) {
-                <div class="invalid-feedback">Vui lòng nhập số CCCD.</div>
-                }
-                @if (memberForm.get('idNumber')?.touched && memberForm.get('idNumber')?.hasError('pattern')) {
-                <div class="invalid-feedback">CCCD chỉ gồm chữ số 0–9.</div>
-                }
-                @if (memberForm.get('idNumber')?.touched && memberForm.get('idNumber')?.hasError('idNumberExists')) {
-                <div class="invalid-feedback">CCCD này đã tồn tại. Vui lòng nhập lại!</div>
-                }
+                <label class="form-label">
+                  Số CCCD
+                  <span class="text-danger" *ngIf="isIdRequired()"> *</span>
+                </label>
+                <input type="text" class="form-control" formControlName="idNumber"
+                  [class.is-invalid]="isInvalid('idNumber')">
+
+                <div class="invalid-feedback" *ngIf="memberForm.get('idNumber')?.hasError('required')">
+                  Vui lòng nhập CCCD.
+                </div>
+                <div class="invalid-feedback" *ngIf="memberForm.get('idNumber')?.hasError('pattern')">
+                  CCCD chỉ gồm chữ số.
+                </div>
+                <div class="invalid-feedback" *ngIf="memberForm.get('idNumber')?.hasError('idNumberExists')">
+                  CCCD đã tồn tại.
+                </div>
               </div>
 
+              <!-- SĐT -->
               <div class="mb-3">
-                <label for="phoneNumber" class="form-label">Số điện thoại</label>
-                <input type="tel" class="form-control" id="phoneNumber" formControlName="phoneNumber"
-                  [class.is-invalid]="memberForm.get('phoneNumber')?.touched && memberForm.get('phoneNumber')?.hasError('pattern')">
-                @if (memberForm.get('phoneNumber')?.touched && memberForm.get('phoneNumber')?.hasError('pattern')) {
-                <div class="invalid-feedback">Số điện thoại chỉ gồm chữ số 0–9.</div>
-                }
+                <label class="form-label">Số điện thoại</label>
+                <input type="tel" class="form-control" formControlName="phoneNumber"
+                  [class.is-invalid]="memberForm.get('phoneNumber')?.hasError('pattern')">
+                <div class="invalid-feedback">Số điện thoại chỉ gồm chữ số.</div>
               </div>
 
+              <!-- ẢNH -->
               <div class="mb-3">
-                <label for="faceImage" class="form-label">Ảnh khuôn mặt <span class="text-danger">*</span></label>
-                <input type="file" class="form-control" id="faceImage" accept="image/*"
-                  (change)="onFileSelected($event)"
-                  [class.is-invalid]="memberForm.get('faceImage')?.touched && memberForm.get('faceImage')?.invalid">
-
-                @if (memberForm.get('faceImage')?.touched && memberForm.get('faceImage')?.hasError('required')) {
-                <div class="invalid-feedback">Vui lòng chọn ảnh khuôn mặt.</div>
-                }
+                <label class="form-label">Ảnh khuôn mặt</label>
+                <input type="file" class="form-control" accept="image/*" (change)="onFileSelected($event)">
               </div>
 
+              <!-- QUỐC TỊCH -->
               <div class="mb-3">
-                <label for="nationality" class="form-label">Quốc tịch</label>
-                <input type="text" class="form-control" id="nationality" formControlName="nationality"
-                  placeholder="Việt Nam">
+                <label class="form-label">Quốc tịch</label>
+                <input type="text" class="form-control" formControlName="nationality">
               </div>
 
-              <div class="d-grid">
-                <button type="submit" class="btn btn-success"
-                  [disabled]="memberForm.invalid || isSubmitting() || memberForm.pending">
-                  @if (isSubmitting()) {
-                  <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-                  Đang lưu...
-                  } @else {
-                  Thêm thành viên
-                  }
-                </button>
-              </div>
+              <!-- SUBMIT -->
+              <button type="submit" class="btn btn-success w-100"
+                [disabled]="memberForm.invalid || memberForm.pending || isSubmitting()">
+                <span *ngIf="isSubmitting()" class="spinner-border spinner-border-sm me-1"></span>
+                Thêm thành viên
+              </button>
 
-              @if (submitError()) {
-              <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+              <div *ngIf="submitError()" class="alert alert-danger mt-3">
                 {{ submitError() }}
-                <button type="button" class="btn-close" (click)="submitError.set(null)" aria-label="Close"></button>
               </div>
-              }
-              @if (submitSuccess()) {
-              <div class="alert alert-success mt-3" role="alert">
+
+              <div *ngIf="submitSuccess()" class="alert alert-success mt-3">
                 {{ submitSuccess() }}
               </div>
-              }
 
             </form>
           </div>
         </div>
       </div>
 
+      <!-- DANH SÁCH -->
       <div class="col-12 col-lg-7">
         <div class="card">
           <div class="card-header">
-            <h5 class="card-title mb-0">Danh sách hộ khẩu</h5>
+            <h5 class="card-title mb-0">Danh sách thành viên gia đình</h5>
           </div>
           <div class="card-body">
-            @if (isLoading()) {
-            <div class="text-center">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-              </div>
+            <div *ngIf="isLoading()" class="text-center">
+              <div class="spinner-border"></div>
             </div>
-            } @else if (loadError()) {
-            <div class="alert alert-danger">{{ loadError() }}</div>
-            } @else if (members().length === 0) {
-            <div class="text-center">Chưa có thành viên nào được khai báo.</div>
-            } @else {
-            <div class="table-responsive">
-              <table class="table table-striped align-middle" style="width:100%">
-                <thead>
-                  <tr>
-                    <th style="width: 80px;">Ảnh</th>
-                    <th>Họ Tên</th>
-                    <th>Quan hệ</th>
-                    <th>CCCD</th>
-                    <th>Số điện thoại</th>
-                    <th>Ngày sinh</th>
-                    <th>Giới tính</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (member of members(); track member.apartmentMemberId) {
-                  <tr>
-                    <td>
-                      <img
-                        [src]="member.faceImageUrl || 'https://ui-avatars.com/api/?name=' + member.name + '&background=random'"
-                        alt="Avatar" class="rounded-circle" width="40" height="40"
-                        style="object-fit: cover; border: 1px solid #dee2e6;">
-                    </td>
-                    <td>{{ member.name }}</td>
-                    <td>{{ member.familyRole }}</td>
-                    <td>{{ member.idNumber }}</td>
-                    <td>{{ member.phoneNumber }}</td>
-                    <td>{{ member.dateOfBirth | date:'dd/MM/yyyy' }}</td>
-                    <td>{{ member.gender }}</td>
-                  </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            }
+
+            <table *ngIf="!isLoading()" class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Ảnh</th>
+                  <th>Họ tên</th>
+                  <th>Quan hệ</th>
+                  <th>CCCD</th>
+                  <th>Ngày sinh</th>
+                  <th>Giới Tính</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of members()">
+                  <td>
+                    <img [src]="m.faceImageUrl || 'https://ui-avatars.com/api/?name=' + m.name + '&background=random'"
+                      alt="Ảnh" class="rounded-circle" width="40" height="40"
+                      style="object-fit: cover; border: 1px solid #dee2e6;">
+                  </td>
+                  <td>{{ m.name }}</td>
+                  <td>{{ m.familyRole }}</td>
+                  <td>{{ m.idNumber }}</td>
+                  <td>{{ m.dateOfBirth | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ m.gender }}</td>
+                </tr>
+              </tbody>
+            </table>
+
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </main>
