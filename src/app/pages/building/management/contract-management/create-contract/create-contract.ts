@@ -251,8 +251,8 @@ export class CreateContract implements OnInit {
   onApartmentSelected(event: any): void {
     const selectedApt = event.option.value as AvailableApartmentDto;
     this.contractForm.patchValue({ apartmentId: selectedApt.apartmentId });
-    // Clear search control to show full list on next open
-    this.apartmentSearchControl.setValue('', { emitEvent: false });
+    // Set search control to selected apartment object so displayWith shows the code
+    this.apartmentSearchControl.setValue(selectedApt, { emitEvent: false });
   }
 
   private normalizeRolesForType(type: string): void {
