@@ -61,16 +61,18 @@ import { InvoiceDto } from '../../../models/invoice.model';
           } @else {
             <ul class="item-list">
               @for(bill of bills; track bill.invoiceId) {
-                <li>
-                  <div>
-                    <span class="item-name">{{ getBillName(bill.feeType) }}</span>
-                    <span class="item-date">Đến hạn: {{ formatDate(bill.endDate) }}</span>
-                  </div>
-                  <div>
-                    <span class="item-amount">{{ bill.price | currency:'VND':'symbol':'1.0-0' }}</span>
-                    <span class="status" [ngClass]="bill.status.toLowerCase()">{{ getStatusLabel(bill.status) }}</span>
-                  </div>
-                </li>
+               <li class="bill-item">
+  <div class="bill-info">
+    <span class="item-name">{{ getBillName(bill.feeType) }}</span>
+    <span class="item-date">Đến hạn: {{ formatDate(bill.endDate) }}</span>
+  </div>
+  <div class="bill-right">
+    <span class="item-amount">{{ bill.price | currency:'VND':'symbol':'1.0-0' }}</span>
+    <span class="status" [ngClass]="{'pending': bill.status === 'PENDING', 'paid': bill.status === 'PAID', 'overdue': bill.status === 'OVERDUE', 'cancelled': bill.status === 'CANCELLED'}">
+      {{ getStatusLabel(bill.status) }}
+    </span>
+  </div>
+</li>
               }
             </ul>
           }
@@ -287,6 +289,53 @@ import { InvoiceDto } from '../../../models/invoice.model';
       display: block;
       text-align: center;
     }
+
+    .item-list li.bill-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f1f3f5;
+  gap: 1rem;
+}
+
+.bill-info, .bill-right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* cho phép text wrap nếu cần */
+}
+
+.bill-info {
+  flex: 1;
+}
+
+.bill-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.bill-right .item-amount {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.bill-right .status {
+  align-self: flex-end; /* đảm bảo badge luôn căn phải */
+}
+
+/* Giữ nguyên các style status cũ */
+.status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.status.pending { background-color: #fff3cd; color: #856404; }
+.status.paid { background-color: #d1e7dd; color: #198754; }
+.status.overdue { background-color: #f8d7da; color: #721c24; }
+.status.cancelled { background-color: #e2e3e5; color: #383d41; }
   `]
 })
 export class HomepageComponent implements OnInit {
