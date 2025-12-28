@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:5175/api'
+    apiUrl: 'https://aparta-backend-api.onrender.com/api',
   };
