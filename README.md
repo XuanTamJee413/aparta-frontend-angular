@@ -1,18 +1,55 @@
-# ApartaAngular
+# Aparta - Real Estate Platform (Angular Frontend)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+[![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-## Development server
+A modern real estate platform built with Angular 20.3.2, designed to provide a seamless property search and management experience.
 
-To start a local development server, run:
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or later)
+- npm (v9 or later) or Yarn
+- Angular CLI (v20.3.2)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/XuanTamJee413/aparta-frontend-angular.git
+   cd aparta-frontend-angular
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+### Development Server
+
+Start the development server:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Code scaffolding
+## 🛠️ Project Structure
+
+```
+src/
+├── app/                  # Application components and modules
+├── assets/              # Static assets (images, fonts, etc.)
+├── environments/         # Environment configurations
+├── styles/              # Global styles
+└── index.html           # Main HTML file
+```
+
+## 🧩 Code Scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
@@ -26,7 +63,7 @@ For a complete list of available schematics (such as `components`, `directives`,
 ng generate --help
 ```
 
-## Building
+## 📦 Building
 
 To build the project run:
 
@@ -36,7 +73,9 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Running unit tests
+## 🧪 Testing
+
+### Unit Tests
 
 To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
 
@@ -44,7 +83,7 @@ To execute unit tests with the [Karma](https://karma-runner.github.io) test runn
 ng test
 ```
 
-## Running end-to-end tests
+### End-to-End Tests
 
 For end-to-end (e2e) testing, run:
 
