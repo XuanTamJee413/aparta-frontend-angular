@@ -132,34 +132,38 @@ ng build --watch --configuration development
 ## 📁 Project Structure
 
 ```
-src/
-├── app/
-│   ├── models/           # Data models
-│   │   ├── building.model.ts
-│   │   ├── project.model.ts
-│   │   ├── manager.model.ts
-│   │   ├── invoice.model.ts
-│   │   └── ...
-│   ├── services/         # Business logic services
-│   │   ├── admin/        # Admin services
-│   │   ├── resident/     # Resident services
-│   │   ├── operation/    # Operations services
-│   │   ├── finance/      # Finance services
-│   │   ├── building/     # Building services
-│   │   ├── chat/         # Chat services
-│   │   └── management/   # Management services
-│   ├── pages/            # Page components
-│   │   └── admin/        # Admin pages
-│   │       ├── dashboard/
-│   │       ├── building/
-│   │       ├── project/
-│   │       ├── manager/
-│   │       └── subscription/
-│   ├── layout/           # Layout components (see LAYOUT_README.md)
-│   └── app.ts            # Root component
-├── environments/         # Environment configurations
-├── public/              # Static assets
-└── styles.css           # Global styles
+aparta-frontend-angular/
+├── src/
+│   ├── app/
+│   │   ├── models/           # Data models
+│   │   │   ├── building.model.ts
+│   │   │   ├── project.model.ts
+│   │   │   ├── manager.model.ts
+│   │   │   ├── invoice.model.ts
+│   │   │   └── ...
+│   │   ├── services/         # Business logic services
+│   │   │   ├── admin/        # Admin services
+│   │   │   ├── resident/     # Resident services
+│   │   │   ├── operation/    # Operations services
+│   │   │   ├── finance/      # Finance services
+│   │   │   ├── building/     # Building services
+│   │   │   ├── chat/         # Chat services
+│   │   │   └── management/   # Management services
+│   │   ├── pages/            # Page components
+│   │   │   └── admin/        # Admin pages
+│   │   │       ├── dashboard/
+│   │   │       ├── building/
+│   │   │       ├── project/
+│   │   │       ├── manager/
+│   │   │       └── subscription/
+│   │   ├── layout/           # Layout components (see LAYOUT_README.md)
+│   │   └── app.ts            # Root component
+│   ├── environments/         # Environment configurations
+│   └── styles.css            # Global styles
+├── public/                   # Static assets
+├── proxy.conf.json           # API proxy configuration
+├── angular.json              # Angular workspace config
+└── package.json              # Dependencies and scripts
 ```
 
 ## 🎨 Layout System
